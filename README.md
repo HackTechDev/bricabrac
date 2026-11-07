@@ -42,3 +42,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 
 Pour ajouter un niveau : le décrire dans `level_data.gd`, chercher une large zone gagnante avec
 `sweep.gd`, puis renseigner sa `solution` pour que `test_levels.gd` la vérifie.
+
+## Licence
+
+Le code est distribué sous licence MIT : voir `LICENSE`.
