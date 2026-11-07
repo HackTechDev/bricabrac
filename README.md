@@ -16,14 +16,19 @@ Ouvrir le projet dans Godot, ou :
 | Pivoter | R ou molette |
 | Miroir | F |
 | Changer de canal | C |
+| Poser une corde | Clic sur Corde dans le bac, puis le premier objet, les poulies dans l'ordre, le second objet |
+| Annuler une corde en cours | Échap ou clic droit |
 | Retirer | Clic droit ou Suppr |
 | Lancer / arrêter | Espace |
+| Couper le son | M |
 
 ## Organisation
 
 - `scripts/board.gd` : mécanique de jeu (disposition, simulation, victoire), sans interface.
 - `scripts/main.gd`, `bin_item.gd`, `part_icon.gd` : interface.
 - `scripts/parts/` : une classe par pièce, dessinée par le code. `catalog.gd` les référence.
+- `scripts/parts/rope_part.gd` : contrainte de longueur de la corde (Godot n'a pas de joint poulie en 2D).
+- `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio.
 - `scripts/level_data.gd` : les niveaux, chacun avec une solution.
 
 ## Tests
@@ -31,6 +36,7 @@ Ouvrir le projet dans Godot, ou :
     GODOT=/home/util01/JEUX/GODOT/Godot_v4.7.2-stable_linux.x86_64
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_levels.gd   # chaque niveau est faisable
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_ui.gd       # souris et clavier
+    $GODOT --headless --path . --fixed-fps 120 -s tests/test_rope.gd     # physique de la corde, sons
     SWEEP=spec.json $GODOT --headless --path . --fixed-fps 120 -s tests/sweep.gd   # aide à la conception
     CAPTURE_DIR=dossier $GODOT --path . -s tests/capture.gd              # captures (affichage requis)
 

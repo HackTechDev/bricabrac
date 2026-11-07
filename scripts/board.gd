@@ -15,14 +15,17 @@ var placed: Array[Dictionary] = []
 var parts: Array[Part] = []
 var running := false
 var has_won := false
+var sfx := Sfx.new()
+var probe := CircleShape2D.new()
 
+var _next_id := 1
 var _part_layer: Node2D
 var _wall_shapes: Array[CollisionShape2D] = []
-var _probe := CircleShape2D.new()
 
 
 func _ready() -> void:
-	_probe.radius = 3.0
+	probe.radius = 3.0
+	add_child(sfx)
 	_build_walls()
 	_part_layer = Node2D.new()
 	add_child(_part_layer)
@@ -31,6 +34,7 @@ func _ready() -> void:
 func load_level(p_level: Dictionary) -> void:
 	level = p_level
 	placed.clear()
+	_next_id = 1
 	_rebuild(false)
 	inventory_changed.emit()
 
@@ -60,7 +64,8 @@ func remaining(kind: String) -> int:
 
 
 func place(kind: String, pos: Vector2) -> Part:
-	var entry := {"kind": kind, "pos": snap(pos), "rot": 0.0, "dir": 1}
+	var entry := {"kind": kind, "pos": snap(pos), "rot": 0.0, "dir": 1, "id": "p%d" % _next_id}
+	_next_id += 1
 	var part := _make(entry)
 	if part.uses_channel():
 		entry.channel = part.channel_range().x
@@ -72,22 +77,60 @@ func place(kind: String, pos: Vector2) -> Part:
 	return part
 
 
+## Pose une liste d'entrées complètes (solutions de niveau) : les cordes en dernier.
+func apply_layout(layout: Array) -> Array[Part]:
+	var result: Array[Part] = []
+	for ropes: bool in [false, true]:
+		for wanted: Dictionary in layout:
+			if (wanted.kind == "rope") == ropes:
+				var part := place(wanted.kind, wanted.get("pos", Vector2.ZERO))
+				part.entry.merge(wanted, true)
+				result.append(rebuild_part(part))
+	return result
+
+
+func add_rope(from: Part, from_off: Vector2, via: Array, to: Part, to_off: Vector2) -> Part:
+	var part := place("rope", Vector2.ZERO)
+	part.entry.merge({
+		"from": from.entry.id, "from_off": from_off, "via": via, "to": to.entry.id, "to_off": to_off,
+	}, true)
+	return rebuild_part(part)
+
+
+## Retire la pièce et les cordes qui en dépendent, qui retournent dans le bac.
 func remove(part: Part) -> void:
+	var id: String = part.entry.get("id", "")
+	for rope in parts.duplicate():
+		if rope is RopePart and rope != part and id != "" and (rope as RopePart).depends_on(id):
+			placed.erase(rope.entry)
+			_drop(rope)
 	placed.erase(part.entry)
 	_drop(part)
 	inventory_changed.emit()
+
+
+func find_part(id: String) -> Part:
+	if id == "":
+		return null
+	for part in parts:
+		if part.entry.get("id", "") == id:
+			return part
+	return null
 
 
 ## Recrée la pièce après un changement de sa disposition.
 func rebuild_part(part: Part) -> Part:
 	var entry := part.entry
 	_drop(part)
-	return _make(entry)
+	var rebuilt := _make(entry)
+	_refresh_ropes()
+	return rebuilt
 
 
 func move_part(part: Part, pos: Vector2) -> void:
 	part.entry.pos = snap(pos)
 	part.position = part.entry.pos
+	_refresh_ropes()
 
 
 func snap(pos: Vector2) -> Vector2:
@@ -105,10 +148,11 @@ func is_valid(part: Part) -> bool:
 
 
 func part_at(point: Vector2) -> Part:
-	var xform := global_transform * Transform2D(0.0, point)
-	for i in range(parts.size() - 1, -1, -1):
-		if parts[i].overlaps_shape(_probe, xform):
-			return parts[i]
+	# Les objets passent avant les cordes qui les traversent.
+	for ropes: bool in [false, true]:
+		for i in range(parts.size() - 1, -1, -1):
+			if (parts[i] is RopePart) == ropes and parts[i].hit_test(point):
+				return parts[i]
 	return null
 
 
@@ -149,10 +193,12 @@ func _rebuild(run: bool) -> void:
 		_part_layer.remove_child(part)
 		part.queue_free()
 	parts.clear()
-	for entry in level.get("fixed", []):
-		_make(entry)
-	for entry in placed:
-		_make(entry)
+	var layout: Array = level.get("fixed", []) + placed
+	# Les cordes s'accrochent à des pièces qui doivent déjà exister.
+	for ropes: bool in [false, true]:
+		for entry: Dictionary in layout:
+			if (entry.kind == "rope") == ropes:
+				_make(entry)
 
 
 func _make(entry: Dictionary) -> Part:
@@ -170,8 +216,16 @@ func _drop(part: Part) -> void:
 
 
 func _key(e: Dictionary) -> String:
-	var p: Vector2 = e.pos
-	return "%s|%08.1f|%08.1f|%06.1f" % [e.kind, p.x, p.y, e.get("rot", 0.0)]
+	var p: Vector2 = e.get("pos", Vector2.ZERO)
+	return "%s|%08.1f|%08.1f|%06.1f|%s|%s" % [
+		e.kind, p.x, p.y, e.get("rot", 0.0), e.get("from", ""), e.get("to", ""),
+	]
+
+
+func _refresh_ropes() -> void:
+	for part in parts:
+		if part is RopePart:
+			part.refresh()
 
 
 func _build_walls() -> void:

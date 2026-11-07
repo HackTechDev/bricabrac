@@ -28,6 +28,7 @@ func _run() -> void:
 			continue
 		await _check(level)
 	print("ÉCHECS : %d" % failures if failures else "TOUS LES NIVEAUX PASSENT")
+	board.free()
 	quit(1 if failures else 0)
 
 
@@ -54,19 +55,14 @@ func _check(level: Dictionary) -> void:
 
 func _play(level: Dictionary, solution: Array) -> float:
 	board.load_level(level)
-	for wanted: Dictionary in solution:
-		var kind: String = wanted.kind
-		if board.remaining(kind) <= 0:
-			_report(level.id, "inventaire", false, "trop de %s" % kind)
+	for part: Part in board.apply_layout(solution):
+		if board.remaining(part.kind) < 0:
+			_report(level.id, "inventaire", false, "trop de %s" % part.kind)
 			return -1.0
-		var part := board.place(kind, wanted.pos)
-		for key: String in wanted:
-			part.entry[key] = wanted[key]
-		part = board.rebuild_part(part)
 		if part.entry.pos != board.snap(part.entry.pos):
-			_report(level.id, "grille", false, "%s hors grille" % kind)
+			_report(level.id, "grille", false, "%s hors grille" % part.kind)
 		if not board.is_valid(part):
-			_report(level.id, "pose valide", false, "%s à %s" % [kind, wanted.pos])
+			_report(level.id, "pose valide", false, "%s à %s" % [part.kind, part.entry.pos])
 	board.start()
 	return await _simulate(SOLVE_SECONDS, level.id)
 

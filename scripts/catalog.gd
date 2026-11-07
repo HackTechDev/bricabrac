@@ -16,6 +16,8 @@ const INFO := {
 	"balloon": {"label": "Ballon", "desc": "Monte, éclate sur les pointes."},
 	"spikes": {"label": "Pointes", "desc": "Font éclater les ballons."},
 	"cannon": {"label": "Canon", "desc": "Tire une bille quand son canal s'allume."},
+	"pulley": {"label": "Poulie", "desc": "Point de passage pour une corde."},
+	"rope": {"label": "Corde", "desc": "Clique un objet, d'éventuelles poulies, puis un autre objet."},
 	"lamp": {"label": "Lampe", "desc": "S'allume avec son canal."},
 	"basket": {"label": "Panier", "desc": "Objectif : y déposer un objet."},
 }
@@ -36,6 +38,8 @@ static func create(kind: String) -> Part:
 		"balloon": part = BalloonPart.new()
 		"spikes": part = SpikesPart.new()
 		"cannon": part = CannonPart.new()
+		"pulley": part = PulleyPart.new()
+		"rope": part = RopePart.new()
 		"lamp": part = LampPart.new()
 		"basket": part = BasketPart.new()
 		_:

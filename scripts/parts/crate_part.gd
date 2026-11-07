@@ -10,6 +10,10 @@ func _build() -> void:
 	add_visual(body, paint)
 
 
+func impact_sound() -> String:
+	return "wood"
+
+
 func paint(c: CanvasItem) -> void:
 	var r := Rect2(-SIZE / 2.0, SIZE)
 	box(c, r, Color("b07a3f"))

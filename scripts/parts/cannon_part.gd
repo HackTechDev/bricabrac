@@ -16,6 +16,7 @@ func on_powered() -> void:
 	if not (running and powered):
 		return
 	var axis := Vector2.RIGHT.rotated(global_rotation) * dir
+	board.sfx.play("cannon")
 	board.spawn({
 		"kind": "ball",
 		"pos": global_position + axis * (SIZE.x / 2.0 + 20.0),

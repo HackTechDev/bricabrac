@@ -16,11 +16,7 @@ func _run() -> void:
 	for i in main.levels.size():
 		main.load_level(i)
 		var board: Board = main.board
-		for wanted: Dictionary in main.levels[i].solution:
-			var part := board.place(wanted.kind, wanted.pos)
-			for key: String in wanted:
-				part.entry[key] = wanted[key]
-			board.rebuild_part(part)
+		board.apply_layout(main.levels[i].solution)
 		await _shot("%s/l%d_edit.png" % [dir, i + 1])
 		main.toggle_run()
 		var delay := create_timer(1.6)

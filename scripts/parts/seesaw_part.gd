@@ -48,6 +48,11 @@ func paint_icon(c: CanvasItem) -> void:
 	_paint_plank(c)
 
 
+func rope_anchor(point: Vector2) -> Vector2:
+	var side := signf(main_body.to_local(point).x)
+	return Vector2((LENGTH / 2.0 - 20.0) * (side if side != 0.0 else 1.0), 0)
+
+
 func _triangle() -> PackedVector2Array:
 	return PackedVector2Array([Vector2(0, 6), Vector2(26, 44), Vector2(-26, 44)])
 

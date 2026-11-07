@@ -6,7 +6,7 @@ const TOP_H := 56.0
 const PANEL_X := 1040.0
 const BIN_ORDER: Array[String] = [
 	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "cannon",
-	"ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes",
+	"pulley", "rope", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes",
 ]
 
 var save_path := "user://progress.cfg"
@@ -20,6 +20,12 @@ var drag_part: Part
 var drag_is_new := false
 var drag_origin := Vector2.ZERO
 
+var rope_tool := false
+var rope_from: Part
+var rope_from_off := Vector2.ZERO
+var rope_via: Array = []
+var muted := false
+
 var _level_picker: OptionButton
 var _run_button: Button
 var _clear_button: Button
@@ -30,6 +36,8 @@ var _items: Array[BinItem] = []
 var _ctx_buttons := {}
 var _win_overlay: Control
 var _win_next: Button
+var _rope_preview: Line2D
+var _sound_button: Button
 var _mouse := Vector2.ZERO
 
 
@@ -45,6 +53,11 @@ func _ready() -> void:
 	add_child(board)
 	board.won.connect(_on_won)
 	board.inventory_changed.connect(_refresh_bin)
+	_rope_preview = Line2D.new()
+	_rope_preview.width = 2.5
+	_rope_preview.default_color = Color(RopePart.COLOR, 0.8)
+	_rope_preview.z_index = 10
+	board.add_child(_rope_preview)
 
 	_build_top_bar()
 	_build_side_panel()
@@ -55,6 +68,7 @@ func _ready() -> void:
 
 func load_level(index: int) -> void:
 	_stop_drag()
+	_cancel_rope()
 	current = index
 	_select(null)
 	_win_overlay.hide()
@@ -68,8 +82,10 @@ func load_level(index: int) -> void:
 
 func toggle_run() -> void:
 	_stop_drag()
+	_cancel_rope()
 	_select(null)
 	_win_overlay.hide()
+	board.sfx.play("stop" if board.running else "start")
 	if board.running:
 		board.stop()
 	else:
@@ -83,6 +99,7 @@ func toggle_run() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouse:
 		_mouse = _to_board(event.position)
+		_update_rope_preview()
 	if drag_part == null:
 		return
 	if event is InputEventMouseMotion:
@@ -105,6 +122,12 @@ func _handle_key(key: Key) -> void:
 	match key:
 		KEY_SPACE:
 			toggle_run()
+		KEY_M:
+			_toggle_sound()
+		KEY_ESCAPE:
+			if rope_tool:
+				_cancel_rope()
+				_status.text = "Corde annulée."
 		KEY_R:
 			_rotate_selected(1.0)
 		KEY_F:
@@ -117,6 +140,9 @@ func _handle_key(key: Key) -> void:
 
 func _handle_click(button: MouseButton) -> void:
 	if board.running:
+		return
+	if rope_tool:
+		_handle_rope_click(button)
 		return
 	match button:
 		MOUSE_BUTTON_WHEEL_UP:
@@ -132,9 +158,10 @@ func _handle_click(button: MouseButton) -> void:
 			var target := board.part_at(_mouse)
 			if _is_player_part(target):
 				_select(target)
-				drag_part = target
-				drag_is_new = false
-				drag_origin = target.position
+				if not target is RopePart:
+					drag_part = target
+					drag_is_new = false
+					drag_origin = target.position
 			else:
 				_select(null)
 
@@ -151,6 +178,11 @@ func _is_player_part(part: Part) -> bool:
 
 func _grab_from_bin(kind: String) -> void:
 	if board.running or board.remaining(kind) <= 0:
+		return
+	if kind == "rope":
+		_select(null)
+		rope_tool = true
+		_status.text = "Corde : clique le premier objet à relier (Échap pour annuler)."
 		return
 	drag_part = board.place(kind, _mouse)
 	drag_is_new = true
@@ -172,7 +204,9 @@ func _drop() -> void:
 	drag_part = null
 	part.modulate = Color.WHITE
 	if board.is_valid(part):
+		board.sfx.play("place")
 		return
+	board.sfx.play("deny")
 	if drag_is_new:
 		_select(null)
 		board.remove(part)
@@ -185,6 +219,92 @@ func _drop() -> void:
 func _stop_drag() -> void:
 	if drag_part != null:
 		_drop()
+
+
+# --- Pose d'une corde -----------------------------------------------------------
+
+func _handle_rope_click(button: MouseButton) -> void:
+	if button == MOUSE_BUTTON_RIGHT:
+		_cancel_rope()
+		_status.text = "Corde annulée."
+		return
+	if button != MOUSE_BUTTON_LEFT:
+		return
+	var target := board.part_at(_mouse)
+	if target == null or target is RopePart:
+		_status.text = "Clique sur une pièce."
+		board.sfx.play("deny")
+	elif rope_from == null:
+		_start_rope(target)
+	elif target is PulleyPart:
+		_add_rope_pulley(target)
+	else:
+		_finish_rope(target)
+	_update_rope_preview()
+
+
+func _start_rope(target: Part) -> void:
+	if not target.can_tie():
+		_status.text = "Une corde commence sur un objet, pas sur une poulie."
+		board.sfx.play("deny")
+		return
+	_ensure_id(target)
+	rope_from = target
+	rope_from_off = target.rope_anchor(board.to_global(_mouse))
+	board.sfx.play("tick")
+	_status.text = "Corde : clique les poulies dans l'ordre, puis le second objet."
+
+
+func _add_rope_pulley(target: Part) -> void:
+	_ensure_id(target)
+	if rope_via.has(target.entry.id):
+		_status.text = "La corde passe déjà par cette poulie."
+		board.sfx.play("deny")
+		return
+	rope_via.append(target.entry.id)
+	board.sfx.play("tick")
+
+
+func _finish_rope(target: Part) -> void:
+	if target == rope_from:
+		_status.text = "Une corde relie deux pièces différentes."
+		board.sfx.play("deny")
+		return
+	if not (rope_from.main_body is RigidBody2D or target.main_body is RigidBody2D):
+		_status.text = "Une corde entre deux pièces fixes ne ferait rien : choisis un objet mobile."
+		board.sfx.play("deny")
+		return
+	_ensure_id(target)
+	var off := target.rope_anchor(board.to_global(_mouse))
+	board.add_rope(rope_from, rope_from_off, rope_via.duplicate(), target, off)
+	board.sfx.play("place")
+	_cancel_rope()
+	_status.text = "Corde posée. Elle garde cette longueur : elle tire mais ne pousse pas."
+
+
+func _cancel_rope() -> void:
+	rope_tool = false
+	rope_from = null
+	rope_via.clear()
+	_update_rope_preview()
+
+
+## Les pièces de décor n'ont pas toutes un identifiant : on leur en donne un à la demande.
+func _ensure_id(part: Part) -> void:
+	if not part.entry.has("id"):
+		part.entry["id"] = "fixed_%d" % part.get_instance_id()
+
+
+func _update_rope_preview() -> void:
+	if _rope_preview == null:
+		return
+	_rope_preview.clear_points()
+	if rope_from == null:
+		return
+	_rope_preview.add_point(board.to_local(rope_from.main_body.to_global(rope_from_off)))
+	for id: String in rope_via:
+		_rope_preview.add_point(board.find_part(id).position)
+	_rope_preview.add_point(_mouse)
 
 
 # --- Pièce sélectionnée ---------------------------------------------------------
@@ -208,6 +328,9 @@ func _edit_selected(key: String, value: Variant) -> void:
 		part.entry[key] = old
 		part = board.rebuild_part(part)
 		_status.text = "Pas assez de place pour cela."
+		board.sfx.play("deny")
+	else:
+		board.sfx.play("tick")
 	selected = null
 	_select(part)
 	if was_dragging:
@@ -240,6 +363,7 @@ func _remove_selected() -> void:
 		var part := selected
 		_select(null)
 		board.remove(part)
+		board.sfx.play("remove")
 
 
 # --- Construction de l'interface ------------------------------------------------
@@ -264,6 +388,11 @@ func _build_top_bar() -> void:
 	_goal_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(_goal_label)
 
+	_sound_button = Button.new()
+	_sound_button.focus_mode = Control.FOCUS_NONE
+	_sound_button.pressed.connect(_toggle_sound)
+	row.add_child(_sound_button)
+
 	var hint := Button.new()
 	hint.text = "Indice"
 	hint.focus_mode = Control.FOCUS_NONE
@@ -275,7 +404,9 @@ func _build_top_bar() -> void:
 	_clear_button.focus_mode = Control.FOCUS_NONE
 	_clear_button.pressed.connect(func() -> void:
 		_select(null)
-		board.clear_placed())
+		_cancel_rope()
+		board.clear_placed()
+		board.sfx.play("remove"))
 	row.add_child(_clear_button)
 
 	_run_button = Button.new()
@@ -411,6 +542,8 @@ func _refresh_context() -> void:
 func _refresh_controls() -> void:
 	_run_button.text = "Arrêter" if board.running else "Lancer"
 	_clear_button.disabled = board.running
+	_sound_button.text = "Son : non" if muted else "Son : oui"
+	AudioServer.set_bus_mute(0, muted)
 
 
 func _refresh_level_picker() -> void:
@@ -425,12 +558,19 @@ func _on_won() -> void:
 	completed[levels[current].id] = true
 	_save_progress()
 	_refresh_level_picker()
+	board.sfx.play("win")
 	var last := current == levels.size() - 1
 	_win_next.text = "Rejouer le premier niveau" if last else "Niveau suivant"
 	_win_overlay.show()
 
 
 # --- Progression ----------------------------------------------------------------
+
+func _toggle_sound() -> void:
+	muted = not muted
+	_refresh_controls()
+	_save_progress()
+
 
 func _first_unsolved() -> int:
 	for i in levels.size():
@@ -444,9 +584,11 @@ func _load_progress() -> void:
 	if cfg.load(save_path) == OK:
 		for id: String in cfg.get_value("progress", "completed", []):
 			completed[id] = true
+		muted = cfg.get_value("settings", "muted", false)
 
 
 func _save_progress() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("progress", "completed", completed.keys())
+	cfg.set_value("settings", "muted", muted)
 	cfg.save(save_path)

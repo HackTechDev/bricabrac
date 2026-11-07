@@ -20,6 +20,10 @@ func _build() -> void:
 		body.linear_velocity = entry.vel
 
 
+func impact_sound() -> String:
+	return "thud" if kind == "ball_heavy" else "knock"
+
+
 func paint(c: CanvasItem) -> void:
 	var s: Dictionary = SPECS[kind]
 	c.draw_circle(Vector2.ZERO, s.r, s.color)

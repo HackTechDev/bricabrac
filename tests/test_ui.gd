@@ -80,10 +80,92 @@ func _run() -> void:
 	var fan := board.place("fan", Vector2(100, 400))
 	_check("ventilateur : canal 0 par défaut", fan.channel == 0 and fan.powered)
 
+	await _test_rope_tool()
+	await _test_sound_toggle()
+
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
 	print("ÉCHECS : %d" % failures if failures else "INTERFACE OK")
 	main.free()
 	quit(1 if failures else 0)
+
+
+## Pose complète d'une corde à la souris, sur le niveau Contrepoids.
+func _test_rope_tool() -> void:
+	var board: Board = main.board
+	main.load_level(6)
+	await _steps(2)
+	var pulley_pos := _bin_pos("pulley")
+	await _drag(pulley_pos, board.to_global(Vector2(300, 40)))
+	pulley_pos = _bin_pos("pulley")
+	await _drag(pulley_pos, board.to_global(Vector2(700, 40)))
+	_check("deux poulies posées", board.remaining("pulley") == 0)
+
+	# Annulation : clic droit pendant la pose.
+	await _click(_bin_pos("rope"), MOUSE_BUTTON_LEFT)
+	_check("outil corde actif", main.rope_tool)
+	await _click(board.to_global(Vector2(700, 120)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(700, 120)), MOUSE_BUTTON_RIGHT)
+	_check("clic droit annule la corde", not main.rope_tool and board.remaining("rope") == 1)
+
+	# Refus : commencer sur une poulie.
+	await _click(_bin_pos("rope"), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(300, 40)), MOUSE_BUTTON_LEFT)
+	_check("refus : commencer sur une poulie", main.rope_tool and main.rope_from == null)
+
+	# Pose : boulet, poulie droite, poulie gauche, bille.
+	await _click(board.to_global(Vector2(700, 120)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(700, 40)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(300, 40)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(300, 610)), MOUSE_BUTTON_LEFT)
+	_check("corde posée", not main.rope_tool and board.remaining("rope") == 0)
+
+	# La disposition faite à la souris doit gagner, comme la solution de référence.
+	await _key(KEY_SPACE)
+	for i in 1800:
+		await physics_frame
+		if main._win_overlay.visible:
+			break
+	_check("Contrepoids gagné à la souris", main._win_overlay.visible)
+	main.toggle_run()
+	await _steps(2)
+
+	# Un clic sur la corde la sélectionne sans la déplacer ; clic droit : retour au bac.
+	await _click(board.to_global(Vector2(500, 40)), MOUSE_BUTTON_LEFT)
+	_check("clic sur la corde : sélection", main.selected is RopePart and main.drag_part == null)
+	await _click(board.to_global(Vector2(500, 40)), MOUSE_BUTTON_RIGHT)
+	_check("clic droit retire la corde", board.remaining("rope") == 1)
+
+	# Retirer une poulie emporte la corde qui y passe.
+	await _click(_bin_pos("rope"), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(700, 120)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(700, 40)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(300, 610)), MOUSE_BUTTON_LEFT)
+	_check("corde reposée", board.remaining("rope") == 0)
+	await _click(board.to_global(Vector2(700, 40)), MOUSE_BUTTON_RIGHT)
+	_check("poulie retirée : corde au bac", board.remaining("rope") == 1 and board.remaining("pulley") == 1)
+
+	# Attache à une pièce de décor qui n'a pas d'identifiant dans le niveau (la plaque).
+	await _click(_bin_pos("rope"), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(700, 120)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(300, 180)), MOUSE_BUTTON_LEFT)
+	_check("corde vers une pièce de décor", board.remaining("rope") == 0)
+	var rope: RopePart = board.parts.back()
+	_check("corde vers le décor : tracé valide", rope.points().size() == 2)
+
+
+func _test_sound_toggle() -> void:
+	var was_muted: bool = main.muted
+	await _key(KEY_M)
+	_check("touche M : son coupé", main.muted != was_muted and AudioServer.is_bus_mute(0) == main.muted)
+	await _click(main._sound_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("bouton Son : rétabli", main.muted == was_muted)
+
+
+func _bin_pos(kind: String) -> Vector2:
+	for item: BinItem in main._items:
+		if item.kind == kind:
+			return item.get_global_rect().get_center()
+	return Vector2.ZERO
 
 
 func _drag(from: Vector2, to: Vector2) -> void:

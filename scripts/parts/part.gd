@@ -8,6 +8,8 @@ const INK := Color("0f1a2e")
 const STEEL := Color("7f8fa6")
 const WOOD := Color("c98f4e")
 const GOLD := Color("ffc94d")
+const IMPACT_MIN_SPEED := 70.0
+const IMPACT_FULL_SPEED := 700.0
 const CHANNEL_COLORS: Array[Color] = [
 	Color("8a94a6"), Color("ff5d5d"), Color("ffc94d"), Color("5dd39e"),
 ]
@@ -23,9 +25,14 @@ var selected := false:
 	set(value):
 		selected = value
 		queue_redraw()
+		refresh()
+var main_body: PhysicsBody2D
 var solids: Array[CollisionShape2D] = []
 var visuals: Array[Node2D] = []
 var anim := 0.0
+
+var _tracked: RigidBody2D
+var _velocity_before := Vector2.ZERO
 
 
 func setup(p_entry: Dictionary, p_board: Board, p_running: bool) -> void:
@@ -48,6 +55,11 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	anim += delta
 	refresh()
+
+
+func _physics_process(_delta: float) -> void:
+	if is_instance_valid(_tracked):
+		_velocity_before = _tracked.linear_velocity
 
 
 # --- À redéfinir dans les pièces ------------------------------------------------
@@ -93,6 +105,26 @@ func on_powered() -> void:
 	pass
 
 
+## Son joué quand la pièce heurte quelque chose ; vide = silencieuse.
+func impact_sound() -> String:
+	return ""
+
+
+## Peut-on y attacher une corde ?
+func can_tie() -> bool:
+	return true
+
+
+## Point d'attache d'une corde, dans le repère du corps, pour un clic à `point`.
+func rope_anchor(_point: Vector2) -> Vector2:
+	return Vector2.ZERO
+
+
+## `point` est en coordonnées du plateau.
+func hit_test(point: Vector2) -> bool:
+	return overlaps_shape(board.probe, board.global_transform * Transform2D(0.0, point))
+
+
 # --- Services communs -----------------------------------------------------------
 
 func uses_channel() -> bool:
@@ -127,6 +159,12 @@ func make_rigid(mass: float, bounce: float, friction := 0.6, gravity := 1.0) -> 
 	b.physics_material_override = _material(bounce, friction)
 	b.set_meta("part", self)
 	add_child(b)
+	main_body = b
+	if running:
+		_tracked = b
+		b.contact_monitor = true
+		b.max_contacts_reported = 4
+		b.body_entered.connect(_on_contact)
 	return b
 
 
@@ -135,6 +173,8 @@ func make_static(bounce := 0.0, friction := 1.0) -> StaticBody2D:
 	b.physics_material_override = _material(bounce, friction)
 	b.set_meta("part", self)
 	add_child(b)
+	if main_body == null:
+		main_body = b
 	return b
 
 
@@ -204,6 +244,13 @@ func _add_solid(parent: Node2D, shape: Shape2D, offset: Vector2) -> CollisionSha
 	parent.add_child(col)
 	solids.append(col)
 	return col
+
+
+func _on_contact(_other: Node) -> void:
+	var sound := impact_sound()
+	var shock := (_tracked.linear_velocity - _velocity_before).length()
+	if sound != "" and shock > IMPACT_MIN_SPEED:
+		board.sfx.play(sound, shock / IMPACT_FULL_SPEED)
 
 
 func _material(bounce: float, friction: float) -> PhysicsMaterial:

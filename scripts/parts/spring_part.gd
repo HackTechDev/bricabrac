@@ -33,6 +33,7 @@ func _on_enter(node: Node2D) -> void:
 		var rb: RigidBody2D = node
 		rb.linear_velocity += up * (SPEED - rb.linear_velocity.dot(up))
 		_flash = anim + 0.15
+		board.sfx.play("spring")
 
 
 func paint(c: CanvasItem) -> void:

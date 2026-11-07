@@ -15,6 +15,10 @@ func channel_range() -> Vector2i:
 	return Vector2i(1, 3)
 
 
+func on_powered() -> void:
+	board.sfx.play("lamp")
+
+
 func is_satisfied() -> bool:
 	return powered
 

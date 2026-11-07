@@ -34,11 +34,7 @@ func _run() -> void:
 	for combo: Array in combos:
 		board.load_level(level)
 		var ok := true
-		for wanted: Dictionary in combo:
-			var part := board.place(wanted.kind, wanted.pos)
-			for key: String in wanted:
-				part.entry[key] = wanted[key]
-			part = board.rebuild_part(part)
+		for part: Part in board.apply_layout(combo):
 			ok = ok and board.is_valid(part)
 		if not ok:
 			continue
@@ -61,6 +57,13 @@ func _expand(p: Dictionary) -> Array:
 				for d: float in p.get("dir", [1.0]):
 					for ch: float in p.get("channel", [0.0]):
 						var e := {"kind": p.kind, "pos": Vector2(x, y), "rot": rot, "dir": int(d)}
+						for key: String in ["id", "from", "to", "via"]:
+							if p.has(key):
+								e[key] = p[key]
+						# Pour une corde : x et y donnent le point d'attache sur la pièce d'arrivée.
+						if p.kind == "rope":
+							e.pos = Vector2.ZERO
+							e.to_off = Vector2(x, y)
 						if ch > 0.0:
 							e.channel = int(ch)
 						out.append(e)
@@ -70,5 +73,6 @@ func _expand(p: Dictionary) -> Array:
 func _describe(combo: Array) -> String:
 	var parts := PackedStringArray()
 	for e: Dictionary in combo:
-		parts.append("%s(%d,%d r%d d%d c%d)" % [e.kind, e.pos.x, e.pos.y, e.rot, e.dir, e.get("channel", 0)])
+		var at: Vector2 = e.get("to_off", e.pos)
+		parts.append("%s(%d,%d r%d d%d c%d)" % [e.kind, at.x, at.y, e.rot, e.dir, e.get("channel", 0)])
 	return " ".join(parts)

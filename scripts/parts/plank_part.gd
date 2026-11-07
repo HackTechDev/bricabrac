@@ -19,6 +19,11 @@ func icon_scale() -> float:
 	return 0.3
 
 
+func rope_anchor(point: Vector2) -> Vector2:
+	var limit := _length() / 2.0 - 4.0
+	return Vector2(snappedf(clampf(main_body.to_local(point).x, -limit, limit), 10.0), 0)
+
+
 func paint(c: CanvasItem) -> void:
 	var l := _length()
 	var locked: bool = entry.get("locked", false)

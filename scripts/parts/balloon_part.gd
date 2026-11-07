@@ -19,6 +19,7 @@ func pop() -> void:
 	if popped:
 		return
 	popped = true
+	board.sfx.play("pop")
 	solids.clear()
 	visuals.clear()
 	body.queue_free()
