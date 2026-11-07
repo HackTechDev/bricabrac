@@ -1,0 +1,38 @@
+extends SceneTree
+## Capture chaque niveau (atelier avec sa solution, puis en pleine simulation). Nécessite un affichage.
+## CAPTURE_DIR=dossier godot --path . -s tests/capture.gd
+
+
+func _initialize() -> void:
+	_run.call_deferred()
+
+
+func _run() -> void:
+	var dir := OS.get_environment("CAPTURE_DIR")
+	var main: Control = (load("res://scenes/main.tscn") as PackedScene).instantiate()
+	main.save_path = "user://capture_progress.cfg"
+	root.add_child(main)
+	await process_frame
+	for i in main.levels.size():
+		main.load_level(i)
+		var board: Board = main.board
+		for wanted: Dictionary in main.levels[i].solution:
+			var part := board.place(wanted.kind, wanted.pos)
+			for key: String in wanted:
+				part.entry[key] = wanted[key]
+			board.rebuild_part(part)
+		await _shot("%s/l%d_edit.png" % [dir, i + 1])
+		main.toggle_run()
+		var delay := create_timer(1.6)
+		await delay.timeout
+		await _shot("%s/l%d_run.png" % [dir, i + 1])
+		main.toggle_run()
+	main.free()
+	quit()
+
+
+func _shot(path: String) -> void:
+	await process_frame
+	await process_frame
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png(path)
