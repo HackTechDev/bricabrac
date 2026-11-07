@@ -5,9 +5,9 @@ simulation, et la réaction en chaîne doit atteindre l'objectif du niveau.
 
 ## Jouer
 
-Ouvrir le projet dans Godot, ou :
+Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de Godot :
 
-    /home/util01/JEUX/GODOT/Godot_v4.7.2-stable_linux.x86_64 --path .
+    $GODOT --path .
 
 | Action | Commande |
 | --- | --- |
@@ -33,7 +33,7 @@ Ouvrir le projet dans Godot, ou :
 
 ## Tests
 
-    GODOT=/home/util01/JEUX/GODOT/Godot_v4.7.2-stable_linux.x86_64
+    export GODOT=/chemin/vers/Godot_v4.7.2-stable_linux.x86_64
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_levels.gd   # chaque niveau est faisable
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_ui.gd       # souris et clavier
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_rope.gd     # physique de la corde, sons
