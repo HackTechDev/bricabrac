@@ -48,6 +48,8 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Retourner (miroir) | F |
 | Changer de canal | C |
 | Retirer une pièce | Clic droit, ou sélection puis Suppr |
+| Annuler | Ctrl+Z, ou bouton Annuler |
+| Rétablir | Ctrl+Y ou Ctrl+Maj+Z, ou bouton Rétablir |
 | Lancer ou arrêter | Espace |
 | Couper le son | M |
 
@@ -145,5 +147,6 @@ terminés portent la mention `[OK]`. Le bouton **Indice** donne un coup de pouce
 - **Rien n'oblige à tout utiliser :** certains niveaux offrent plus de pièces qu'il n'en faut.
 - **Il y a souvent plusieurs solutions :** si la tienne fonctionne, elle est bonne.
 
-Ta progression et le réglage du son sont sauvegardés. En revanche, les pièces posées ne le sont pas :
-elles disparaissent quand tu changes de niveau ou que tu quittes le jeu.
+Ta progression, le réglage du son et les pièces posées dans chaque niveau sont sauvegardés : tu
+retrouves ta machine en revenant sur un niveau ou en relançant le jeu. L'historique d'annulation, lui,
+est conservé quand tu changes de niveau, mais pas quand tu quittes le jeu.

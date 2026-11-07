@@ -51,6 +51,23 @@ func _check(level: Dictionary) -> void:
 			slowest = maxf(slowest, time)
 	_report(level.id, "solution gagnante %d/%d (%.2fs à %.2fs)" % [wins, REPEATS, fastest, slowest],
 			wins == REPEATS, "pas de victoire en %ds" % SOLVE_SECONDS)
+	await _check_saved_copy(level)
+
+
+## Une machine relue depuis le format de sauvegarde doit se poser entière et gagner pareil.
+func _check_saved_copy(level: Dictionary) -> void:
+	board.load_level(level)
+	board.apply_layout(level.solution)
+	var cfg := ConfigFile.new()
+	cfg.set_value("layouts", "by_level", board.layout())
+	var reread := ConfigFile.new()
+	reread.parse(cfg.encode_to_text())
+	board.load_level(level)
+	var dropped := board.restore_layout(reread.get_value("layouts", "by_level"))
+	_report(level.id, "sauvegarde relue entière", dropped == 0, "%d pièce(s) écartée(s)" % dropped)
+	board.start()
+	var time := await _simulate(SOLVE_SECONDS, "")
+	_report(level.id, "sauvegarde relue gagnante", time >= 0.0, "pas de victoire")
 
 
 func _play(level: Dictionary, solution: Array) -> float:

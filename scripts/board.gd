@@ -33,6 +33,11 @@ func _ready() -> void:
 
 func load_level(p_level: Dictionary) -> void:
 	level = p_level
+	# Identifiants stables pour le décor : une corde sauvegardée doit y retrouver ses attaches.
+	var fixed: Array = level.get("fixed", [])
+	for i in fixed.size():
+		if not fixed[i].has("id"):
+			fixed[i]["id"] = "f%d" % i
 	placed.clear()
 	_next_id = 1
 	_rebuild(false)
@@ -40,8 +45,6 @@ func load_level(p_level: Dictionary) -> void:
 
 
 func start() -> void:
-	# Ordre canonique : à disposition égale, résultat égal, quel que soit l'ordre de pose.
-	placed.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _key(a) < _key(b))
 	_rebuild(true)
 
 
@@ -53,6 +56,40 @@ func clear_placed() -> void:
 	placed.clear()
 	_rebuild(false)
 	inventory_changed.emit()
+
+
+## Copie indépendante de la disposition du joueur.
+func layout() -> Array:
+	var copy: Array = []
+	for entry in placed:
+		copy.append(entry.duplicate(true))
+	return copy
+
+
+## Remplace la disposition par un état déjà connu comme valide (annulation).
+func set_layout(state: Array) -> void:
+	placed.clear()
+	for entry: Dictionary in state:
+		placed.append(entry.duplicate(true))
+	_bump_next_id()
+	_rebuild(false)
+	inventory_changed.emit()
+
+
+## Remet en place une disposition sauvegardée, en écartant ce qui n'est plus valide, par exemple
+## si le niveau a changé depuis. Renvoie le nombre de pièces écartées.
+func restore_layout(state: Array) -> int:
+	var dropped := 0
+	for ropes: bool in [false, true]:
+		for item: Variant in state:
+			var is_rope: bool = item is Dictionary and item.get("kind") == "rope"
+			if is_rope != ropes:
+				continue
+			if not _restore_entry(item):
+				dropped += 1
+	_bump_next_id()
+	inventory_changed.emit()
+	return dropped
 
 
 func remaining(kind: String) -> int:
@@ -193,10 +230,13 @@ func _rebuild(run: bool) -> void:
 		_part_layer.remove_child(part)
 		part.queue_free()
 	parts.clear()
-	var layout: Array = level.get("fixed", []) + placed
+	var mine: Array = placed.duplicate()
+	if run:
+		# Ordre canonique : à disposition égale, résultat égal, quel que soit l'ordre de pose.
+		mine.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _key(a) < _key(b))
 	# Les cordes s'accrochent à des pièces qui doivent déjà exister.
 	for ropes: bool in [false, true]:
-		for entry: Dictionary in layout:
+		for entry: Dictionary in level.get("fixed", []) + mine:
 			if (entry.kind == "rope") == ropes:
 				_make(entry)
 
@@ -207,6 +247,50 @@ func _make(entry: Dictionary) -> Part:
 	_part_layer.add_child(part)
 	parts.append(part)
 	return part
+
+
+func _restore_entry(item: Variant) -> bool:
+	if not item is Dictionary or not Catalog.INFO.has(item.get("kind", "")):
+		return false
+	var entry: Dictionary = (item as Dictionary).duplicate(true)
+	if remaining(entry.kind) <= 0:
+		return false
+	if entry.kind == "rope":
+		if not _rope_targets_exist(entry):
+			return false
+	elif not entry.get("pos") is Vector2:
+		return false
+	placed.append(entry)
+	var part := _make(entry)
+	if _is_rejected(part):
+		placed.pop_back()
+		_drop(part)
+		return false
+	return true
+
+
+func _is_rejected(part: Part) -> bool:
+	return not part is RopePart and not is_valid(part)
+
+
+func _rope_targets_exist(entry: Dictionary) -> bool:
+	var from := find_part(entry.get("from", ""))
+	var to := find_part(entry.get("to", ""))
+	if from == null or to == null or from == to:
+		return false
+	if not (from.main_body is RigidBody2D or to.main_body is RigidBody2D):
+		return false
+	for id: Variant in entry.get("via", []):
+		if not find_part(str(id)) is PulleyPart:
+			return false
+	return true
+
+
+func _bump_next_id() -> void:
+	for entry in placed:
+		var id: String = entry.get("id", "")
+		if id.begins_with("p") and id.substr(1).is_valid_int():
+			_next_id = maxi(_next_id, id.substr(1).to_int() + 1)
 
 
 func _drop(part: Part) -> void:

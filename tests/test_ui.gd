@@ -82,6 +82,10 @@ func _run() -> void:
 
 	await _test_rope_tool()
 	await _test_sound_toggle()
+	await _test_undo()
+	await _test_persistence()
+	await _test_undo_cascade()
+	await _test_stale_save()
 
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
 	print("ÉCHECS : %d" % failures if failures else "INTERFACE OK")
@@ -153,6 +157,187 @@ func _test_rope_tool() -> void:
 	_check("corde vers le décor : tracé valide", rope.points().size() == 2)
 
 
+## Le niveau Par-dessus le mur, vide au départ : ressort et planche.
+func _test_undo() -> void:
+	var board: Board = main.board
+	main.load_level(1)
+	await _steps(2)
+	_check("rien à annuler au départ", main._ctx_buttons.undo.disabled)
+	await _key(KEY_Z, true)
+	_check("Ctrl+Z sans historique : sans effet", board.placed.is_empty())
+
+	await _drag(_bin_pos("spring"), board.to_global(Vector2(200, 500)))
+	await _key(KEY_R)
+	await _drag(board.to_global(Vector2(200, 500)), board.to_global(Vector2(300, 400)))
+	_check("trois actions faites", board.placed[0].pos == Vector2(300, 400) and board.placed[0].rot == 15.0)
+
+	# Un glisser sur place ne crée pas d'étape.
+	await _drag(board.to_global(Vector2(300, 400)), board.to_global(Vector2(300, 400)))
+	await _key(KEY_Z, true)
+	_check("Ctrl+Z : déplacement annulé d'un coup", board.placed[0].pos == Vector2(200, 500))
+	_check("la rotation reste", board.placed[0].rot == 15.0)
+	await _key(KEY_Z, true)
+	_check("Ctrl+Z : rotation annulée", board.placed[0].rot == 0.0)
+	await _key(KEY_Z, true)
+	_check("Ctrl+Z : pose annulée, pièce au bac", board.placed.is_empty() and board.remaining("spring") == 1)
+	_check("objet affiché retiré", board.part_at(Vector2(200, 500)) == null)
+
+	await _key(KEY_Y, true)
+	await _key(KEY_Z, true, true)
+	await _key(KEY_Y, true)
+	_check("Ctrl+Y et Ctrl+Maj+Z rétablissent", board.placed[0].pos == Vector2(300, 400))
+	_check("pièce rétablie déplaçable", board.part_at(Vector2(300, 400)) != null)
+	await _key(KEY_Y, true)
+	_check("rien de plus à rétablir", main._ctx_buttons.redo.disabled)
+
+	# Une nouvelle action efface ce qui pouvait être rétabli.
+	await _key(KEY_Z, true)
+	await _key(KEY_F)  # Sans effet sur un ressort : pas d'étape.
+	_check("action sans effet : on peut encore rétablir", not main._ctx_buttons.redo.disabled)
+	await _click(board.to_global(Vector2(200, 500)), MOUSE_BUTTON_LEFT)
+	await _key(KEY_R)
+	_check("nouvelle action : plus de rétablissement", main._ctx_buttons.redo.disabled)
+
+	# Tout retirer s'annule en une fois.
+	await _drag(_bin_pos("plank"), board.to_global(Vector2(700, 200)))
+	await _click(main._clear_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("tout retirer", board.placed.is_empty())
+	await _click(main._ctx_buttons.undo.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("bouton Annuler : deux pièces reviennent", board.placed.size() == 2)
+
+	# Pas d'annulation pendant la simulation.
+	var before: Array = board.layout()
+	await _key(KEY_SPACE)
+	await _key(KEY_Z, true)
+	_check("Ctrl+Z ignoré pendant la simulation", board.running and board.layout() == before)
+	_check("boutons grisés pendant la simulation", main._ctx_buttons.undo.disabled)
+	await _key(KEY_SPACE)
+	_check("lancer ne crée pas d'étape", board.layout() == before)
+	await _drag(board.to_global(Vector2(700, 200)), board.to_global(Vector2(700, 300)))
+	await _key(KEY_Z, true)
+	_check("lancer n'a pas perturbé l'historique", board.layout() == before)
+
+	# Pendant la pose d'une corde, Ctrl+Z abandonne la pose.
+	main.load_level(7)
+	await _steps(2)
+	await _click(_bin_pos("rope"), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(120, 300)), MOUSE_BUTTON_LEFT)
+	await _key(KEY_Z, true)
+	_check("Ctrl+Z annule la corde en cours", not main.rope_tool and board.placed.is_empty())
+
+	# Chaque niveau garde son propre historique.
+	main.load_level(1)
+	await _steps(2)
+	_check("historique conservé par niveau", not main._ctx_buttons.undo.disabled)
+
+
+## Pendule : corde vers la poutre ; Contrepoids : corde vers la plaque, qui n'a pas d'id dans le niveau.
+func _test_persistence() -> void:
+	var board: Board = main.board
+	main.load_level(1)
+	await _steps(2)
+	var layout_before: Array = board.layout()
+	_check("machine présente avant de changer de niveau", not layout_before.is_empty())
+	main.load_level(0)
+	await _steps(2)
+	main.load_level(1)
+	await _steps(2)
+	_check("changer de niveau conserve les pièces", board.layout() == layout_before)
+
+	main.load_level(6)
+	await _steps(2)
+	var rope_layout: Array = board.layout()
+	_check("corde vers le décor en place", board.remaining("rope") == 0)
+
+	# Redémarrage complet : nouvelle interface, relecture du fichier.
+	await _restart()
+	board = main.board
+	main.load_level(1)
+	await _steps(2)
+	_check("redémarrage : pièces restaurées", board.layout() == layout_before)
+	_check("redémarrage : pas d'annulation d'avant", main._ctx_buttons.undo.disabled)
+	var spring := board.part_at(layout_before[0].pos)
+	_check("redémarrage : pièce restaurée sélectionnable", spring != null)
+
+	main.load_level(6)
+	await _steps(2)
+	_check("redémarrage : corde restaurée", board.layout() == rope_layout)
+	var rope: RopePart
+	for part in board.parts:
+		if part is RopePart:
+			rope = part
+	_check("redémarrage : corde rattachée au décor", rope != null and rope.points().size() == 2)
+
+	# Une nouvelle pièce ne doit pas reprendre l'identifiant d'une pièce restaurée.
+	main.load_level(1)
+	await _steps(2)
+	var ids: Array = []
+	for entry: Dictionary in board.placed:
+		ids.append(entry.id)
+	var extra := board.place("plank", Vector2(800, 100))
+	_check("nouvel identifiant sans collision", not ids.has(extra.entry.id))
+	board.remove(extra)
+
+
+## Retirer une poulie emporte sa corde : un seul Ctrl+Z doit ramener les deux.
+func _test_undo_cascade() -> void:
+	var board: Board = main.board
+	main.load_level(6)
+	await _steps(2)
+	await _click(board.to_global(Vector2(500, 150)), MOUSE_BUTTON_RIGHT)
+	_check("corde vers le décor retirée", board.remaining("rope") == 1)
+	await _click(_bin_pos("rope"), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(700, 120)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(300, 40)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(300, 610)), MOUSE_BUTTON_LEFT)
+	_check("corde passant par la poulie posée", board.remaining("rope") == 0)
+	await _click(board.to_global(Vector2(300, 40)), MOUSE_BUTTON_RIGHT)
+	_check("poulie retirée avec sa corde", board.remaining("rope") == 1 and board.remaining("pulley") == 2)
+	await _key(KEY_Z, true)
+	_check("Ctrl+Z : poulie et corde reviennent", board.remaining("rope") == 0 and board.remaining("pulley") == 1)
+	var rope: RopePart
+	for part in board.parts:
+		if part is RopePart:
+			rope = part
+	_check("Ctrl+Z : corde rattachée à la poulie", rope != null and rope.points().size() == 3)
+
+
+## Sauvegarde devenue incohérente : le niveau démarre quand même, sans les pièces invalides.
+func _test_stale_save() -> void:
+	main.saved_layouts["pente"] = [
+		{"kind": "plank", "pos": Vector2(190, 240), "rot": 30.0, "dir": 1, "id": "p1"},
+		{"kind": "plank", "pos": Vector2(600, 200), "rot": 0.0, "dir": 1, "id": "p2"},
+		{"kind": "plank", "pos": Vector2(800, 200), "rot": 0.0, "dir": 1, "id": "p3"},
+		{"kind": "piece_disparue", "pos": Vector2(10, 10)},
+		{"kind": "plank", "pos": "pas une position"},
+		{"kind": "rope", "from": "absent", "to": "p1"},
+		"pas une entrée",
+	]
+	main.levels[0].inventory = {"plank": 2, "rope": 1}
+	main.histories.erase("pente")
+	main.load_level(0)
+	await _steps(2)
+	_check("sauvegarde incohérente : seules les pièces valides restent", main.board.placed.size() == 2)
+	main.levels[0].inventory = {"plank": 2}
+	main.saved_layouts["pente"] = [
+		{"kind": "plank", "pos": Vector2(150, 60), "rot": 0.0, "dir": 1, "id": "p1"},
+	]
+	main.histories.erase("pente")
+	main.load_level(0)
+	await _steps(2)
+	_check("sauvegarde incohérente : pièce sur le décor écartée", main.board.placed.is_empty())
+
+
+func _restart() -> void:
+	main.free()
+	await process_frame
+	main = (load("res://scenes/main.tscn") as PackedScene).instantiate()
+	main.save_path = SAVE
+	root.add_child(main)
+	await process_frame
+	await process_frame
+
+
 func _test_sound_toggle() -> void:
 	var was_muted: bool = main.muted
 	await _key(KEY_M)
@@ -200,10 +385,12 @@ func _button(at: Vector2, button: MouseButton, pressed: bool) -> void:
 	await process_frame
 
 
-func _key(key: Key) -> void:
+func _key(key: Key, ctrl := false, shift := false) -> void:
 	var ev := InputEventKey.new()
 	ev.keycode = key
 	ev.physical_keycode = key
+	ev.ctrl_pressed = ctrl
+	ev.shift_pressed = shift
 	ev.pressed = true
 	root.push_input(ev)
 	await process_frame

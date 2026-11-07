@@ -20,8 +20,9 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 | Miroir | F |
 | Changer de canal | C |
 | Poser une corde | Clic sur Corde dans le bac, puis le premier objet, les poulies dans l'ordre, le second objet |
-| Annuler une corde en cours | Échap ou clic droit |
+| Annuler une corde en cours | Échap, clic droit ou Ctrl+Z |
 | Retirer | Clic droit ou Suppr |
+| Annuler / rétablir | Ctrl+Z / Ctrl+Y ou Ctrl+Maj+Z |
 | Lancer / arrêter | Espace |
 | Couper le son | M |
 
@@ -29,6 +30,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 
 - `scripts/board.gd` : mécanique de jeu (disposition, simulation, victoire), sans interface.
 - `scripts/main.gd`, `bin_item.gd`, `part_icon.gd` : interface.
+- `scripts/history.gd` : historique d'annulation, par niveau.
 - `scripts/parts/` : une classe par pièce, dessinée par le code. `catalog.gd` les référence.
 - `scripts/parts/rope_part.gd` : contrainte de longueur de la corde (Godot n'a pas de joint poulie en 2D).
 - `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio.

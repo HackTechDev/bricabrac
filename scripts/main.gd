@@ -26,6 +26,9 @@ var rope_from_off := Vector2.ZERO
 var rope_via: Array = []
 var muted := false
 
+var histories := {}
+var saved_layouts := {}
+
 var _level_picker: OptionButton
 var _run_button: Button
 var _clear_button: Button
@@ -73,8 +76,16 @@ func load_level(index: int) -> void:
 	_select(null)
 	_win_overlay.hide()
 	board.load_level(levels[index])
+	var level_id: String = levels[index].id
+	var dropped := board.restore_layout(saved_layouts.get(level_id, []))
+	if not histories.has(level_id):
+		histories[level_id] = History.new(board.layout())
 	_goal_label.text = levels[index].goal_text
 	_status.text = levels[index].get("intro", "")
+	if not board.placed.is_empty():
+		_status.text = "Ta machine a été remise en place. Ctrl+Z annule ta dernière action."
+	if dropped > 0:
+		_status.text = "%d pièce(s) sauvegardée(s) ne sont plus valides dans ce niveau." % dropped
 	_rebuild_bin()
 	_refresh_level_picker()
 	_refresh_controls()
@@ -113,13 +124,20 @@ func _input(event: InputEvent) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		_handle_key(event.keycode)
+		_handle_key(event)
 	elif event is InputEventMouseButton and event.pressed:
 		_handle_click(event.button_index)
 
 
-func _handle_key(key: Key) -> void:
-	match key:
+func _handle_key(event: InputEventKey) -> void:
+	if event.is_command_or_control_pressed():
+		match event.keycode:
+			KEY_Z:
+				_redo() if event.shift_pressed else _undo()
+			KEY_Y:
+				_redo()
+		return
+	match event.keycode:
 		KEY_SPACE:
 			toggle_run()
 		KEY_M:
@@ -205,6 +223,7 @@ func _drop() -> void:
 	part.modulate = Color.WHITE
 	if board.is_valid(part):
 		board.sfx.play("place")
+		_commit()
 		return
 	board.sfx.play("deny")
 	if drag_is_new:
@@ -214,6 +233,7 @@ func _drop() -> void:
 	else:
 		board.move_part(part, drag_origin)
 		_status.text = "Pas de place ici : la pièce reprend sa position."
+	_commit()
 
 
 func _stop_drag() -> void:
@@ -248,7 +268,6 @@ func _start_rope(target: Part) -> void:
 		_status.text = "Une corde commence sur un objet, pas sur une poulie."
 		board.sfx.play("deny")
 		return
-	_ensure_id(target)
 	rope_from = target
 	rope_from_off = target.rope_anchor(board.to_global(_mouse))
 	board.sfx.play("tick")
@@ -256,7 +275,6 @@ func _start_rope(target: Part) -> void:
 
 
 func _add_rope_pulley(target: Part) -> void:
-	_ensure_id(target)
 	if rope_via.has(target.entry.id):
 		_status.text = "La corde passe déjà par cette poulie."
 		board.sfx.play("deny")
@@ -274,11 +292,11 @@ func _finish_rope(target: Part) -> void:
 		_status.text = "Une corde entre deux pièces fixes ne ferait rien : choisis un objet mobile."
 		board.sfx.play("deny")
 		return
-	_ensure_id(target)
 	var off := target.rope_anchor(board.to_global(_mouse))
 	board.add_rope(rope_from, rope_from_off, rope_via.duplicate(), target, off)
 	board.sfx.play("place")
 	_cancel_rope()
+	_commit()
 	_status.text = "Corde posée. Elle garde cette longueur : elle tire mais ne pousse pas."
 
 
@@ -287,12 +305,6 @@ func _cancel_rope() -> void:
 	rope_from = null
 	rope_via.clear()
 	_update_rope_preview()
-
-
-## Les pièces de décor n'ont pas toutes un identifiant : on leur en donne un à la demande.
-func _ensure_id(part: Part) -> void:
-	if not part.entry.has("id"):
-		part.entry["id"] = "fixed_%d" % part.get_instance_id()
 
 
 func _update_rope_preview() -> void:
@@ -305,6 +317,54 @@ func _update_rope_preview() -> void:
 	for id: String in rope_via:
 		_rope_preview.add_point(board.find_part(id).position)
 	_rope_preview.add_point(_mouse)
+
+
+# --- Annulation et sauvegarde des pièces ----------------------------------------
+
+## À appeler à la fin de chaque action du joueur : une action égale une étape d'annulation.
+func _commit() -> void:
+	var state := board.layout()
+	if _history().record(state):
+		_store_layout(state)
+	_refresh_context()
+
+
+func _history() -> History:
+	return histories.get(levels[current].id)
+
+
+func _undo() -> void:
+	if board.running or drag_part != null:
+		return
+	if rope_tool:
+		_cancel_rope()
+		_status.text = "Corde annulée."
+	elif _history().can_undo():
+		_show_state(_history().undo(), "Action annulée.")
+	else:
+		board.sfx.play("deny")
+
+
+func _redo() -> void:
+	if board.running or drag_part != null or rope_tool:
+		return
+	if _history().can_redo():
+		_show_state(_history().redo(), "Action rétablie.")
+	else:
+		board.sfx.play("deny")
+
+
+func _show_state(state: Array, message: String) -> void:
+	_select(null)
+	board.set_layout(state)
+	_store_layout(state)
+	board.sfx.play("tick")
+	_status.text = message
+
+
+func _store_layout(state: Array) -> void:
+	saved_layouts[levels[current].id] = state
+	_save_progress()
 
 
 # --- Pièce sélectionnée ---------------------------------------------------------
@@ -336,6 +396,8 @@ func _edit_selected(key: String, value: Variant) -> void:
 	if was_dragging:
 		drag_part = part
 		_update_drag_tint()
+	else:
+		_commit()
 
 
 func _rotate_selected(sign_value: float) -> void:
@@ -364,6 +426,7 @@ func _remove_selected() -> void:
 		_select(null)
 		board.remove(part)
 		board.sfx.play("remove")
+		_commit()
 
 
 # --- Construction de l'interface ------------------------------------------------
@@ -406,7 +469,8 @@ func _build_top_bar() -> void:
 		_select(null)
 		_cancel_rope()
 		board.clear_placed()
-		board.sfx.play("remove"))
+		board.sfx.play("remove")
+		_commit())
 	row.add_child(_clear_button)
 
 	_run_button = Button.new()
@@ -442,6 +506,8 @@ func _build_side_panel() -> void:
 	grid.columns = 2
 	col.add_child(grid)
 	for def: Array in [
+		["undo", "Annuler", _undo, "Ctrl+Z"],
+		["redo", "Rétablir", _redo, "Ctrl+Y"],
 		["rotate", "Pivoter (R)", func() -> void: _rotate_selected(1.0)],
 		["flip", "Miroir (F)", _flip_selected],
 		["channel", "Canal (C)", _cycle_channel],
@@ -452,6 +518,8 @@ func _build_side_panel() -> void:
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.focus_mode = Control.FOCUS_NONE
 		b.pressed.connect(def[2])
+		if def.size() > 3:
+			b.tooltip_text = def[3]
 		grid.add_child(b)
 		_ctx_buttons[def[0]] = b
 
@@ -537,6 +605,9 @@ func _refresh_context() -> void:
 	_ctx_buttons.flip.disabled = p == null or not p.can_flip()
 	_ctx_buttons.channel.disabled = p == null or not p.uses_channel()
 	_ctx_buttons.remove.disabled = p == null
+	var history := _history() if histories.has(levels[current].id) else null
+	_ctx_buttons.undo.disabled = board.running or history == null or not history.can_undo()
+	_ctx_buttons.redo.disabled = board.running or history == null or not history.can_redo()
 
 
 func _refresh_controls() -> void:
@@ -585,10 +656,12 @@ func _load_progress() -> void:
 		for id: String in cfg.get_value("progress", "completed", []):
 			completed[id] = true
 		muted = cfg.get_value("settings", "muted", false)
+		saved_layouts = cfg.get_value("layouts", "by_level", {})
 
 
 func _save_progress() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("progress", "completed", completed.keys())
 	cfg.set_value("settings", "muted", muted)
+	cfg.set_value("layouts", "by_level", saved_layouts)
 	cfg.save(save_path)
