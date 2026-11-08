@@ -178,5 +178,5 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
 - Outils :
   - mesure des performances (`bench_perf.gd`) ;
   - recherche de zones gagnantes (`sweep.gd`) ;
-  - captures d'écran (`capture.gd`).
+  - captures d'écran (`capture.gd`) et captures du README (`screenshots.gd`).
 - Code sous licence MIT.

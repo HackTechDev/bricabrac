@@ -6,6 +6,19 @@ simulation, et la réaction en chaîne doit atteindre l'objectif du niveau.
 Pour découvrir le jeu, suis le [tutoriel](TUTORIAL.md). La liste complète des fonctionnalités est
 dans [FEATURES.md](FEATURES.md), les pistes pour la suite dans [IMPROVEMENTS.md](IMPROVEMENTS.md).
 
+## Captures d'écran
+
+| | |
+| --- | --- |
+| ![Écran titre](docs/captures/titre.png) | ![Atelier : réaction en chaîne](docs/captures/atelier.png) |
+| Écran titre | Atelier : une réaction en chaîne en marche |
+| ![Usine : le tri](docs/captures/usine.png) | ![Grenier : le chat dans le noir](docs/captures/grenier.png) |
+| Usine : le tri de la bille et du boulet | Grenier : la lampe de poche perce l'obscurité |
+| ![Choix du niveau](docs/captures/selection.png) | ![Page d'aide](docs/captures/aide.png) |
+| Choix du niveau, rangé par monde | Page d'aide et « À propos » |
+
+Les captures sont refaites par `tests/screenshots.gd` (voir « Tests »).
+
 ## Jouer
 
 Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de Godot :
@@ -135,6 +148,7 @@ sauvegarde reste dans le navigateur, et le bouton Quitter n'y apparaît pas.
     $GODOT --path . -s tests/test_render.gd    # vignettes et cartes de niveau (affichage requis)
     SWEEP=spec.json $GODOT --headless --path . --fixed-fps 120 -s tests/sweep.gd   # aide à la conception
     CAPTURE_DIR=dossier $GODOT --path . -s tests/capture.gd              # captures (affichage requis)
+    $GODOT --path . -s tests/screenshots.gd    # captures du README dans docs/captures/ (affichage requis)
 
 ### Performances
 

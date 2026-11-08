@@ -96,4 +96,4 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
   vérifier le son, la sauvegarde et la galerie en ligne.
 - Publier une démo jouable sur itch.io, avec une page en français et en anglais, pour
   recueillir des retours.
-- Illustrer le README avec des captures d'écran et un GIF, faits avec « Filmer en GIF ».
+- Ajouter au README un GIF d'une machine en marche, fait avec « Filmer en GIF ».
