@@ -42,7 +42,8 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 - `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio, dont les sons continus du
   tapis et du ventilateur ; `music.gd` : musique d'atelier, composée par le code elle aussi.
 - `scripts/options_panel.gd` : fenêtre d'options ; `accessibility.gd` : couleurs de canaux
-  adaptées et animations réduites ; `effects.gd` : particules décoratives.
+  adaptées et animations réduites ; `effects.gd` : particules décoratives ; `darkness.gd` et
+  `shaders/darkness.gdshader` : obscurité du grenier, percée par les lampes.
 - `scripts/lang.gd` et `i18n/en.json` : traduction anglaise. Les textes sont écrits en français
   dans le code (`Lang.t("…")`) et dans les niveaux ; le fichier JSON associe à chacun sa
   traduction. `test_lang.gd` signale tout texte nouveau qui n'y figure pas.
@@ -51,7 +52,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
   format. Pour y ajouter un niveau proposé, coller son code dans une nouvelle section.
 - `levels/` : les niveaux du jeu, un fichier texte par niveau (`07_contrepoids.cfg`), joués dans
   l'ordre des noms ; chacun indique son monde et sa solution. Chaque monde a sa dizaine (atelier
-  01 à 19, cuisine 20, usine 30, espace 40, jardin 50), pour ajouter un niveau sans renuméroter les autres.
+  01 à 19, cuisine 20, usine 30, espace 40, jardin 50, grenier 60), pour ajouter un niveau sans renuméroter les autres.
 - `scripts/level_file.gd` : lecture et écriture de ces fichiers ; `level_data.gd` : mondes, bac à
   sable, éditeur et liste des niveaux.
 

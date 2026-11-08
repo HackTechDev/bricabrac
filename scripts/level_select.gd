@@ -176,6 +176,7 @@ func _render_thumb(level: Dictionary) -> Texture2D:
 	var mini := Board.new()
 	vp.add_child(mini)
 	mini.load_level(level.duplicate(true))
+	mini.darkness.set_strength(Darkness.PREVIEW_DARKNESS)
 	mini.set_process(false)
 	mini.sfx.process_mode = Node.PROCESS_MODE_DISABLED
 	# La sous-fenêtre a sa propre physique : on la fige, le dessin suffit.

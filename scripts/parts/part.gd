@@ -134,6 +134,12 @@ func on_powered() -> void:
 	pass
 
 
+## Lumières que la pièce projette dans un niveau sombre : [{pos, dir, range, half, strength}],
+## en coordonnées du plateau ; `half` (demi-ouverture) absent pour un halo rond.
+func light_sources() -> Array:
+	return []
+
+
 ## Son joué quand la pièce heurte quelque chose ; vide = silencieuse.
 func impact_sound() -> String:
 	return ""

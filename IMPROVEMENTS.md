@@ -7,7 +7,7 @@ section, les idées les plus utiles ou les moins coûteuses viennent en premier.
 
 Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
-- Faire essayer les 39 niveaux à de vrais joueurs et noter où ils bloquent.
+- Faire essayer les 43 niveaux à de vrais joueurs et noter où ils bloquent.
 - Revoir la difficulté de la Catapulte et du Pendule, dont les zones gagnantes sont étroites.
 - Régler en jouant le chat, l'élastique et la corde qui s'accroche aux obstacles, jusqu'ici
   réglés seulement par des tests.
@@ -19,10 +19,13 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 - Essayer l'entonnoir, le tuyau coudé, l'aimant répulsif et la bougie dans le bac à sable avant
   de bâtir des niveaux autour d'eux : taille de l'ouverture, vitesse de sortie du coude, délai
   de chauffe de la bougie.
+- Régler l'obscurité du grenier en jouant : opacité du voile, taille du halo du pointeur, portée
+  de la lampe de poche.
 
 ## Nouveaux niveaux
 
-- Un sixième monde, par exemple un grenier sombre où une lampe de poche éclaire le décor.
+- D'autres niveaux pour le grenier (il n'en a que quatre), et une obscurité qui compte en jeu :
+  un chat qui ne voit que ce qui est éclairé, une cellule qui allume son canal dans un faisceau.
 - Remplacer les niveaux « La fronde » et « Le hamster » de la galerie, qui ont maintenant leur
   version officielle, par d'autres niveaux d'exemple.
 

@@ -20,6 +20,10 @@ func on_powered() -> void:
 		board.sfx.play("lamp")
 
 
+func light_sources() -> Array:
+	return [{"pos": board.to_local(to_global(Vector2(0, -12))), "range": 150.0}] if powered else []
+
+
 func is_satisfied() -> bool:
 	return powered
 

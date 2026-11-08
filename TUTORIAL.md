@@ -157,6 +157,8 @@ présents dans le niveau restent en place.
 - **Bougie :** sa chaleur monte et fait éclater un ballon qui reste un court instant au-dessus de
   la flamme, jusqu'à 240 px de haut, à moins qu'un obstacle ne l'abrite. La bande orangée montre
   sa portée. Canal 0 : allumée dès le départ ; canaux 1 à 3 : s'allume avec son canal.
+- **Lampe de poche :** son faisceau éclaire le grenier, sur 460 px devant elle. Elle pivote par
+  crans de 15°. Canal 0 : allumée dès le départ ; canaux 1 à 3 : s'allume avec son canal.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.
 
 ## Les canaux
@@ -169,7 +171,7 @@ balayage entre les niveaux, les particules et les mouvements décoratifs.
 
 - **Plaque, canon et lampe :** canaux 1 à 3.
 - **Portail :** canaux 1 à 3, mais le numéro ne sert qu'à relier deux portails entre eux.
-- **Tapis, ventilateur, aimants, bougie et moteur :** canaux 1 à 3, ou canal 0 pour fonctionner en permanence.
+- **Tapis, ventilateur, aimants, bougie, lampe de poche et moteur :** canaux 1 à 3, ou canal 0 pour fonctionner en permanence.
 
 Par exemple, pour déclencher un canon, pose une plaque là où un objet va tomber, puis mets la plaque
 et le canon sur le même numéro.
@@ -225,7 +227,7 @@ au-delà de son point d'attache, de quoi fabriquer une fronde. Il s'amincit à m
 
 ## Les niveaux
 
-Les 39 niveaux sont regroupés en cinq mondes, chacun avec sa couleur de fond. Tous sont accessibles
+Les 43 niveaux sont regroupés en six mondes, chacun avec sa couleur de fond. Tous sont accessibles
 dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
 Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles et
 de ton record (meilleur temps et plus petit nombre de pièces). Un record battu est annoncé à la
@@ -296,6 +298,15 @@ marge. Sa vignette reste fermée (🔒) tant que les autres niveaux du monde n'o
 37. **Le cerf-volant :** le vent, les ciseaux et une haie de planches.
 38. **La grande machine :** chariot, trappe, souris et engrenages à la suite.
 39. **Défi : contre le vent :** l'élastique, une haie et le vent de face.
+
+**Le grenier**, plongé dans le noir. Seuls les faisceaux des lampes de poche, les lampes allumées,
+les bougies et, à l'atelier, un petit halo autour du pointeur éclairent le décor ; les étoiles des
+objectifs restent visibles. L'obscurité ne change rien à la physique :
+
+40. **La lampe de poche :** une étagère cachée dans le noir.
+41. **L'interrupteur :** une lampe de poche qui s'allume avec l'interrupteur.
+42. **Les ballons perdus :** la bougie et les pointes, pour deux ballons coincés sous le toit.
+43. **Défi : les combles :** un ressort, l'interrupteur au mur et le panier dessous.
 
 ## Les objectifs bonus
 

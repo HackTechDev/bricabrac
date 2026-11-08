@@ -52,12 +52,18 @@ var _part_layer: Node2D
 var _wall_shapes: Array[CollisionShape2D] = []
 var _walls: StaticBody2D
 var _surfaces := {}
+## Voile des niveaux sombres.
+var darkness: Darkness
 
 
 func _ready() -> void:
 	probe.radius = 3.0
 	add_child(sfx)
 	_build_walls()
+	# Le voile passe avant les pièces dans l'arbre : à hauteur égale, les étoiles d'objectif le
+	# recouvrent et restent visibles dans le noir.
+	darkness = Darkness.new(self)
+	add_child(darkness)
 	_part_layer = Node2D.new()
 	add_child(_part_layer)
 	add_child(effects)
@@ -73,6 +79,7 @@ func load_level(p_level: Dictionary) -> void:
 	placed.clear()
 	_next_id = 1
 	_apply_physics()
+	darkness.visible = is_dark()
 	running = false  # Pas de trace venue d'un autre niveau.
 	ghost.clear()
 	hint_entries = []
@@ -100,6 +107,12 @@ func _apply_physics() -> void:
 ## Physique propre au niveau : gravité relative (1 : normale) et vent permanent.
 func gravity_factor() -> float:
 	return level.get("gravity", 1.0)
+
+
+## Niveau plongé dans le noir, éclairé par les lampes de poche : tout le grenier, ou un niveau qui
+## le demande avec `dark`.
+func is_dark() -> bool:
+	return level.get("dark", LevelData.world(level.get("world", "")).get("dark", false))
 
 
 func wind() -> Vector2:
@@ -448,6 +461,8 @@ func _rebuild(run: bool) -> void:
 				_make(entry)
 	if run:
 		_find_gear_pairs()
+	if darkness.visible:
+		darkness.refresh()
 	if run or was_running:
 		running_changed.emit()
 

@@ -25,6 +25,7 @@ func _run() -> void:
 	await _test_candle()
 	await _test_effects()
 	await _test_hums()
+	await _test_darkness()
 	_end("PIÈCES OK")
 
 
@@ -526,3 +527,26 @@ func _test_hums() -> void:
 	_check("tapis allumé : il ronronne", board.sfx.hum_counts.belt == 1)
 	board.stop()
 	_check("arrêt : sons continus coupés", board.sfx.hum_counts.fan == 0 and board.sfx.hum_counts.belt == 0)
+
+
+## Grenier : le voile sombre ne couvre que les niveaux sombres ; le faisceau éclaire devant la
+## lampe de poche, pas derrière, et une lampe de poche sur canal attend son signal.
+func _test_darkness() -> void:
+	_level([{"kind": "flashlight", "pos": Vector2(200, 300)}])
+	_check("obscurité : absente hors du grenier", not board.darkness.visible)
+	_level([
+		{"kind": "flashlight", "pos": Vector2(200, 300)},
+		{"kind": "flashlight", "pos": Vector2(200, 550), "channel": 1},
+	], {}, {"world": "grenier"})
+	_check("obscurité : le grenier est sombre", board.darkness.visible)
+	board.start()
+	await _steps(2)
+	var ahead := board.darkness.light_at(Vector2(450, 300))
+	var behind := board.darkness.light_at(Vector2(60, 300))
+	_check("lampe de poche : éclaire devant (%.2f)" % ahead, ahead > 0.9)
+	_check("lampe de poche : pas derrière (%.2f)" % behind, behind < 0.05)
+	_check("lampe de poche sur canal : éteinte d'abord", board.darkness.light_at(Vector2(450, 550)) < 0.05)
+	board.activate_channel(1)
+	await _steps(2)
+	_check("lampe de poche sur canal : allumée au signal", board.darkness.light_at(Vector2(450, 550)) > 0.9)
+	board.stop()

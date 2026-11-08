@@ -37,6 +37,7 @@ const INFO := {
 	"pulley": {"label": "Poulie", "desc": "Point de passage pour une corde."},
 	"rope": {"label": "Corde", "desc": "Clique un objet, d'éventuelles poulies, puis un autre objet. R : mou."},
 	"elastic": {"label": "Élastique", "desc": "Se pose comme une corde, mais s'étire et tire comme un ressort. R : tension."},
+	"flashlight": {"label": "Lampe de poche", "desc": "Son faisceau éclaire le grenier. Canal 0 : toujours allumée."},
 	"lamp": {"label": "Lampe", "desc": "S'allume avec son canal."},
 	"basket": {"label": "Panier", "desc": "Objectif : y déposer un objet."},
 }
@@ -89,6 +90,7 @@ static func create(kind: String) -> Part:
 		"pulley": part = PulleyPart.new()
 		"rope": part = RopePart.new()
 		"elastic": part = ElasticPart.new()
+		"flashlight": part = FlashlightPart.new()
 		"lamp": part = LampPart.new()
 		"basket": part = BasketPart.new()
 		_:

@@ -48,6 +48,12 @@ func _heats(balloon: BalloonPart, flame: Vector2) -> bool:
 	return get_world_2d().direct_space_state.intersect_ray(query).is_empty()
 
 
+func light_sources() -> Array:
+	if not powered:
+		return []
+	return [{"pos": board.to_local(to_global(FLAME)), "range": 120.0, "strength": 0.8}]
+
+
 func on_powered() -> void:
 	if running and powered:
 		board.sfx.play("tick")
