@@ -14,12 +14,15 @@ signal reset_requested
 var custom_id := ""
 ## Pièces offertes au joueur : genre → nombre.
 var inventory := {}
+## Preuve que l'auteur a résolu le niveau : {"signature": empreinte, "solution": disposition}.
+var proof := {}
 
 var name_edit: LineEdit
 var goal_edit: LineEdit
 var goal_button: Button
 var inventory_button: Button
 var delete_button: Button
+var proof_label: Label
 var _dialog: PopupPanel
 var _spins := {}
 
@@ -32,6 +35,10 @@ func _init() -> void:
 	add_child(title)
 	name_edit = _line("Nom du niveau")
 	goal_edit = _line("Objectif affiché au joueur")
+	proof_label = Label.new()
+	proof_label.add_theme_font_size_override("font_size", 13)
+	proof_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	add_child(proof_label)
 	var grid := GridContainer.new()
 	grid.columns = 2
 	add_child(grid)
@@ -73,8 +80,25 @@ func load_from(level: Dictionary) -> void:
 	name_edit.text = level.get("name", "")
 	goal_edit.text = level.get("goal_text", "")
 	inventory = level.get("inventory", {}).duplicate()
+	proof = level.get("proof", {}).duplicate(true)
+	if level.get("verified", false):
+		proof = {"signature": LevelData.signature(level), "solution": level.get("solution", [])}
 	delete_button.disabled = custom_id == ""
 	_sync_spins()
+
+
+## Le niveau `level`, tel qu'il est sur le plan de travail, a-t-il été résolu par l'auteur ?
+func is_proven(level: Dictionary) -> bool:
+	return not proof.is_empty() and proof.signature == LevelData.signature(level)
+
+
+func show_proof(level: Dictionary) -> void:
+	if is_proven(level):
+		proof_label.text = "✔ Résolu par toi : prêt à partager."
+		proof_label.add_theme_color_override("font_color", Color("8fd18f"))
+	else:
+		proof_label.text = "✘ Pas encore résolu : gagne-le avec « Essayer » avant de le partager."
+		proof_label.add_theme_color_override("font_color", Color("f0a070"))
 
 
 func inventory_text() -> String:

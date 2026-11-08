@@ -259,6 +259,12 @@ panneau « Éditeur de niveaux », sous le bac, règle le reste :
    plan de travail, intact.
 6. **Enregistrer :** range le niveau dans le monde « Mes niveaux » de l'écran de sélection.
 
+Un niveau ne peut être partagé que si tu l'as **résolu toi-même**. Gagne-le avec « Essayer » :
+le panneau affiche alors « ✔ Résolu par toi » et ta solution est enregistrée avec le niveau. Toute
+retouche du décor, de l'inventaire, de la gravité ou du vent annule cette preuve, et il faut le
+gagner de nouveau. Dans l'écran de sélection, un niveau qui n'a pas été résolu porte la mention
+« Non vérifié ».
+
 Le bouton **Modifier**, en haut d'un de tes niveaux, le rouvre dans l'éditeur ; **Supprimer** l'efface
 de « Mes niveaux » et **Nouveau** vide le plan de travail. Ton brouillon est gardé entre deux parties.
 

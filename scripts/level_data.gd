@@ -99,6 +99,13 @@ static func from_editor(id: String, name: String, goal_text: String, decor: Arra
 	}
 
 
+## Empreinte de ce qui fait un niveau (décor, inventaire, physique), sans son nom : une solution
+## trouvée pour une empreinte ne vaut plus si elle change.
+static func signature(level: Dictionary) -> int:
+	return var_to_str([level.get("fixed", []), level.get("inventory", {}), level.get("gravity", 1.0),
+			level.get("wind", Vector2.ZERO)]).hash()
+
+
 static func has_goal(level: Dictionary) -> bool:
 	for entry: Dictionary in level.get("fixed", []):
 		if entry.get("goal", false):

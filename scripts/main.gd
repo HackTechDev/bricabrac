@@ -188,6 +188,7 @@ func load_level(index: int) -> void:
 	_refresh_controls()
 	editor.visible = is_editor()
 	editor.refresh()
+	_refresh_proof()
 	tutorial.stop()
 	if show_tutorials and levels[index].has("tutorial") and not completed.has(level_id) \
 			and not tutorials_done.has(level_id):
@@ -514,6 +515,18 @@ func _commit() -> void:
 	if _history().record(state):
 		_store_layout(state)
 	_refresh_context()
+	_refresh_proof()
+
+
+## Dans l'éditeur : le plan de travail actuel a-t-il déjà été résolu ?
+func _refresh_proof() -> void:
+	if editor != null and is_editor():
+		editor.show_proof(_draft_level())
+
+
+func _draft_level() -> Dictionary:
+	return LevelData.from_editor("", "", "", board.layout(), editor.inventory, board.gravity_factor(),
+			board.wind())
 
 
 func _history() -> History:
@@ -854,6 +867,7 @@ func _cycle_sandbox_physics(dg: int, dw: int) -> void:
 	var g := SANDBOX_GRAVITY[(SANDBOX_GRAVITY.find(board.gravity_factor()) + dg) % SANDBOX_GRAVITY.size()]
 	var w := SANDBOX_WIND[(SANDBOX_WIND.find(board.wind()) + dw) % SANDBOX_WIND.size()]
 	board.set_physics(g, w)
+	_refresh_proof()
 	_refresh_controls()
 
 
@@ -887,6 +901,8 @@ func _refresh_level_picker() -> void:
 
 ## Ligne d'état d'une vignette : terminé ou non, étoiles des objectifs bonus.
 func _level_status(level: Dictionary) -> String:
+	if level.get("custom", false) and not level.get("verified", false):
+		return "Non vérifié"
 	if level.get("editor", false):
 		return "Crée tes propres niveaux"
 	if level.get("sandbox", false):
@@ -964,8 +980,10 @@ func _next_index() -> int:
 
 ## Victoire pendant un essai depuis l'éditeur.
 func _on_test_won() -> void:
-	_win_bonus.text = "Ton niveau peut se gagner avec %d pièce(s), en %s s." % [board.placed.size(),
-			String.num(board.elapsed, 1).replace(".", ",")]
+	editor.proof = {"signature": LevelData.signature(levels[current]), "solution": board.layout()}
+	_save_progress()
+	_win_bonus.text = "Résolu ! Ton niveau peut se gagner avec %d pièce(s), en %s s.\nTu peux maintenant l'enregistrer et le partager." % [
+			board.placed.size(), String.num(board.elapsed, 1).replace(".", ",")]
 	board.sfx.play("win")
 	_win_next.text = "Retour à l'éditeur"
 	_win_overlay.show()
@@ -1093,7 +1111,7 @@ func _save_progress() -> void:
 	cfg.set_value("custom", "levels", custom_levels)
 	if editor != null:
 		cfg.set_value("custom", "draft", {"id": editor.custom_id, "name": editor.name_edit.text,
-				"goal_text": editor.goal_edit.text, "inventory": editor.inventory})
+				"goal_text": editor.goal_edit.text, "inventory": editor.inventory, "proof": editor.proof})
 	cfg.save(save_path)
 
 
@@ -1106,6 +1124,7 @@ func edit_level(level: Dictionary) -> void:
 	board.set_physics(level.get("gravity", 1.0), level.get("wind", Vector2.ZERO))
 	board.set_layout(level.get("fixed", []))
 	_commit()
+	_refresh_proof()
 	_refresh_controls()
 	_status.text = "Niveau « %s » ouvert dans l'éditeur." % level.name
 
@@ -1172,6 +1191,9 @@ func _editor_save() -> void:
 		_status.text = level
 		board.sfx.play("deny")
 		return
+	level.verified = editor.is_proven(level)
+	if level.verified:
+		level.solution = editor.proof.solution
 	var replaced := false
 	for i in custom_levels.size():
 		if custom_levels[i].id == id:
@@ -1182,7 +1204,8 @@ func _editor_save() -> void:
 	editor.custom_id = id
 	_reload_level_list(editor_index)
 	board.sfx.play("place")
-	_status.text = "« %s » est enregistré dans « Mes niveaux »." % level.name
+	_status.text = ("« %s » est enregistré dans « Mes niveaux »." % level.name) + (""
+			if level.verified else " Il n'est pas encore résolu : il ne pourra pas être partagé.")
 
 
 func _editor_delete() -> void:

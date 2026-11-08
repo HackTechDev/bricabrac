@@ -519,12 +519,15 @@ func _test_editor() -> void:
 	await _steps(2)
 	await _click(main._win_next.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	_check("éditeur : retour au plan de travail", main.is_editor() and board.placed.size() == 2)
+	_check("éditeur : résolu par l'auteur", main.editor.proof_label.text.begins_with("✔"))
 	main._editor_save()
 	_check("éditeur : nom exigé", main.custom_levels.is_empty())
 	main.editor.name_edit.text = "Mon premier niveau"
 	main.editor.goal_edit.text = "Mets la bille au panier."
 	main._editor_save()
 	_check("éditeur : niveau enregistré", main.custom_levels.size() == 1 and main.is_editor())
+	_check("éditeur : enregistré comme vérifié, avec sa solution", main.custom_levels[0].verified
+			and main.custom_levels[0].solution.size() == 1)
 
 	await _restart()
 	board = main.board
@@ -545,6 +548,16 @@ func _test_editor() -> void:
 	await _steps(2)
 	_check("niveau personnel : rouvert dans l'éditeur", main.is_editor() and board.placed.size() == 2
 			and main.editor.name_edit.text == "Mon premier niveau")
+	_check("niveau personnel : toujours résolu à la réouverture", main.editor.proof_label.text.begins_with("✔"))
+	board.move_part(board.part_at(Vector2(150, 60)), Vector2(250, 60))
+	main._commit()
+	_check("éditeur : décor modifié, preuve perdue", main.editor.proof_label.text.begins_with("✘"))
+	main._editor_save()
+	_check("éditeur : réenregistré non vérifié", not main.custom_levels[0].verified)
+	main.open_level_select()
+	await _steps(2)
+	_check("éditeur : vignette « Non vérifié »", main._level_select.status_text(index) == "Non vérifié")
+	main._level_select.hide()
 	main._editor_delete()
 	_check("niveau personnel : supprimé", main.custom_levels.is_empty())
 	main._editor_reset()

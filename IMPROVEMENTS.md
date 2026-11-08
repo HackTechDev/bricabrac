@@ -26,7 +26,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Éditeur et communauté
 
-- Vérification à la publication : un niveau partagé doit avoir été résolu par son auteur.
 - Partage des niveaux et des solutions par fichier ou par code à copier.
 - Relecture d'une solution, enregistrable en GIF ou en vidéo.
 
