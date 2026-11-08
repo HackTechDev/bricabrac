@@ -63,7 +63,8 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Changer de canal | C |
 | Choisir plusieurs pièces | Maj+clic sur chacune, un cadre tracé en glissant depuis une zone vide (Maj : en ajoute), ou Ctrl+A pour toutes ; les glisser les déplace ensemble |
 | Ajuster d'un cran | Flèches : la pièce ou le groupe choisi se décale de 10 px ; Maj+flèche, de 50 px |
-| Retirer une pièce | Clic droit, ou sélection puis Suppr (tout le groupe choisi) |
+| Menu d'une pièce | Clic droit dessus : pivoter, miroir, canal, copier ou retirer ; sur un groupe choisi, copier et retirer s'appliquent à tout le groupe |
+| Retirer une pièce | Sélection puis Suppr (tout le groupe choisi), ou « Retirer » du menu |
 | Copier, coller | Ctrl+C, puis Ctrl+V : la copie se pose sous la souris, avec ses cordes |
 | Annuler | Ctrl+Z, ou bouton Annuler |
 | Rétablir | Ctrl+Y ou Ctrl+Maj+Z, ou bouton Rétablir |
@@ -202,7 +203,7 @@ La corde relie deux pièces, avec des poulies en chemin si besoin. Elle se pose 
 5. Clique sur le second objet.
 
 Échap ou clic droit annule la pose en cours. Pour retirer une corde déjà posée, fais un clic droit
-dessus. Retirer une pièce ou une poulie renvoie aussi au bac les cordes qui y sont liées.
+dessus, puis « Retirer ». Retirer une pièce ou une poulie renvoie aussi au bac les cordes qui y sont liées.
 
 À retenir :
 

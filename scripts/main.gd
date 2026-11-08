@@ -10,6 +10,12 @@ const BIN_ORDER: Array[String] = [
 	"pulley", "rope", "elastic", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes", "candle", "flashlight", "funnel", "pipe",
 	"lamp", "basket",
 ]
+## Entrées du menu du clic droit.
+const CTX_ROTATE := 0
+const CTX_FLIP := 1
+const CTX_CHANNEL := 2
+const CTX_COPY := 3
+const CTX_REMOVE := 4
 ## Taille en dessous de laquelle un cadre n'est qu'un clic.
 const MARQUEE_MIN := 8.0
 ## Flèches du clavier : direction d'un cran de grille ; Maj déplace de NUDGE_FAST crans.
@@ -115,6 +121,7 @@ var _status: Label
 var _bin: VBoxContainer
 var _items: Array[BinItem] = []
 var _ctx_buttons := {}
+var context_menu: PopupMenu
 var _win_overlay: Control
 var _win_bonus: Label
 var _gravity_button: Button
@@ -550,8 +557,9 @@ func _handle_click(button: MouseButton, shift := false) -> void:
 		MOUSE_BUTTON_RIGHT:
 			var target := board.part_at(_mouse)
 			if _is_player_part(target):
-				_select(target)
-				_remove_selected()
+				if not _selection().has(target):
+					_select(target)
+				open_context_menu()
 		MOUSE_BUTTON_LEFT:
 			var target := board.part_at(_mouse)
 			if not _is_player_part(target):
@@ -1306,6 +1314,53 @@ func _build_side_panel() -> void:
 			b.tooltip_text = def[3]
 		grid.add_child(b)
 		_ctx_buttons[def[0]] = b
+	_build_context_menu()
+
+
+## Menu du clic droit sur une pièce : les mêmes actions que les boutons du panneau et les
+## raccourcis, sous la souris.
+func _build_context_menu() -> void:
+	context_menu = PopupMenu.new()
+	for item: Array in [
+		[CTX_ROTATE, Lang.t("Pivoter (R)")], [CTX_FLIP, Lang.t("Miroir (F)")],
+		[CTX_CHANNEL, Lang.t("Canal (C)")], [CTX_COPY, Lang.t("Copier (Ctrl+C)")],
+		[CTX_REMOVE, Lang.t("Retirer (Suppr)")],
+	]:
+		context_menu.add_item(item[1], item[0])
+	context_menu.id_pressed.connect(_on_context_item)
+	add_child(context_menu)
+
+
+func open_context_menu() -> void:
+	var p := selected if is_instance_valid(selected) else null
+	if p == null:
+		return
+	_hide_tooltip()
+	var adjustable := not p.setting().is_empty()
+	var rotate := context_menu.get_item_index(CTX_ROTATE)
+	context_menu.set_item_text(rotate, p.setting().label if adjustable else Lang.t("Pivoter (R)"))
+	context_menu.set_item_disabled(rotate, p.rotate_step() <= 0.0 and not adjustable)
+	context_menu.set_item_disabled(context_menu.get_item_index(CTX_FLIP), not p.can_flip())
+	context_menu.set_item_disabled(context_menu.get_item_index(CTX_CHANNEL), not p.uses_channel())
+	var count := _selection().size()
+	context_menu.set_item_text(context_menu.get_item_index(CTX_REMOVE),
+			Lang.t("Retirer (Suppr)") if count <= 1 else Lang.t("Retirer les %d pièces (Suppr)") % count)
+	context_menu.reset_size()
+	context_menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()), Vector2i.ZERO))
+
+
+func _on_context_item(id: int) -> void:
+	match id:
+		CTX_ROTATE:
+			_rotate_selected(1.0)
+		CTX_FLIP:
+			_flip_selected()
+		CTX_CHANNEL:
+			_cycle_channel()
+		CTX_COPY:
+			copy_selection()
+		CTX_REMOVE:
+			_remove_selected()
 
 
 func _build_status_bar() -> void:

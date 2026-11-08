@@ -24,7 +24,8 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 | Sélection multiple | Maj+clic, cadre tracé sur une zone vide, Ctrl+A |
 | Copier / coller | Ctrl+C / Ctrl+V (sous la souris) |
 | Ajuster la position | Flèches (Maj : 5 crans) |
-| Retirer | Clic droit ou Suppr |
+| Menu d'une pièce | Clic droit (pivoter, miroir, canal, copier, retirer) |
+| Retirer | Suppr, ou « Retirer » du menu |
 | Annuler / rétablir | Ctrl+Z / Ctrl+Y ou Ctrl+Maj+Z |
 | Lancer / arrêter | Espace |
 | Couper le son | M |

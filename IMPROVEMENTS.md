@@ -33,8 +33,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
   choc trop rapide, et un ralenti ×0,5 à côté de ×2 et ×4.
 - Comparer deux essais : garder la trace de l'avant-dernier en plus de la dernière, d'une autre
   couleur.
-- Un menu au clic droit sur une pièce (pivoter, miroir, canal, copier, retirer), plus facile à
-  découvrir que les raccourcis.
 - Prise en charge du tactile, pour une future version mobile.
 
 ## Éditeur et communauté
@@ -72,6 +70,9 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Technique
 
+- Dans le bac à sable, la barre du haut déborde : avec les boutons Gravité et Vent, l'objectif
+  passe sur quatre lignes, la barre double de hauteur et Pause, ×1 et Lancer glissent sous le
+  panneau des pièces. Raccourcir l'objectif ou regrouper gravité et vent dans un menu.
 - Enregistrer les volumes dès qu'un curseur bouge : ils ne le sont aujourd'hui qu'à la
   fermeture de la fenêtre d'options, et se perdent si l'on quitte le jeu avant.
 - Garder la musique calculée quand la scène se recharge (changement de langue) : elle est

@@ -599,5 +599,9 @@
  "Défi : les combles": "Challenge: under the eaves",
  "Allume la lampe, puis dépose la bille dans le panier.": "Light the lamp, then drop the marble into the basket.",
  "Un niveau défi : un seul ressort, un seul rebond, et l'interrupteur au mur. Il s'ouvre quand tout le grenier a ses étoiles.": "A challenge level: one spring, one bounce, and the switch on the wall. It opens once the whole attic has its stars.",
- "Le ressort tout près du sol, sous la bille, incliné de 30° : elle frappe l'interrupteur et retombe dans le panier.": "The spring close to the floor, under the marble, tilted 30°: it hits the switch and drops back into the basket."
+ "Le ressort tout près du sol, sous la bille, incliné de 30° : elle frappe l'interrupteur et retombe dans le panier.": "The spring close to the floor, under the marble, tilted 30°: it hits the switch and drops back into the basket.",
+ "Copier (Ctrl+C)": "Copy (Ctrl+C)",
+ "Retirer (Suppr)": "Remove (Del)",
+ "Retirer les %d pièces (Suppr)": "Remove the %d parts (Del)",
+ "Pas de place ici.": "No room here."
 }

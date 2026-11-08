@@ -25,8 +25,8 @@ func _run() -> void:
 	await _drag(board.to_global(Vector2(600, 200)), board.to_global(Vector2(190, 240)))
 	_check("déplacement + grille", board.placed[0].pos == Vector2(190, 240))
 
-	# Clic droit : retirer ; puis on repose.
-	await _click(board.to_global(Vector2(190, 240)), MOUSE_BUTTON_RIGHT)
+	# Clic droit puis « Retirer » ; puis on repose.
+	await _remove_by_menu(board.to_global(Vector2(190, 240)))
 	_check("clic droit retire", board.placed.is_empty())
 	await _drag(bin_pos, board.to_global(Vector2(190, 240)))
 	await _key(KEY_R)
@@ -100,6 +100,7 @@ func _run() -> void:
 	_test_records()
 	await _test_copy_paste()
 	await _test_marquee()
+	await _test_context_menu()
 	await _test_options()
 	await _test_accessibility()
 
@@ -150,7 +151,7 @@ func _test_rope_tool() -> void:
 	# Elle passe sur le dessus des poulies, à un rayon de leur axe.
 	await _click(board.to_global(Vector2(500, 40 - PulleyPart.RADIUS)), MOUSE_BUTTON_LEFT)
 	_check("clic sur la corde : sélection", main.selected is RopePart and main.drag_part == null)
-	await _click(board.to_global(Vector2(500, 40 - PulleyPart.RADIUS)), MOUSE_BUTTON_RIGHT)
+	await _remove_by_menu(board.to_global(Vector2(500, 40 - PulleyPart.RADIUS)))
 	_check("clic droit retire la corde", board.remaining("rope") == 1)
 
 	# Retirer une poulie emporte la corde qui y passe.
@@ -159,7 +160,7 @@ func _test_rope_tool() -> void:
 	await _click(board.to_global(Vector2(700, 40)), MOUSE_BUTTON_LEFT)
 	await _click(board.to_global(Vector2(300, 610)), MOUSE_BUTTON_LEFT)
 	_check("corde reposée", board.remaining("rope") == 0)
-	await _click(board.to_global(Vector2(700, 40)), MOUSE_BUTTON_RIGHT)
+	await _remove_by_menu(board.to_global(Vector2(700, 40)))
 	_check("poulie retirée : corde au bac", board.remaining("rope") == 1 and board.remaining("pulley") == 1)
 
 	# Attache à une pièce de décor qui n'a pas d'identifiant dans le niveau (la plaque).
@@ -371,14 +372,14 @@ func _test_undo_cascade() -> void:
 	var board: Board = main.board
 	main.load_level(6)
 	await _steps(2)
-	await _click(board.to_global(Vector2(500, 150)), MOUSE_BUTTON_RIGHT)
+	await _remove_by_menu(board.to_global(Vector2(500, 150)))
 	_check("corde vers le décor retirée", board.remaining("rope") == 1)
 	await _click(_bin_pos("rope"), MOUSE_BUTTON_LEFT)
 	await _click(board.to_global(Vector2(700, 120)), MOUSE_BUTTON_LEFT)
 	await _click(board.to_global(Vector2(300, 40)), MOUSE_BUTTON_LEFT)
 	await _click(board.to_global(Vector2(300, 610)), MOUSE_BUTTON_LEFT)
 	_check("corde passant par la poulie posée", board.remaining("rope") == 0)
-	await _click(board.to_global(Vector2(300, 40)), MOUSE_BUTTON_RIGHT)
+	await _remove_by_menu(board.to_global(Vector2(300, 40)))
 	_check("poulie retirée avec sa corde", board.remaining("rope") == 1 and board.remaining("pulley") == 2)
 	await _key(KEY_Z, true)
 	_check("Ctrl+Z : poulie et corde reviennent", board.remaining("rope") == 0 and board.remaining("pulley") == 1)
@@ -1182,6 +1183,51 @@ func _test_records() -> void:
 
 
 ## Maj+clic, glisser d'un groupe, Ctrl+C / Ctrl+V avec la corde qui relie les deux caisses.
+## Clic droit sur une pièce, puis « Retirer » dans son menu.
+func _remove_by_menu(at: Vector2) -> void:
+	await _click(at, MOUSE_BUTTON_RIGHT)
+	if main.context_menu.visible:
+		main.context_menu.id_pressed.emit(main.CTX_REMOVE)
+		main.context_menu.hide()
+	await process_frame
+
+
+## Menu du clic droit : il s'ouvre sur une pièce du joueur, propose ce qui s'applique à elle et
+## agit sur toute la sélection pour copier et retirer.
+func _test_context_menu() -> void:
+	var board: Board = main.board
+	board.set_layout([])
+	board.place("plank", Vector2(300, 300))
+	board.place("crate", Vector2(600, 300))
+	board.place("crate", Vector2(700, 300))
+	main._commit()
+	await _steps(2)
+	var menu: PopupMenu = main.context_menu
+	await _click(board.to_global(Vector2(600, 500)), MOUSE_BUTTON_RIGHT)
+	_check("menu : rien dans le vide", not menu.visible)
+	await _click(board.to_global(Vector2(300, 300)), MOUSE_BUTTON_RIGHT)
+	_check("menu : ouvert sur la planche", menu.visible and main.selected.kind == "plank")
+	_check("menu : pivoter permis, canal grisé",
+			not menu.is_item_disabled(menu.get_item_index(main.CTX_ROTATE))
+			and menu.is_item_disabled(menu.get_item_index(main.CTX_CHANNEL)))
+	menu.id_pressed.emit(main.CTX_ROTATE)
+	menu.hide()
+	_check("menu : Pivoter tourne la planche", is_equal_approx(board.placed[0].get("rot", 0.0), 15.0))
+	await _key(KEY_A, true)
+	await _click(board.to_global(Vector2(600, 300)), MOUSE_BUTTON_RIGHT)
+	_check("menu : le groupe reste choisi (%d)" % main._selection().size(), main._selection().size() == 3)
+	_check("menu : retirer tout le groupe annoncé",
+			menu.get_item_text(menu.get_item_index(main.CTX_REMOVE)).begins_with("Retirer les 3"))
+	menu.id_pressed.emit(main.CTX_COPY)
+	menu.hide()
+	_check("menu : Copier copie le groupe", main.clipboard.size() == 3)
+	await _click(board.to_global(Vector2(600, 300)), MOUSE_BUTTON_RIGHT)
+	menu.id_pressed.emit(main.CTX_REMOVE)
+	menu.hide()
+	_check("menu : Retirer vide le plateau", board.placed.is_empty())
+	await process_frame
+
+
 ## Cadre de sélection : glisser sur une zone vide choisit les pièces qu'il entoure et la corde
 ## qui les relie ; Maj ajoute ; un simple clic ne choisit rien.
 func _test_marquee() -> void:
