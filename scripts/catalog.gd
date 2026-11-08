@@ -11,6 +11,8 @@ const INFO := {
 	"seesaw": {"label": "Bascule", "desc": "Le côté haut chargé catapulte le côté bas."},
 	"spring": {"label": "Ressort", "desc": "Renvoie tout à la même vitesse."},
 	"plate": {"label": "Plaque", "desc": "Allume son canal au premier contact."},
+	"trapdoor": {"label": "Trappe", "desc": "S'ouvre vers le bas quand son canal s'allume."},
+	"door": {"label": "Porte", "desc": "S'ouvre quand son canal s'allume, se referme quand il s'éteint."},
 	"timer": {"label": "Minuterie", "desc": "Allume son canal un délai après le lancement (R : délai)."},
 	"switch": {"label": "Interrupteur", "desc": "Chaque choc sur le levier allume ou éteint son canal."},
 	"conveyor": {"label": "Tapis", "desc": "Canal 0 : toujours en marche."},
@@ -37,6 +39,7 @@ static func create(kind: String) -> Part:
 		"plate": part = PlatePart.new()
 		"switch": part = SwitchPart.new()
 		"timer": part = TimerPart.new()
+		"trapdoor", "door": part = GatePart.new()
 		"conveyor": part = ConveyorPart.new()
 		"fan": part = FanPart.new()
 		"balloon": part = BalloonPart.new()

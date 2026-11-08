@@ -94,6 +94,9 @@ présents dans le niveau restent en place.
   les obstacles.
 - **Minuterie :** allume son canal un certain temps après le lancement. R et la molette règlent
   ce délai, de 0,5 à 15 secondes.
+- **Trappe et porte :** s'ouvrent quand leur canal s'allume et se referment quand il s'éteint. La
+  trappe bascule vers le bas et lâche ce qu'elle porte ; la porte s'écarte vers la droite, ou vers
+  la gauche après un miroir.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.

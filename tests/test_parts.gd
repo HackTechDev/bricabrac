@@ -7,6 +7,7 @@ func _run() -> void:
 	await _start_board()
 	await _test_switch()
 	await _test_timer()
+	await _test_gates()
 	_end("PIÈCES OK")
 
 
@@ -25,6 +26,34 @@ func _test_timer() -> void:
 	_check("minuterie : lampe allumée à 1,5 s (%d images)" % lit_at, absi(lit_at - 180) <= 1)
 	_level([{"kind": "timer", "pos": Vector2(300, 600), "channel": 1}])
 	_check("minuterie : délai par défaut 2 s", (board.parts[0] as TimerPart).delay() == 2.0)
+
+
+## Une trappe lâche la bille à l'ouverture ; une porte la retient puis la laisse passer.
+func _test_gates() -> void:
+	_level([
+		{"kind": "trapdoor", "id": "trappe", "pos": Vector2(240, 300), "channel": 1},
+		{"kind": "ball", "id": "b", "pos": Vector2(300, 270)},
+		{"kind": "timer", "pos": Vector2(800, 600), "channel": 1, "delay": 1.0},
+	])
+	board.start()
+	await _steps(110)
+	_check("trappe fermée : la bille repose dessus", absf(_pos("b").y - 278.0) < 4.0)
+	await _steps(100)
+	_check("trappe ouverte : la bille est tombée", _pos("b").y > 400.0)
+	var gate := board.find_part("trappe") as GatePart
+	_near("trappe : panneau à la verticale", gate.panel.rotation_degrees, 90.0, 0.01)
+
+	_level([
+		{"kind": "conveyor", "pos": Vector2(300, 600)},
+		{"kind": "ball", "id": "b", "pos": Vector2(240, 570)},
+		{"kind": "door", "pos": Vector2(460, 470), "channel": 1},
+		{"kind": "timer", "pos": Vector2(800, 400), "channel": 1, "delay": 2.0},
+	])
+	board.start()
+	await _steps(220)
+	_check("porte fermée : la bille est bloquée", _pos("b").x < 460.0)
+	await _steps(240)
+	_check("porte ouverte : la bille est passée", _pos("b").x > 480.0)
 
 
 func _lamp() -> LampPart:
