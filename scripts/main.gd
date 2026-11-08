@@ -15,6 +15,8 @@ const SANDBOX_GRAVITY: Array[float] = [1.0, 0.4, 0.1, 1.8]
 const SANDBOX_WIND: Array[Vector2] = [Vector2.ZERO, Vector2(150, 0), Vector2(-150, 0), Vector2(0, -150)]
 
 var save_path := "user://progress.cfg"
+## « Mes niveaux » : un fichier de niveau par niveau personnel, dans les données du joueur.
+var custom_dir := "user://niveaux"
 var board: Board
 var levels: Array = []
 var current := 0
@@ -1242,8 +1244,42 @@ func _load_progress() -> void:
 		for id: String in cfg.get_value("progress", "tutorials", []):
 			tutorials_done[id] = true
 		bonuses = cfg.get_value("progress", "bonuses", {})
-		custom_levels = cfg.get_value("custom", "levels", [])
 		_editor_draft = cfg.get_value("custom", "draft", {})
+		# Anciennes sauvegardes : les niveaux personnels y étaient rangés ; ils passent en fichiers.
+		for level: Dictionary in cfg.get_value("custom", "levels", []):
+			if not FileAccess.file_exists(_custom_path(level.id)):
+				_write_custom(level)
+	custom_levels = _read_custom_levels()
+
+
+## Niveaux personnels lus dans `custom_dir`, dans l'ordre où ils ont été créés.
+func _read_custom_levels() -> Array:
+	var found: Array = []
+	for file: Dictionary in LevelFile.list_dir(custom_dir):
+		var level: Dictionary = file.level
+		level.merge({"world": "perso", "custom": true}, true)
+		found.append(level)
+	found.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return [a.get("created", 0), a.id] < [b.get("created", 0), b.id])
+	return found
+
+
+func _custom_path(id: String) -> String:
+	return custom_dir.path_join("%s.%s" % [id.validate_filename(), LevelFile.EXTENSION])
+
+
+## Écrit un niveau personnel dans son fichier ; la date de création fixe sa place dans la liste.
+func _write_custom(level: Dictionary) -> void:
+	if not level.has("created"):
+		level.created = int(Time.get_unix_time_from_system())
+	DirAccess.make_dir_recursive_absolute(custom_dir)
+	var error := LevelFile.save(level, _custom_path(level.id))
+	if error != OK:
+		push_error("Niveau personnel non enregistré (%s) : %s" % [error_string(error), level.id])
+
+
+func _remove_custom(id: String) -> void:
+	DirAccess.remove_absolute(_custom_path(id))
 
 
 func _save_progress() -> void:
@@ -1253,7 +1289,6 @@ func _save_progress() -> void:
 	cfg.set_value("progress", "bonuses", bonuses)
 	cfg.set_value("settings", "muted", muted)
 	cfg.set_value("layouts", "by_level", saved_layouts)
-	cfg.set_value("custom", "levels", custom_levels)
 	if editor != null:
 		cfg.set_value("custom", "draft", {"id": editor.custom_id, "name": editor.name_edit.text,
 				"goal_text": editor.goal_edit.text, "inventory": editor.inventory, "proof": editor.proof})
@@ -1342,10 +1377,12 @@ func _editor_save() -> void:
 	var replaced := false
 	for i in custom_levels.size():
 		if custom_levels[i].id == id:
+			level.created = custom_levels[i].get("created", 0)
 			custom_levels[i] = level
 			replaced = true
 	if not replaced:
 		custom_levels.append(level)
+	_write_custom(level)
 	editor.custom_id = id
 	_reload_level_list(editor_index)
 	board.sfx.play("place")
@@ -1360,6 +1397,7 @@ func _editor_delete() -> void:
 		if custom_levels[i].id == editor.custom_id:
 			custom_levels.remove_at(i)
 			break
+	_remove_custom(editor.custom_id)
 	completed.erase(editor.custom_id)
 	bonuses.erase(editor.custom_id)
 	saved_layouts.erase(editor.custom_id)
@@ -1552,6 +1590,7 @@ func _import_level(raw: Variant) -> void:
 	level.merge({"world": "perso", "custom": true, "verified": true, "intro": level.goal_text,
 			"hint": "Niveau importé."}, true)
 	custom_levels.append(level)
+	_write_custom(level)
 	_reload_level_list(func() -> int: return current)
 	share_dialog.hide()
 	for i in levels.size():

@@ -289,6 +289,10 @@ gagner de nouveau. Dans l'écran de sélection, un niveau qui n'a pas été rés
 Le bouton **Modifier**, en haut d'un de tes niveaux, le rouvre dans l'éditeur ; **Supprimer** l'efface
 de « Mes niveaux » et **Nouveau** vide le plan de travail. Ton brouillon est gardé entre deux parties.
 
+Chacun de tes niveaux est un fichier texte du dossier `niveaux`, dans les données du jeu (à côté
+du dossier `enregistrements`). Tu peux le copier pour le sauvegarder ou le transmettre ; pour le
+partager avec sa vérification, préfère toutefois « Partager le niveau… ».
+
 **Niveaux du jeu.** Quand le jeu est lancé depuis ses sources (Godot ouvert sur le projet), deux
 boutons de plus permettent de travailler sur les niveaux officiels du dossier `levels/` :
 

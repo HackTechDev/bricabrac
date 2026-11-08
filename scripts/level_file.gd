@@ -82,6 +82,8 @@ static func load_dir(dir := DIR) -> Array:
 
 ## Fichiers de niveau d'un dossier, dans l'ordre : [{path, level}], les illisibles écartés.
 static func list_dir(dir := DIR) -> Array:
+	if not DirAccess.dir_exists_absolute(dir):
+		return []
 	var names := Array(DirAccess.get_files_at(dir)).filter(
 			func(name: String) -> bool: return name.get_extension() == EXTENSION)
 	names.sort()

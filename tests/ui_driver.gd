@@ -3,6 +3,7 @@ extends SceneTree
 ## événements souris et clavier, comme un joueur.
 
 const SAVE := "user://test_ui_progress.cfg"
+const CUSTOM_DIR := "user://test_ui_niveaux"
 
 var main: Control
 var failures := 0
@@ -21,8 +22,10 @@ func _launch(show_tutorials: bool, fresh := true) -> void:
 	root.size = Vector2i(1280, 720)  # La fenêtre headless fait 64x64 par défaut.
 	if fresh:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
+		_clear_custom_dir()
 	main = (load("res://scenes/main.tscn") as PackedScene).instantiate()
 	main.save_path = SAVE
+	main.custom_dir = CUSTOM_DIR
 	main.show_tutorials = show_tutorials
 	main.show_title = false
 	root.add_child(main)
@@ -30,8 +33,17 @@ func _launch(show_tutorials: bool, fresh := true) -> void:
 	await process_frame
 
 
+func _clear_custom_dir() -> void:
+	if not DirAccess.dir_exists_absolute(CUSTOM_DIR):
+		return
+	for name in DirAccess.get_files_at(CUSTOM_DIR):
+		DirAccess.remove_absolute(CUSTOM_DIR.path_join(name))
+	DirAccess.remove_absolute(CUSTOM_DIR)
+
+
 func _finish(success: String) -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE))
+	_clear_custom_dir()
 	print("ÉCHECS : %d" % failures if failures else success)
 	main.free()
 	quit(1 if failures else 0)

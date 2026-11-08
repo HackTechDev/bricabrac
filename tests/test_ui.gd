@@ -90,6 +90,7 @@ func _run() -> void:
 	await _test_chrono()
 	await _test_title_and_transitions()
 	await _test_official_levels()
+	await _test_custom_migration()
 
 	_finish("INTERFACE OK")
 
@@ -535,6 +536,10 @@ func _test_editor() -> void:
 	_check("éditeur : niveau enregistré", main.custom_levels.size() == 1 and main.is_editor())
 	_check("éditeur : enregistré comme vérifié, avec sa solution", main.custom_levels[0].verified
 			and main.custom_levels[0].solution.size() == 1)
+	var file: String = main._custom_path(main.custom_levels[0].id)
+	_check("éditeur : rangé dans son fichier, hors de la sauvegarde", file.begins_with(CUSTOM_DIR)
+			and LevelFile.load_file(file).get("name", "") == "Mon premier niveau"
+			and not _saved_custom_levels())
 
 	await _restart()
 	board = main.board
@@ -566,7 +571,8 @@ func _test_editor() -> void:
 	_check("éditeur : vignette « Non vérifié »", main._level_select.status_text(index) == "Non vérifié")
 	main._level_select.hide()
 	main._editor_delete()
-	_check("niveau personnel : supprimé", main.custom_levels.is_empty())
+	_check("niveau personnel : supprimé, avec son fichier", main.custom_levels.is_empty()
+			and DirAccess.get_files_at(CUSTOM_DIR).is_empty())
 	main._editor_reset()
 
 
@@ -820,3 +826,28 @@ func _test_official_levels() -> void:
 	LevelData.set_dir(LevelFile.DIR)
 	main.official_dir = LevelFile.DIR
 	main._reload_level_list(func() -> int: return 0)
+
+
+## Une ancienne sauvegarde qui contenait « Mes niveaux » : au lancement, ils passent en fichiers
+## et ne sont plus réécrits dans la sauvegarde.
+func _test_custom_migration() -> void:
+	var cfg := ConfigFile.new()
+	cfg.load(SAVE)
+	var old := LevelData.from_editor("perso_42", "Ancien niveau", "Vise le panier.",
+			[{"kind": "basket", "id": "p1", "pos": Vector2(480, 590), "goal": true}], {"plank": 1}, 1.0, Vector2.ZERO)
+	cfg.set_value("custom", "levels", [old])
+	cfg.save(SAVE)
+	await _restart()
+	_check("migration : niveau repris en fichier", main.custom_levels.size() == 1
+			and FileAccess.file_exists(main._custom_path("perso_42")))
+	main._save_progress()
+	_check("migration : retiré de la sauvegarde", not _saved_custom_levels())
+	_check("migration : jouable dans « Mes niveaux »", main.levels.any(
+			func(l: Dictionary) -> bool: return l.id == "perso_42" and l.world == "perso"))
+
+
+## La sauvegarde contient-elle encore une liste de niveaux personnels ?
+func _saved_custom_levels() -> bool:
+	var cfg := ConfigFile.new()
+	cfg.load(SAVE)
+	return cfg.has_section_key("custom", "levels")
