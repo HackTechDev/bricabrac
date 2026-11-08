@@ -21,6 +21,7 @@ const INFO := {
 	"water": {"label": "Bac d'eau", "desc": "Fait flotter les objets légers ; les lourds coulent lentement."},
 	"suction": {"label": "Ventouse", "desc": "Retient ce qui touche sa coupelle. Canal 1 à 3 : lâche quand il s'allume."},
 	"cart": {"label": "Chariot", "desc": "Roule sur son rail et emporte ce qu'il porte. R : incliner le rail."},
+	"mousewheel": {"label": "Souris", "desc": "Dort dans sa roue. Réveillée par un choc ou son canal, elle entraîne les engrenages."},
 	"timer": {"label": "Minuterie", "desc": "Allume son canal un délai après le lancement (R : délai)."},
 	"switch": {"label": "Interrupteur", "desc": "Chaque choc sur le levier allume ou éteint son canal."},
 	"conveyor": {"label": "Tapis", "desc": "Canal 0 : toujours en marche."},
@@ -57,6 +58,7 @@ static func create(kind: String) -> Part:
 		"portal": part = PortalPart.new()
 		"suction": part = SuctionPart.new()
 		"cart": part = CartPart.new()
+		"mousewheel": part = MouseWheelPart.new()
 		"water": part = WaterPart.new()
 		"magnet": part = MagnetPart.new()
 		"scissors": part = ScissorsPart.new()

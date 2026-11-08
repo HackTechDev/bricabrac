@@ -118,6 +118,9 @@ présents dans le niveau restent en place.
 - **Chariot sur rail :** le wagonnet ne peut que rouler le long de son rail, d'un butoir à l'autre,
   et emporte ce qu'on pose dessus. Incliné avec R, le rail le fait descendre tout seul ; sinon, un
   choc ou un ventilateur le mettent en route.
+- **Souris :** elle dort dans sa roue jusqu'à ce qu'un objet heurte la roue ou que son canal
+  s'allume. Réveillée, elle court sans s'arrêter, et sa roue entraîne les engrenages qu'elle touche,
+  comme un moteur. Le miroir change le sens de sa course.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.

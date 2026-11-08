@@ -16,6 +16,7 @@ func _run() -> void:
 	await _test_level_physics()
 	await _test_suction()
 	await _test_cart()
+	await _test_mouse_wheel()
 	_end("PIÈCES OK")
 
 
@@ -260,6 +261,25 @@ func _test_cart() -> void:
 	await _steps(240)
 	_check("chariot : poussé par le vent (%.0f)" % _pos("c").x, _pos("c").x > 560.0)
 	_check("chariot : le boulet reste à bord", absf(_pos("k").x - _pos("c").x) < 30.0 and _pos("k").y < 400.0)
+
+
+## La souris dort ; une bille tombe sur sa roue, elle se réveille et entraîne l'engrenage voisin.
+## Une autre souris, que rien ne dérange, dort toujours.
+func _test_mouse_wheel() -> void:
+	_level([
+		{"kind": "mousewheel", "id": "s", "pos": Vector2(300, 400)},
+		{"kind": "gear", "id": "g", "pos": Vector2(384, 400)},
+		{"kind": "ball", "pos": Vector2(270, 200)},
+		{"kind": "mousewheel", "id": "s2", "pos": Vector2(800, 400)},
+	])
+	_check("souris : engrène avec la roue", board.gear_neighbors(board.find_part("s")).size() == 1)
+	board.start()
+	await _steps(20)
+	_check("souris : dort au départ", not (board.find_part("s") as MouseWheelPart).awake)
+	await _steps(120)
+	_check("souris : réveillée par la bille", (board.find_part("s") as MouseWheelPart).awake)
+	_near("souris : entraîne l'engrenage", _spin("g"), -MouseWheelPart.RUN_SPEED * 44.0 / 40.0, 0.03)
+	_check("souris : l'autre dort encore", not (board.find_part("s2") as MouseWheelPart).awake)
 
 
 func _lamp() -> LampPart:
