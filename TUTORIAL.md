@@ -24,6 +24,8 @@ avec `GODOT` pointant vers l'exécutable de Godot :
 - **À droite :** le bac des pièces disponibles et, dessous, les actions sur la pièce sélectionnée.
 - **En bas :** une ligne de messages, qui te guide et explique pourquoi une action est refusée.
 
+Survole une pièce un instant, dans le bac ou sur le plateau, pour afficher son rôle et ses réglages.
+
 ## Ta première machine
 
 Le niveau 1, *Première pente*, te demande d'amener la bille dans le panier doré.

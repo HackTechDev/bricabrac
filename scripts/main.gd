@@ -46,6 +46,10 @@ var _win_next: Button
 var _rope_preview: Line2D
 var _sound_button: Button
 var _mouse := Vector2.ZERO
+var _tooltip: PanelContainer
+var _tooltip_label: Label
+var _hovered: Part
+var _hover_time := 0.0
 
 
 func _ready() -> void:
@@ -69,6 +73,7 @@ func _ready() -> void:
 	_build_top_bar()
 	_build_side_panel()
 	_build_status_bar()
+	_build_tooltip()
 	tutorial = Tutorial.new()
 	tutorial.condition = _tutorial_condition
 	tutorial.locate = _tutorial_target
@@ -81,6 +86,7 @@ func _ready() -> void:
 
 func load_level(index: int) -> void:
 	_stop_drag()
+	_hide_tooltip()
 	_cancel_rope()
 	current = index
 	_select(null)
@@ -125,6 +131,7 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouse:
 		_mouse = _to_board(event.position)
 		_update_rope_preview()
+		_track_hover(event)
 	if drag_part == null:
 		return
 	if event is InputEventMouseMotion:
@@ -204,6 +211,79 @@ func _to_board(screen_pos: Vector2) -> Vector2:
 
 func _is_player_part(part: Part) -> bool:
 	return part != null and board.placed.has(part.entry)
+
+
+# --- Infobulles du plateau ------------------------------------------------------
+
+const TOOLTIP_DELAY := 0.5
+
+
+func _process(delta: float) -> void:
+	if _hovered == null:
+		return
+	if not is_instance_valid(_hovered):
+		_hide_tooltip()
+		return
+	_hover_time += delta
+	if _hover_time >= TOOLTIP_DELAY and not _tooltip.visible:
+		_show_tooltip()
+
+
+## Un clic ou un glisser ferme l'infobulle ; survoler une autre pièce relance le délai.
+func _track_hover(event: InputEventMouse) -> void:
+	if event is InputEventMouseButton or drag_part != null:
+		_hide_tooltip()
+		return
+	var inside := Rect2(Vector2.ZERO, Board.SIZE).has_point(_mouse)
+	var part := board.part_at(_mouse) if inside else null
+	if part != _hovered:
+		_hide_tooltip()
+		_hovered = part
+	elif _tooltip.visible:
+		_place_tooltip()
+
+
+func _show_tooltip() -> void:
+	var info: Dictionary = Catalog.INFO[_hovered.kind]
+	var lines := PackedStringArray([info.label, info.desc])
+	lines.append_array(_hovered.describe())
+	if not _is_player_part(_hovered):
+		lines.append("Pièce du décor : elle ne se déplace pas.")
+	_tooltip_label.text = "\n".join(lines)
+	_tooltip.reset_size()
+	_tooltip.show()
+	_place_tooltip()
+
+
+func _place_tooltip() -> void:
+	var at := board.to_global(_mouse) + Vector2(18, 18)
+	var limit := get_viewport_rect().size - _tooltip.size - Vector2(4, 4)
+	_tooltip.position = at.clamp(Vector2(4, 4), limit)
+
+
+func _hide_tooltip() -> void:
+	_hovered = null
+	_hover_time = 0.0
+	if _tooltip != null:
+		_tooltip.hide()
+
+
+func _build_tooltip() -> void:
+	_tooltip = PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("0f1a2e")
+	style.border_color = Color("7f8fa6")
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	style.set_content_margin_all(8.0)
+	_tooltip.add_theme_stylebox_override("panel", style)
+	_tooltip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tooltip.z_index = 20
+	_tooltip_label = Label.new()
+	_tooltip_label.add_theme_font_size_override("font_size", 13)
+	_tooltip.add_child(_tooltip_label)
+	add_child(_tooltip)
+	_tooltip.hide()
 
 
 # --- Glisser-déposer ------------------------------------------------------------

@@ -120,6 +120,14 @@ func rope_anchor(_point: Vector2) -> Vector2:
 	return Vector2.ZERO
 
 
+## Réglages propres à cette pièce, affichés dans son infobulle (une ligne par réglage).
+func describe() -> PackedStringArray:
+	var lines := PackedStringArray()
+	if uses_channel():
+		lines.append("Canal %d" % channel if channel > 0 else "Canal 0 : toujours en marche")
+	return lines
+
+
 ## `point` est en coordonnées du plateau.
 func hit_test(point: Vector2) -> bool:
 	return overlaps_shape(board.probe, board.global_transform * Transform2D(0.0, point))

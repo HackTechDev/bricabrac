@@ -68,6 +68,7 @@ func _run() -> void:
 
 	await _test_rope_tool()
 	await _test_sound_toggle()
+	await _test_board_tooltips()
 	await _test_undo()
 	await _test_persistence()
 	await _test_undo_cascade()
@@ -138,6 +139,35 @@ func _test_rope_tool() -> void:
 	_check("corde vers une pièce de décor", board.remaining("rope") == 0)
 	var rope: RopePart = board.parts.back()
 	_check("corde vers le décor : tracé valide", rope.points().size() == 2)
+
+
+## Survoler une pièce du plateau affiche son infobulle, avec ses réglages.
+func _test_board_tooltips() -> void:
+	var board: Board = main.board
+	main.load_level(5)
+	await _steps(2)
+	board.clear_placed()  # Une plaque restaurée d'un test précédent serait sur un autre canal.
+	await _drag(_bin_pos("plate"), board.to_global(Vector2(120, 620)))
+	await _move(board.to_global(Vector2(500, 300)))
+	await _move(board.to_global(Vector2(120, 620)))
+	await _steps(20)
+	_check("survol bref : pas encore d'infobulle", not main._tooltip.visible)
+	await _steps(60)
+	var text: String = main._tooltip_label.text
+	_check("infobulle d'une pièce posée", main._tooltip.visible and text.begins_with("Plaque") and "Canal 1" in text)
+	_check("infobulle à l'écran", Rect2(Vector2.ZERO, Vector2(1280, 720)).encloses(main._tooltip.get_global_rect()))
+	await _move(board.to_global(Vector2(800, 507)))  # Fond du panier.
+	await _steps(80)
+	_check("infobulle d'une pièce du décor", "décor" in main._tooltip_label.text \
+			and main._tooltip_label.text.begins_with("Panier"))
+	await _move(board.to_global(Vector2(500, 300)))
+	_check("hors pièce : infobulle fermée", not main._tooltip.visible)
+	await _move(board.to_global(Vector2(120, 620)))
+	await _steps(80)
+	await _button(board.to_global(Vector2(120, 620)), MOUSE_BUTTON_LEFT, true)
+	_check("clic : infobulle fermée", not main._tooltip.visible)
+	await _button(board.to_global(Vector2(120, 620)), MOUSE_BUTTON_LEFT, false)
+	main.board.clear_placed()
 
 
 ## Le niveau Par-dessus le mur, vide au départ : ressort et planche.

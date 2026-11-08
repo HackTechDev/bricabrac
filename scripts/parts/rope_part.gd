@@ -176,6 +176,11 @@ func _measure(path: PackedVector2Array) -> float:
 	return total
 
 
+func describe() -> PackedStringArray:
+	var via: int = entry.get("via", []).size()
+	return PackedStringArray(["Passe par %d poulie(s)" % via] if via > 0 else [])
+
+
 func paint(c: CanvasItem) -> void:
 	var path := points()
 	if path.size() < 2:
