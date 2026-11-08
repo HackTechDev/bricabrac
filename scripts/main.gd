@@ -40,7 +40,8 @@ var tutorials_done := {}
 var show_tutorials := true
 var tutorial: Tutorial
 
-var _level_picker: OptionButton
+var _level_button: Button
+var _level_select: LevelSelect
 var _run_button: Button
 var _clear_button: Button
 var _goal_label: Label
@@ -92,6 +93,10 @@ func _ready() -> void:
 	tutorial.finished.connect(_on_tutorial_finished)
 	add_child(tutorial)
 	_build_win_overlay()
+	_level_select = LevelSelect.new()
+	add_child(_level_select)
+	_level_select.setup(levels)
+	_level_select.chosen.connect(load_level)
 	load_level(_first_unsolved())
 
 
@@ -182,6 +187,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _handle_key(event: InputEventKey) -> void:
+	if _level_select.visible:
+		if event.keycode in [KEY_ESCAPE, KEY_TAB]:
+			_level_select.hide()
+		return
 	if event.is_command_or_control_pressed():
 		match event.keycode:
 			KEY_Z:
@@ -194,6 +203,8 @@ func _handle_key(event: InputEventKey) -> void:
 			toggle_run()
 		KEY_M:
 			_toggle_sound()
+		KEY_TAB:
+			open_level_select()
 		KEY_ESCAPE:
 			if rope_tool:
 				_cancel_rope()
@@ -262,7 +273,7 @@ func _process(delta: float) -> void:
 
 ## Un clic ou un glisser ferme l'infobulle ; survoler une autre pièce relance le délai.
 func _track_hover(event: InputEventMouse) -> void:
-	if event is InputEventMouseButton or drag_part != null:
+	if event is InputEventMouseButton or drag_part != null or _level_select.visible:
 		_hide_tooltip()
 		return
 	var inside := Rect2(Vector2.ZERO, Board.SIZE).has_point(_mouse)
@@ -574,10 +585,14 @@ func _build_top_bar() -> void:
 	row.add_theme_constant_override("separation", 12)
 	bar.add_child(row)
 
-	_level_picker = OptionButton.new()
-	_level_picker.custom_minimum_size.x = 270
-	_level_picker.item_selected.connect(load_level)
-	row.add_child(_level_picker)
+	_level_button = Button.new()
+	_level_button.custom_minimum_size.x = 270
+	_level_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_level_button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_level_button.focus_mode = Control.FOCUS_NONE
+	_level_button.tooltip_text = "Choisir un autre niveau (Tab)"
+	_level_button.pressed.connect(open_level_select)
+	row.add_child(_level_button)
 
 	_goal_label = Label.new()
 	_goal_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -791,13 +806,31 @@ func _refresh_controls() -> void:
 
 
 func _refresh_level_picker() -> void:
-	_level_picker.clear()
-	for i in levels.size():
-		var mark := "[OK] " if completed.has(levels[i].id) else ""
-		var world: String = LevelData.world(levels[i].get("world", "")).name + " · " \
-				if levels[i].has("world") else ""
-		_level_picker.add_item("%s%s%d. %s%s" % [mark, world, i + 1, levels[i].name, _stars(levels[i])])
-	_level_picker.select(current)
+	var level: Dictionary = levels[current]
+	var world: String = LevelData.world(level.world).name + " · " if level.has("world") else ""
+	_level_button.text = "☰  %s%d. %s%s" % [world, current + 1, level.name, _stars(level)]
+
+
+## Ligne d'état d'une vignette : terminé ou non, étoiles des objectifs bonus.
+func _level_status(level: Dictionary) -> String:
+	if level.get("sandbox", false):
+		return "Toutes les pièces, sans objectif"
+	if not completed.has(level.id):
+		return "À faire"
+	return "Terminé" + _stars(level)
+
+
+func open_level_select() -> void:
+	if _level_select.visible:
+		_level_select.hide()
+		return
+	_stop_drag()
+	_cancel_rope()
+	_hide_tooltip()
+	var statuses: Array = []
+	for level: Dictionary in levels:
+		statuses.append(_level_status(level))
+	_level_select.open(current, statuses)
 
 
 ## Étoiles des objectifs bonus : pleines pour ceux obtenus.

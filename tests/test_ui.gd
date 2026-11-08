@@ -53,7 +53,7 @@ func _run() -> void:
 	_check("bonus Complet manqué : une planche reste au bac", not got.has("all"))
 	_check("bonus affichés à la victoire", main._win_bonus.text.contains("★ Économe")
 			and main._win_bonus.text.contains("☆ Complet") and main._win_bonus.text.contains("nouveau"))
-	_check("étoiles dans la liste des niveaux", main._level_picker.get_item_text(0).ends_with("★★☆"))
+	_check("étoiles sur le bouton du niveau", main._level_button.text.ends_with("★★☆"))
 	await _steps(2)
 	await _click(main._win_next.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	_check("niveau suivant", main.current == 1 and not board.running)
@@ -82,6 +82,7 @@ func _run() -> void:
 	await _test_undo_cascade()
 	await _test_stale_save()
 	await _test_sandbox()
+	await _test_level_select()
 
 	_finish("INTERFACE OK")
 
@@ -429,3 +430,29 @@ func _test_sandbox() -> void:
 	_check("hors bac à sable : boutons masqués et gravité normale",
 			not main._gravity_button.visible and board.gravity_factor() == 1.0)
 	_check("le bac à sable n'est pas un niveau à finir", main._first_unsolved() != index)
+
+
+## Écran de sélection : s'ouvre par le bouton ou Tab, montre l'état de chaque niveau, se ferme par
+## Échap, et un clic sur une vignette charge le niveau.
+func _test_level_select() -> void:
+	var select: LevelSelect = main._level_select
+	main.load_level(0)
+	await _steps(2)
+	await _click(main._level_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	await _steps(2)
+	_check("sélection : ouverte par le bouton", select.visible)
+	_check("sélection : une vignette par niveau", select._cards.size() == main.levels.size())
+	_check("sélection : vignettes rendues", select._thumb_rects[9].texture != null)
+	_check("sélection : niveau terminé et étoiles", select.status_text(0).begins_with("Terminé")
+			and select.status_text(0).ends_with("★★☆"))
+	_check("sélection : niveau à faire", select.status_text(12) == "À faire")
+	await _key(KEY_SPACE)
+	_check("sélection : les touches du jeu sont ignorées", not main.board.running)
+	await _key(KEY_ESCAPE)
+	_check("sélection : Échap ferme", not select.visible)
+	await _key(KEY_TAB)
+	_check("sélection : Tab ouvre", select.visible)
+	await _steps(2)
+	await _click(select.card(10).get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("sélection : clic sur une vignette", main.current == 10 and not select.visible)
+	_check("sélection : nom du monde sur le bouton", main._level_button.text.contains("Cuisine"))

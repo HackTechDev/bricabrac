@@ -19,7 +19,7 @@ avec `GODOT` pointant vers l'exécutable de Godot :
 
 ## L'écran
 
-- **En haut :** le choix du niveau, l'objectif, puis les boutons Son, Indice, Tout retirer et Lancer.
+- **En haut :** le bouton du niveau en cours, qui ouvre l'écran de sélection, l'objectif, puis les boutons Son, Indice, Tout retirer et Lancer.
 - **Au centre :** le plateau, où tu construis ta machine.
 - **À droite :** le bac des pièces disponibles et, dessous, les actions sur la pièce sélectionnée.
 - **En bas :** une ligne de messages, qui te guide et explique pourquoi une action est refusée.
@@ -57,6 +57,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Rétablir | Ctrl+Y ou Ctrl+Maj+Z, ou bouton Rétablir |
 | Lancer ou arrêter | Espace |
 | Couper le son | M |
+| Choisir un niveau | Tab, ou le bouton en haut à gauche |
 
 Les boutons du panneau de droite font la même chose que R, F et C. Ils restent grisés quand la pièce
 sélectionnée ne propose pas l'action.
@@ -166,7 +167,9 @@ dessus. Retirer une pièce ou une poulie renvoie aussi au bac les cordes qui y s
 ## Les niveaux
 
 Les 18 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
-dès le départ depuis la liste en haut à gauche, et ceux que tu as terminés portent la mention `[OK]`.
+dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
+Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles.
+Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran.
 Le bouton **Indice** donne un coup de pouce sans tout révéler.
 
 **L'atelier**, pour apprendre les bases :
@@ -209,11 +212,11 @@ Chaque victoire fait le point sur trois défis facultatifs, qui rapportent chacu
   plus de pièces qu'il n'en faut.
 
 Économe et Complet ne s'obtiennent pas avec la même machine : il faut rejouer le niveau. Les étoiles
-gagnées restent acquises, et la liste des niveaux les affiche à côté de chaque niveau terminé.
+gagnées restent acquises, et l'écran de sélection et le bouton du niveau les affichent.
 
 ## Le bac à sable
 
-Le dernier élément de la liste des niveaux, **Bac à sable**, n'a pas d'objectif. Toutes les pièces y
+La dernière vignette de l'écran de sélection, **Bac à sable**, n'a pas d'objectif. Toutes les pièces y
 sont disponibles en quantité illimitée (« ∞ »), y compris le panier et la lampe. Deux boutons
 apparaissent en haut de l'écran :
 
