@@ -10,6 +10,9 @@ const BIN_ORDER: Array[String] = [
 	"pulley", "rope", "elastic", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes", "candle", "flashlight", "funnel", "pipe",
 	"lamp", "basket",
 ]
+## Flèches du clavier : direction d'un cran de grille ; Maj déplace de NUDGE_FAST crans.
+const ARROWS := {KEY_LEFT: Vector2i.LEFT, KEY_RIGHT: Vector2i.RIGHT, KEY_UP: Vector2i.UP, KEY_DOWN: Vector2i.DOWN}
+const NUDGE_FAST := 5
 ## Réglages proposés dans le bac à sable.
 const SANDBOX_GRAVITY: Array[float] = [1.0, 0.4, 0.1, 1.8]
 const SANDBOX_WIND: Array[Vector2] = [Vector2.ZERO, Vector2(150, 0), Vector2(-150, 0), Vector2(0, -150)]
@@ -448,7 +451,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
+	# Une flèche maintenue répète le déplacement ; les autres touches n'agissent qu'une fois.
+	if event is InputEventKey and event.pressed and (not event.echo or ARROWS.has(event.keycode)):
 		_handle_key(event)
 	elif event is InputEventMouseButton and event.pressed:
 		_handle_click(event.button_index, event.shift_pressed)
@@ -512,6 +516,8 @@ func _handle_key(event: InputEventKey) -> void:
 			_cycle_channel()
 		KEY_DELETE, KEY_BACKSPACE:
 			_remove_selected()
+		KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN:
+			nudge_selection(ARROWS[event.keycode] * (NUDGE_FAST if event.shift_pressed else 1))
 
 
 func _handle_click(button: MouseButton, shift := false) -> void:
@@ -924,6 +930,29 @@ func _cycle_channel() -> void:
 	var r := selected.channel_range()
 	var next := selected.channel + 1
 	_edit_selected("channel", r.x if next > r.y else next)
+
+
+## Flèches : déplace la pièce sélectionnée ou le groupe de `steps` crans de grille. Si une pièce
+## n'a plus sa place, rien ne bouge.
+func nudge_selection(steps: Vector2i) -> void:
+	if board.running or drag_part != null or rope_tool:
+		return
+	var origins := {}
+	for part in _selection():
+		if not part is RopePart:
+			origins[part] = part.position
+	if origins.is_empty():
+		return
+	for part: Part in origins:
+		board.move_part(part, origins[part] + Vector2(steps) * Board.GRID)
+	for part: Part in origins:
+		if not board.is_valid(part):
+			for back: Part in origins:
+				board.move_part(back, origins[back])
+			board.sfx.play("deny")
+			_status.text = Lang.t("Pas de place ici.")
+			return
+	_commit()
 
 
 func _remove_selected() -> void:

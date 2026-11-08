@@ -62,6 +62,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Retourner (miroir) | F |
 | Changer de canal | C |
 | Choisir plusieurs pièces | Maj+clic sur chacune, ou Ctrl+A pour toutes ; les glisser les déplace ensemble |
+| Ajuster d'un cran | Flèches : la pièce ou le groupe choisi se décale de 10 px ; Maj+flèche, de 50 px |
 | Retirer une pièce | Clic droit, ou sélection puis Suppr (tout le groupe choisi) |
 | Copier, coller | Ctrl+C, puis Ctrl+V : la copie se pose sous la souris, avec ses cordes |
 | Annuler | Ctrl+Z, ou bouton Annuler |

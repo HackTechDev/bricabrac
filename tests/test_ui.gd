@@ -1206,6 +1206,25 @@ func _test_copy_paste() -> void:
 	_check("groupe hors du plateau : retour en place", crates[0].pos == Vector2(300, 400)
 			and crates[1].pos == Vector2(400, 400))
 
+	await _key(KEY_RIGHT)
+	await _key(KEY_DOWN, false, true)
+	crates = board.placed.filter(func(e: Dictionary) -> bool: return e.kind == "crate")
+	_check("flèches : le groupe avance d'un cran, de cinq avec Maj", crates[0].pos == Vector2(310, 450)
+			and crates[1].pos == Vector2(410, 450))
+	await _key(KEY_Z, true)
+	crates = board.placed.filter(func(e: Dictionary) -> bool: return e.kind == "crate")
+	_check("flèches : Ctrl+Z annule un cran", crates[0].pos == Vector2(310, 400))
+	await _key(KEY_A, true)  # L'annulation reconstruit les pièces et vide la sélection.
+	for i in 30:
+		await _key(KEY_DOWN, false, true)
+	crates = board.placed.filter(func(e: Dictionary) -> bool: return e.kind == "crate")
+	_check("flèches : arrêt au bord du plateau (%s)" % crates[0].pos, crates[0].pos.y < 640.0
+			and board.is_valid(board.find_part(crates[0].id)))
+	await _key(KEY_LEFT)
+	while crates[0].pos.y > 400.0:
+		await _key(KEY_UP)
+	_check("flèches : retour en place", crates[0].pos == Vector2(300, 400) and crates[1].pos == Vector2(400, 400))
+
 	await _key(KEY_C, true)
 	_check("Ctrl+C : caisses et corde copiées", main.clipboard.size() == 3)
 	await _move(board.to_global(Vector2(700, 200)))

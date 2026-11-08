@@ -23,6 +23,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 | Annuler une corde en cours | Échap, clic droit ou Ctrl+Z |
 | Sélection multiple | Maj+clic, Ctrl+A |
 | Copier / coller | Ctrl+C / Ctrl+V (sous la souris) |
+| Ajuster la position | Flèches (Maj : 5 crans) |
 | Retirer | Clic droit ou Suppr |
 | Annuler / rétablir | Ctrl+Z / Ctrl+Y ou Ctrl+Maj+Z |
 | Lancer / arrêter | Espace |
