@@ -54,7 +54,7 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
   s'envole au bruit.
 - Défis quotidiens : un niveau du jeu avec une contrainte en plus (sans tel type de pièce, en
   moins de x secondes).
-- Pièces à venir : un tuyau droit de longueur réglable, une bougie que le vent souffle.
+- Des niveaux autour du tuyau droit et de la bougie que le vent souffle.
 
 ## Présentation
 

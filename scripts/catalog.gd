@@ -31,9 +31,10 @@ const INFO := {
 	"balloon": {"label": "Ballon", "desc": "Monte, éclate sur les pointes."},
 	"spikes": {"label": "Pointes", "desc": "Font éclater les ballons."},
 	"cannon": {"label": "Canon", "desc": "Tire une bille quand son canal s'allume."},
-	"candle": {"label": "Bougie", "desc": "Sa chaleur fait éclater les ballons au-dessus de la flamme."},
+	"candle": {"label": "Bougie", "desc": "Sa chaleur fait éclater les ballons au-dessus de la flamme. Le vent la souffle."},
 	"funnel": {"label": "Entonnoir", "desc": "Rassemble ce qui tombe vers son ouverture."},
 	"pipe": {"label": "Tuyau coudé", "desc": "Guide les billes et les renvoie à angle droit. F : côté de sortie."},
+	"tube": {"label": "Tuyau droit", "desc": "Guide les billes en ligne droite. + et − : longueur."},
 	"pulley": {"label": "Poulie", "desc": "Point de passage pour une corde."},
 	"rope": {"label": "Corde", "desc": "Clique un objet, d'éventuelles poulies, puis un autre objet. R : mou."},
 	"elastic": {"label": "Élastique", "desc": "Se pose comme une corde, mais s'étire et tire comme un ressort. R : tension."},
@@ -81,6 +82,7 @@ static func create(kind: String) -> Part:
 		"candle": part = CandlePart.new()
 		"funnel": part = FunnelPart.new()
 		"pipe": part = PipePart.new()
+		"tube": part = TubePart.new()
 		"scissors": part = ScissorsPart.new()
 		"trapdoor", "door": part = GatePart.new()
 		"conveyor": part = ConveyorPart.new()

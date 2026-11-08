@@ -7,7 +7,7 @@ const PANEL_X := 1040.0
 const BIN_ORDER: Array[String] = [
 	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "switch", "timer", "trapdoor", "door", "scissors", "magnet", "magnet_repel", "motor", "gear", "portal", "water", "suction", "cart", "mousewheel", "cat",
 	"cannon",
-	"pulley", "rope", "elastic", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes", "candle", "flashlight", "cell", "funnel", "pipe",
+	"pulley", "rope", "elastic", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes", "candle", "flashlight", "cell", "funnel", "pipe", "tube",
 	"lamp", "basket",
 ]
 ## Entrées du menu du clic droit.
@@ -16,6 +16,8 @@ const CTX_FLIP := 1
 const CTX_CHANNEL := 2
 const CTX_COPY := 3
 const CTX_REMOVE := 4
+const CTX_LONGER := 5
+const CTX_SHORTER := 6
 ## Taille en dessous de laquelle un cadre n'est qu'un clic.
 const MARQUEE_MIN := 8.0
 ## Flèches du clavier : direction d'un cran de grille ; Maj déplace de NUDGE_FAST crans.
@@ -580,6 +582,10 @@ func _handle_key(event: InputEventKey) -> void:
 			_cycle_channel()
 		KEY_DELETE, KEY_BACKSPACE:
 			_remove_selected()
+		KEY_EQUAL, KEY_PLUS, KEY_KP_ADD:
+			_resize_selected(1.0)
+		KEY_MINUS, KEY_KP_SUBTRACT:
+			_resize_selected(-1.0)
 		KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN:
 			nudge_selection(ARROWS[event.keycode] * (NUDGE_FAST if event.shift_pressed else 1))
 
@@ -988,6 +994,20 @@ func _rotate_selected(sign_value: float) -> void:
 	_edit_selected("rot", fposmod(rot, 360.0))
 
 
+## + et − : allonge ou raccourcit la pièce choisie, si elle a une taille réglable.
+func _resize_selected(sign_value: float) -> void:
+	if selected == null or board.running:
+		return
+	var size := selected.size_setting()
+	if size.is_empty():
+		return
+	var value: float = selected.entry.get(size.key, size.default)
+	var next := clampf(value + size.step * sign_value, size.min, size.max)
+	if next != value:
+		_edit_selected(size.key, next)
+		_status.text = selected.describe()[-1]
+
+
 func _flip_selected() -> void:
 	if selected != null and selected.can_flip():
 		_edit_selected("dir", -selected.dir)
@@ -1364,7 +1384,8 @@ func _build_context_menu() -> void:
 	context_menu = PopupMenu.new()
 	for item: Array in [
 		[CTX_ROTATE, Lang.t("Pivoter (R)")], [CTX_FLIP, Lang.t("Miroir (F)")],
-		[CTX_CHANNEL, Lang.t("Canal (C)")], [CTX_COPY, Lang.t("Copier (Ctrl+C)")],
+		[CTX_CHANNEL, Lang.t("Canal (C)")], [CTX_LONGER, Lang.t("Allonger (+)")],
+		[CTX_SHORTER, Lang.t("Raccourcir (−)")], [CTX_COPY, Lang.t("Copier (Ctrl+C)")],
 		[CTX_REMOVE, Lang.t("Retirer (Suppr)")],
 	]:
 		context_menu.add_item(item[1], item[0])
@@ -1383,6 +1404,9 @@ func open_context_menu() -> void:
 	context_menu.set_item_disabled(rotate, p.rotate_step() <= 0.0 and not adjustable)
 	context_menu.set_item_disabled(context_menu.get_item_index(CTX_FLIP), not p.can_flip())
 	context_menu.set_item_disabled(context_menu.get_item_index(CTX_CHANNEL), not p.uses_channel())
+	# Allonger et raccourcir : seulement pour une pièce à taille réglable.
+	for id: int in [CTX_LONGER, CTX_SHORTER]:
+		context_menu.set_item_disabled(context_menu.get_item_index(id), p.size_setting().is_empty())
 	var count := _selection().size()
 	context_menu.set_item_text(context_menu.get_item_index(CTX_REMOVE),
 			Lang.t("Retirer (Suppr)") if count <= 1 else Lang.t("Retirer les %d pièces (Suppr)") % count)
@@ -1402,6 +1426,10 @@ func _on_context_item(id: int) -> void:
 			copy_selection()
 		CTX_REMOVE:
 			_remove_selected()
+		CTX_LONGER:
+			_resize_selected(1.0)
+		CTX_SHORTER:
+			_resize_selected(-1.0)
 
 
 func _build_status_bar() -> void:

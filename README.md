@@ -18,6 +18,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 | Déplacer / sélectionner | Clic gauche sur une pièce posée |
 | Pivoter | R ou molette (Maj+R : sens inverse) |
 | Miroir | F |
+| Longueur (tuyau droit) | + et − |
 | Changer de canal | C |
 | Poser une corde | Clic sur Corde dans le bac, puis le premier objet, les poulies dans l'ordre, le second objet |
 | Annuler une corde en cours | Échap, clic droit ou Ctrl+Z |

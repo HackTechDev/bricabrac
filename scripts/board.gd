@@ -747,7 +747,7 @@ static func _hint_label(entry: Dictionary) -> String:
 
 ## Ombre du vent : derrière chaque obstacle, la bande qu'il abrite jusqu'au bord du plateau,
 ## comme les rayons de Wind la voient. Elle se voit dès l'atelier, pour placer un objet à l'abri.
-func wind_shadows() -> Array[PackedVector2Array]:
+func wind_shadows(ignore: Part = null) -> Array[PackedVector2Array]:
 	var result: Array[PackedVector2Array] = []
 	var w := wind()
 	if w == Vector2.ZERO:
@@ -756,7 +756,7 @@ func wind_shadows() -> Array[PackedVector2Array]:
 	var board_rect := PackedVector2Array([Vector2.ZERO, Vector2(SIZE.x, 0), SIZE, Vector2(0, SIZE.y)])
 	var to_board := get_global_transform().affine_inverse()
 	for part in parts:
-		if part.collision_layer() & Part.LAYER_WORLD == 0:
+		if part == ignore or part.collision_layer() & Part.LAYER_WORLD == 0:
 			continue
 		for col in part.solids:
 			if not is_instance_valid(col) or not col.is_inside_tree():
@@ -776,32 +776,70 @@ func wind_shadows() -> Array[PackedVector2Array]:
 ## À l'atelier, tous les ventilateurs la montrent ; en marche, seulement ceux qui soufflent.
 func fan_shadows() -> Array[PackedVector2Array]:
 	var result: Array[PackedVector2Array] = []
-	var to_board := get_global_transform().affine_inverse()
 	for fan in parts:
-		if not fan is FanPart or (running and not fan.powered):
-			continue
-		var xf := to_board * fan.global_transform
-		var axis := xf.basis_xform(Vector2.RIGHT).normalized() * fan.dir
-		var across := axis.orthogonal() * FanPart.WIND_WIDTH / 2.0
-		var face := xf.origin + axis * FanPart.FACE
-		var reach := axis * FanPart.RANGE
-		var zone := PackedVector2Array([face + across, face + across + reach, face - across + reach,
-				face - across])
-		var zone_box := _bounds(zone)
-		for part in parts:
-			if part == fan or part.collision_layer() & Part.LAYER_WORLD == 0:
-				continue
-			for col in part.solids:
-				if not is_instance_valid(col) or not col.is_inside_tree():
-					continue
-				var outline := (to_board * col.global_transform) * WaterPart._outline(col.shape)
-				if outline.size() < 3 or not _bounds(outline).intersects(zone_box):
-					continue
-				var swept := outline.duplicate()
-				for point in outline:
-					swept.append(point + reach)
-				result.append_array(Geometry2D.intersect_polygons(Geometry2D.convex_hull(swept), zone))
+		if fan is FanPart and (not running or fan.powered):
+			result.append_array(_fan_shadow(fan, fan_zone(fan)))
 	return result
+
+
+## Bande de souffle d'un ventilateur, sur le plateau.
+func fan_zone(fan: Part) -> PackedVector2Array:
+	var xf := get_global_transform().affine_inverse() * fan.global_transform
+	var axis := xf.basis_xform(Vector2.RIGHT).normalized() * fan.dir
+	var across := axis.orthogonal() * FanPart.WIND_WIDTH / 2.0
+	var face := xf.origin + axis * FanPart.FACE
+	var reach := axis * FanPart.RANGE
+	return PackedVector2Array([face + across, face + across + reach, face - across + reach, face - across])
+
+
+## Parties de la bande d'un ventilateur cachées par les obstacles (sauf `ignore`).
+func _fan_shadow(fan: Part, zone: PackedVector2Array, ignore: Part = null) -> Array[PackedVector2Array]:
+	var result: Array[PackedVector2Array] = []
+	var to_board := get_global_transform().affine_inverse()
+	var reach := (zone[1] - zone[0])
+	var zone_box := _bounds(zone)
+	for part in parts:
+		if part == fan or part == ignore or part.collision_layer() & Part.LAYER_WORLD == 0:
+			continue
+		for col in part.solids:
+			if not is_instance_valid(col) or not col.is_inside_tree():
+				continue
+			var outline := (to_board * col.global_transform) * WaterPart._outline(col.shape)
+			if outline.size() < 3 or not _bounds(outline).intersects(zone_box):
+				continue
+			var swept := outline.duplicate()
+			for point in outline:
+				swept.append(point + reach)
+			result.append_array(Geometry2D.intersect_polygons(Geometry2D.convex_hull(swept), zone))
+	return result
+
+
+## Le vent atteint-il ce point du plateau ? Vent du niveau hors de l'abri des obstacles, ou
+## souffle d'un ventilateur allumé hors de son ombre. `ignore` ne fait pas écran (la pièce qui
+## pose la question).
+func wind_reaches(point: Vector2, ignore: Part = null) -> bool:
+	if wind() != Vector2.ZERO and Rect2(Vector2.ZERO, SIZE).has_point(point):
+		var sheltered := false
+		for shadow in wind_shadows(ignore):
+			if Geometry2D.is_point_in_polygon(point, shadow):
+				sheltered = true
+				break
+		if not sheltered:
+			return true
+	for fan in parts:
+		if not fan is FanPart or not fan.powered:
+			continue
+		var zone := fan_zone(fan)
+		if not Geometry2D.is_point_in_polygon(point, zone):
+			continue
+		var sheltered := false
+		for shadow in _fan_shadow(fan, zone, ignore):
+			if Geometry2D.is_point_in_polygon(point, shadow):
+				sheltered = true
+				break
+		if not sheltered:
+			return true
+	return false
 
 
 func in_fan_shadow(point: Vector2) -> bool:

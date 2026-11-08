@@ -456,7 +456,7 @@
  "S'ouvre quand son canal s'allume, se referme quand il s'éteint.": "Opens when its channel turns on, closes when it turns off.",
  "S'ouvre quand son canal s'allume.": "Opens when its channel turns on.",
  "S'ouvre vers le bas quand son canal s'allume.": "Opens downwards when its channel turns on.",
- "Sa chaleur fait éclater les ballons au-dessus de la flamme.": "Its heat pops balloons above the flame.",
+ "Sa chaleur fait éclater les ballons au-dessus de la flamme. Le vent la souffle.": "Its heat pops balloons above the flame. The wind blows it out.",
  "Sans attache, le boulet tombe tout droit. Relié à la poutre, il se balance.": "Untied, the cannonball falls straight down. Tied to the beam, it swings.",
  "Sans autre portail du canal %d, il ne fait rien.": "With no other portal on channel %d, it does nothing.",
  "Sans nom": "Untitled",
@@ -625,5 +625,11 @@
  "Une planche inclinée sous la bille l'envoie à travers le faisceau.": "A tilted plank under the marble sends it through the beam.",
  "Le chat dans le noir": "The cat in the dark",
  "Dans le noir, le chat ne voit que ce qui est éclairé. Le ballon monte juste devant lui… sans qu'il le remarque.": "In the dark, the cat only sees what is lit. The balloon rises right in front of it… without it noticing.",
- "Éclaire le ballon : la lampe de poche à gauche du chat, inclinée vers le haut.": "Light up the balloon: the flashlight to the left of the cat, tilted upwards."
+ "Éclaire le ballon : la lampe de poche à gauche du chat, inclinée vers le haut.": "Light up the balloon: the flashlight to the left of the cat, tilted upwards.",
+ "Tuyau droit": "Straight pipe",
+ "Guide les billes en ligne droite. + et − : longueur.": "Guides marbles in a straight line. + and −: length.",
+ "Longueur : %d px (+ et − pour la changer).": "Length: %d px (+ and − to change it).",
+ "Allonger (+)": "Lengthen (+)",
+ "Raccourcir (−)": "Shorten (−)",
+ "Le vent ou un ventilateur la souffle, sauf derrière un abri.": "The wind or a fan blows it out, unless it is sheltered."
 }

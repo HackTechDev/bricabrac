@@ -28,6 +28,8 @@ func _run() -> void:
 	await _test_darkness()
 	await _test_fan_shadow()
 	await _test_cell()
+	await _test_tube()
+	await _test_candle_wind()
 	_end("PIÈCES OK")
 
 
@@ -635,3 +637,50 @@ func _test_cell() -> void:
 		_check("chat du grenier : %s (%d saut)" % ["bondit sur le ballon éclairé" if lit else "ne voit pas le ballon dans le noir", leaps],
 				(leaps > 0) == lit)
 	board.stop()
+
+
+## Tuyau droit : une bille lâchée dans le haut d'un tuyau incliné en ressort par le bas, dans son
+## axe ; sa longueur suit son réglage.
+func _test_tube() -> void:
+	var axis := Vector2.from_angle(deg_to_rad(30.0))
+	_level([
+		{"kind": "tube", "id": "tuyau", "pos": Vector2(400, 300), "rot": 30.0, "len": 240.0},
+		{"kind": "ball", "id": "bille", "pos": (Vector2(400, 300) - axis * 100.0).round()},
+	])
+	_check("tuyau droit : longueur réglée", is_equal_approx(board.find_part("tuyau").solids[0].shape.size.x, 240.0))
+	board.start()
+	var exited := Vector2.ZERO
+	for i in 240:
+		await _steps(1)
+		var p := _pos("bille")
+		if p.x > 400.0 + axis.x * 125.0:
+			exited = _rigid("bille").linear_velocity
+			break
+	_check("tuyau droit : la bille ressort par le bas, dans l'axe (%s)" % exited,
+			exited.x > 0.0 and absf(exited.angle() - deg_to_rad(30.0)) < 0.35)
+	board.stop()
+
+
+## Bougie et vent : un ventilateur l'éteint, sauf derrière une planche ; le vent du niveau aussi.
+## Soufflée, elle ne fait plus éclater le ballon.
+func _test_candle_wind() -> void:
+	_level([
+		{"kind": "fan", "pos": Vector2(100, 166)},
+		{"kind": "candle", "id": "exposee", "pos": Vector2(300, 200)},
+		{"kind": "balloon", "id": "ballon", "pos": Vector2(300, 60)},
+		{"kind": "fan", "pos": Vector2(100, 466)},
+		{"kind": "plank", "pos": Vector2(200, 466), "rot": 90.0, "len": 100.0},
+		{"kind": "candle", "id": "abritee", "pos": Vector2(300, 500)},
+	])
+	board.start()
+	await _steps(10)
+	_check("bougie : le ventilateur la souffle", (board.find_part("exposee") as CandlePart).blown)
+	_check("bougie : abritée derrière une planche, elle brûle", not (board.find_part("abritee") as CandlePart).blown)
+	await _steps(60)
+	_check("bougie soufflée : le ballon n'éclate pas", not (board.find_part("ballon") as BalloonPart).popped)
+	_level([{"kind": "candle", "id": "vent", "pos": Vector2(300, 600)}], {}, {"wind": Vector2(120, 0)})
+	board.start()
+	await _steps(5)
+	_check("bougie : le vent du niveau la souffle", (board.find_part("vent") as CandlePart).blown)
+	board.stop()
+	board.set_physics(1.0, Vector2.ZERO)

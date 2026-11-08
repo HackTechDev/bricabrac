@@ -33,9 +33,10 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
 
 ## Les pièces
 
-39 sortes de pièces, chacune avec une infobulle qui explique son rôle et ses réglages.
+40 sortes de pièces, chacune avec une infobulle qui explique son rôle et ses réglages.
 
-- **Guidage :** planche, ressort, tapis roulant, bascule, entonnoir, tuyau coudé.
+- **Guidage :** planche, ressort, tapis roulant, bascule, entonnoir, tuyau coudé, tuyau droit
+  de longueur réglable.
 - **Objets mobiles :** bille, balle rebond, boulet, caisse, domino, ballon.
 - **Mécanismes :**
   - plaque et interrupteur ;
@@ -52,7 +53,7 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
   - chat qui bondit sur ce qui bouge ;
   - canon ;
   - pointes ;
-  - bougie qui fait éclater les ballons ;
+  - bougie qui fait éclater les ballons, et que le vent souffle ;
   - lampe de poche ;
   - cellule photoélectrique, qui allume son canal à la lumière (ou quand on la coupe) ;
   - lampe.
@@ -74,7 +75,8 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
 - Sélection multiple : Maj+clic, cadre tracé sur une zone vide, Ctrl+A. Un groupe se déplace, se
   copie et se retire d'un coup.
 - Copier-coller (Ctrl+C, Ctrl+V) sous la souris, cordes comprises.
-- Menu au clic droit sur une pièce : pivoter, miroir, canal, copier, retirer.
+- Menu au clic droit sur une pièce : pivoter, miroir, canal, allonger, raccourcir, copier,
+  retirer.
 - Panneau d'actions sous le bac : Annuler, Rétablir, Pivoter, Miroir, Canal, Retirer.
 - Annuler et rétablir sans limite, par niveau (Ctrl+Z, Ctrl+Y).
 - « Tout retirer » vide le plateau des pièces du joueur.

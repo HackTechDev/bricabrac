@@ -60,10 +60,11 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Sélectionner ou déplacer une pièce posée | Clic gauche, en maintenant pour déplacer |
 | Pivoter, ou régler le délai d'une minuterie | R ou molette ; Maj+R dans l'autre sens |
 | Retourner (miroir) | F |
+| Allonger ou raccourcir (tuyau droit) | + et − |
 | Changer de canal | C |
 | Choisir plusieurs pièces | Maj+clic sur chacune, un cadre tracé en glissant depuis une zone vide (Maj : en ajoute), ou Ctrl+A pour toutes ; les glisser les déplace ensemble |
 | Ajuster d'un cran | Flèches : la pièce ou le groupe choisi se décale de 10 px ; Maj+flèche, de 50 px |
-| Menu d'une pièce | Clic droit dessus : pivoter, miroir, canal, copier ou retirer ; sur un groupe choisi, copier et retirer s'appliquent à tout le groupe |
+| Menu d'une pièce | Clic droit dessus : pivoter, miroir, canal, allonger, raccourcir, copier ou retirer ; sur un groupe choisi, copier et retirer s'appliquent à tout le groupe |
 | Retirer une pièce | Sélection puis Suppr (tout le groupe choisi), ou « Retirer » du menu |
 | Copier, coller | Ctrl+C, puis Ctrl+V : la copie se pose sous la souris, avec ses cordes |
 | Annuler | Ctrl+Z, ou bouton Annuler |
@@ -104,6 +105,9 @@ présents dans le niveau restent en place.
   boulet. Il pivote par pas de 15°.
 - **Tuyau coudé :** ce qui entre par le haut glisse le long du coude et ressort à l'horizontale,
   à droite, ou à gauche après un miroir. R le tourne d'un quart de tour.
+- **Tuyau droit :** deux parois parallèles, de la largeur du coude, qui guident les billes en ligne
+  droite et se raccordent au coude. Il pivote par pas de 15° ; + et − (ou le menu du clic droit)
+  règlent sa longueur, de 80 à 400 px par pas de 20.
 
 **Les objets mobiles**
 
@@ -162,7 +166,9 @@ présents dans le niveau restent en place.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Bougie :** sa chaleur monte et fait éclater un ballon qui reste un court instant au-dessus de
   la flamme, jusqu'à 240 px de haut, à moins qu'un obstacle ne l'abrite. La bande orangée montre
-  sa portée. Canal 0 : allumée dès le départ ; canaux 1 à 3 : s'allume avec son canal.
+  sa portée. Canal 0 : allumée dès le départ ; canaux 1 à 3 : s'allume avec son canal. Le vent
+  la souffle : celui du niveau, ou le souffle d'un ventilateur allumé, s'il atteint la flamme
+  sans obstacle. Éteinte, elle ne se rallume plus de l'essai.
 - **Lampe de poche :** son faisceau éclaire le grenier, sur 460 px devant elle. Elle pivote par
   crans de 15°. Canal 0 : allumée dès le départ ; canaux 1 à 3 : s'allume avec son canal.
 - **Cellule :** allume son canal tant qu'une lampe l'éclaire assez (lampe de poche, lampe allumée

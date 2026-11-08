@@ -117,6 +117,12 @@ func setting() -> Dictionary:
 	return {}
 
 
+## Taille réglable avec + et − (ou le menu du clic droit), en plus de la rotation :
+## {"key", "step", "min", "max", "default"}. Vide si la pièce n'a pas de taille réglable.
+func size_setting() -> Dictionary:
+	return {}
+
+
 ## Canaux possibles : la plaque et le canon exigent un canal, un tapis peut s'en passer.
 func channel_range() -> Vector2i:
 	return Vector2i(-1, -1)
