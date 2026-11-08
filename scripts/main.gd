@@ -43,6 +43,10 @@ var show_tutorials := true
 ## Écran titre au démarrage ; les tests le passent.
 var show_title := true
 var title_screen: TitleScreen
+## Dossier des niveaux du jeu que l'éditeur peut ouvrir et écrire ; vide : fonction cachée (jeu
+## exporté, où `levels/` est en lecture seule).
+var official_dir := LevelFile.DIR if OS.has_feature("editor") else ""
+var official_dialog: OfficialDialog
 var transition: LevelTransition
 var _started := false
 var tutorial: Tutorial
@@ -275,6 +279,7 @@ func load_level(index: int) -> void:
 	_refresh_level_picker()
 	_refresh_controls()
 	editor.visible = is_editor()
+	editor.official_box.visible = official_dir != ""
 	editor.refresh()
 	_refresh_proof()
 	tutorial.stop()
@@ -849,6 +854,12 @@ func _build_side_panel() -> void:
 	editor.delete_requested.connect(_editor_delete)
 	editor.reset_requested.connect(_editor_reset)
 	editor.share_requested.connect(_share_level)
+	editor.open_official_requested.connect(_open_official)
+	editor.save_official_requested.connect(_ask_save_official)
+	official_dialog = OfficialDialog.new()
+	add_child(official_dialog)
+	official_dialog.opened.connect(edit_official)
+	official_dialog.save_confirmed.connect(_save_official)
 	editor.goal_button.pressed.connect(_toggle_goal)
 
 	col.add_child(HSeparator.new())
@@ -1382,6 +1393,94 @@ func _reload_level_list(index_of: Callable) -> void:
 	editor.refresh()
 	_refresh_level_picker()
 	_refresh_controls()
+
+
+# --- Niveaux du jeu dans l'éditeur ------------------------------------------------
+
+func _open_official() -> void:
+	if board.running or official_dir == "":
+		return
+	official_dialog.show_list(LevelFile.list_dir(official_dir))
+
+
+## Ouvre un niveau du jeu dans l'éditeur. Sa solution, qui gagne (test_levels le vérifie),
+## devient la preuve : il peut être réenregistré tel quel ou retouché puis réessayé.
+func edit_official(path: String) -> void:
+	var level := LevelFile.load_file(path)
+	if level.is_empty():
+		_status.text = "Fichier de niveau illisible : %s" % path.get_file()
+		board.sfx.play("deny")
+		return
+	# Mêmes identifiants qu'en jeu pour le décor anonyme, auxquels la solution peut se référer.
+	for i in level.fixed.size():
+		if not level.fixed[i].has("id"):
+			level.fixed[i].id = "f%d" % i
+	edit_level(level)
+	editor.custom_id = ""
+	editor.refresh()
+	var meta := {}
+	for key: String in ["id", "world", "intro", "hint", "par_time", "tutorial"]:
+		if level.has(key):
+			meta[key] = level[key]
+	editor.source = {"path": path, "meta": meta}
+	var normalized: Variant = _editor_level(level.id)
+	if normalized is Dictionary and level.has("solution"):
+		var solution := LevelData.remap_ids(level.solution, LevelData.decor_ids(board.layout()))
+		editor.proof = {"signature": LevelData.signature(normalized), "solution": solution}
+	_refresh_proof()
+	_status.text = "Niveau du jeu « %s » ouvert : %s." % [level.name, path.get_file()]
+
+
+func _ask_save_official() -> void:
+	if board.running or official_dir == "":
+		return
+	var level: Variant = _editor_level("essai")
+	if level is String:
+		_status.text = level
+		board.sfx.play("deny")
+		return
+	if not editor.is_proven(level):
+		_status.text = "Un niveau du jeu doit avoir une solution vérifiée : gagne-le d'abord avec « Essayer »."
+		board.sfx.play("deny")
+		return
+	var meta: Dictionary = editor.source.get("meta", {"world": "atelier"})
+	if not meta.has("id"):
+		meta = meta.duplicate()
+		meta.id = editor.name_edit.text.strip_edges().to_lower().validate_filename().replace(" ", "_")
+	official_dialog.show_form(meta, editor.source.get("path", ""))
+
+
+## Écrit le niveau du plan de travail dans `levels/`, puis recharge la liste des niveaux.
+func _save_official(meta: Dictionary) -> void:
+	var level: Variant = _editor_level(meta.id)
+	if level is String or not editor.is_proven(level):
+		official_dialog.message.text = "Le niveau a changé depuis son essai : réessaie-le."
+		return
+	var old_path: String = editor.source.get("path", "")
+	var old_id: String = editor.source.get("meta", {}).get("id", "")
+	for file: Dictionary in LevelFile.list_dir(official_dir):
+		if file.level.id == meta.id and file.path != old_path:
+			official_dialog.message.text = "L'identifiant « %s » est déjà pris par %s." % [meta.id, file.path.get_file()]
+			return
+	var path := old_path
+	if path == "":
+		path = LevelFile.next_path(official_dir, meta.id)
+	elif meta.id != old_id:
+		path = old_path.get_base_dir().path_join(LevelFile.file_name(
+				old_path.get_file().get_slice("_", 0).to_int(), meta))
+	var official := LevelData.to_official(level, meta, editor.proof.solution)
+	var error := LevelFile.save(official, path)
+	if error != OK:
+		official_dialog.message.text = "Écriture impossible (%s)." % error_string(error)
+		return
+	if path != old_path and old_path != "":
+		DirAccess.remove_absolute(old_path)
+	official_dialog.hide()
+	editor.source = {"path": path, "meta": meta}
+	LevelData.set_dir(official_dir)
+	_reload_level_list(editor_index)
+	board.sfx.play("place")
+	_status.text = "« %s » est enregistré dans %s." % [official.name, path.get_file()]
 
 
 # --- Partage --------------------------------------------------------------------

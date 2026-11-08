@@ -53,8 +53,6 @@ pour les pièces de base.
 
 ## Éditeur et communauté
 
-- Ouvrir et enregistrer depuis l'éditeur les fichiers de niveau du dossier `levels/`, pour
-  créer les niveaux officiels dans le jeu lui-même.
 - Ranger « Mes niveaux » en fichiers dans le dossier de données du joueur plutôt que dans
   la sauvegarde.
 - Choix de la gravité et du vent dans l'éditeur, comme dans le bac à sable.

@@ -54,10 +54,11 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
     SWEEP=spec.json $GODOT --headless --path . --fixed-fps 120 -s tests/sweep.gd   # aide à la conception
     CAPTURE_DIR=dossier $GODOT --path . -s tests/capture.gd              # captures (affichage requis)
 
-Pour ajouter un niveau : créer son fichier dans `levels/` (le préfixe numérique fixe sa place),
-chercher une large zone gagnante avec `sweep.gd`, puis renseigner sa `solution` pour que
-`test_levels.gd` la vérifie. Le format est décrit en tête de `scripts/level_file.gd` ; un niveau
-fait dans l'éditeur du jeu a les mêmes champs, et `LevelFile.save` l'écrit sous cette forme.
+Pour ajouter un niveau : le construire dans l'éditeur du jeu lancé depuis les sources, le gagner
+avec « Essayer », puis « Enregistrer (jeu)… » écrit son fichier dans `levels/` avec sa solution.
+On peut aussi écrire le fichier à la main (format décrit en tête de `scripts/level_file.gd`, le
+préfixe numérique fixe sa place) et chercher une large zone gagnante avec `sweep.gd`.
+`test_levels.gd` vérifie ensuite que la solution gagne.
 
 ## Licence
 

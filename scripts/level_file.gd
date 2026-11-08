@@ -80,6 +80,28 @@ static func load_dir(dir := DIR) -> Array:
 	return levels
 
 
+## Fichiers de niveau d'un dossier, dans l'ordre : [{path, level}], les illisibles écartés.
+static func list_dir(dir := DIR) -> Array:
+	var names := Array(DirAccess.get_files_at(dir)).filter(
+			func(name: String) -> bool: return name.get_extension() == EXTENSION)
+	names.sort()
+	var files: Array = []
+	for name: String in names:
+		var level := load_file(dir.path_join(name))
+		if not level.is_empty():
+			files.append({"path": dir.path_join(name), "level": level})
+	return files
+
+
+## Chemin d'un nouveau niveau, numéroté après les autres : « 19_fronde.cfg ».
+static func next_path(dir: String, id: String) -> String:
+	var last := 0
+	for name in DirAccess.get_files_at(dir):
+		if name.get_extension() == EXTENSION:
+			last = maxi(last, name.get_slice("_", 0).to_int())
+	return dir.path_join(file_name(last + 1, {"id": id}))
+
+
 ## Nom de fichier conseillé : « 07_contrepoids.cfg ».
 static func file_name(index: int, level: Dictionary) -> String:
 	return "%02d_%s.%s" % [index, level.id, EXTENSION]

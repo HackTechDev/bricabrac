@@ -7,6 +7,7 @@ class_name LevelData
 ## `par_time` : temps de l'objectif bonus « Rapide », que la solution doit tenir ;
 ## `tutorial` : étapes guidées du niveau.
 
+static var dir := LevelFile.DIR
 static var _levels: Array = []
 
 
@@ -64,26 +65,12 @@ static func editor_level() -> Dictionary:
 	return level
 
 
-## Niveau jouable tiré du plan de travail de l'éditeur. Les pièces du décor reçoivent des
-## identifiants « d1, d2… » (les cordes suivent) pour ne jamais croiser ceux du joueur.
+## Niveau jouable tiré du plan de travail de l'éditeur. Les pièces du décor gardent leur
+## identifiant s'il est parlant (« bille », « boulet » : un tutoriel ou une solution s'y réfèrent) ;
+## les autres deviennent « d1, d2… » (les cordes suivent) pour ne jamais croiser ceux du joueur.
 static func from_editor(id: String, name: String, goal_text: String, decor: Array, inventory: Dictionary,
 		gravity: float, wind: Vector2) -> Dictionary:
-	var ids := {}
-	var fixed: Array = []
-	for entry: Dictionary in decor:
-		ids[entry.get("id", "")] = "d%d" % (ids.size() + 1)
-	for entry: Dictionary in decor:
-		var copy: Dictionary = entry.duplicate(true)
-		copy.id = ids[entry.get("id", "")]
-		for key: String in ["from", "to"]:
-			if copy.has(key):
-				copy[key] = ids.get(copy[key], copy[key])
-		if copy.has("via"):
-			var via: Array = []
-			for v: String in copy.via:
-				via.append(ids.get(v, v))
-			copy.via = via
-		fixed.append(copy)
+	var fixed := remap_ids(decor, decor_ids(decor))
 	var counts := {}
 	for kind: String in inventory:
 		if inventory[kind] > 0:
@@ -112,5 +99,92 @@ static func has_goal(level: Dictionary) -> bool:
 ## Niveaux du jeu, lus une fois dans res://levels (voir LevelFile). Chaque appel rend une copie.
 static func all() -> Array:
 	if _levels.is_empty():
-		_levels = LevelFile.load_dir()
+		_levels = LevelFile.load_dir(dir)
 	return _levels.duplicate(true)
+
+
+## Change le dossier des niveaux du jeu (les tests travaillent sur une copie) et relit les niveaux.
+static func set_dir(p_dir: String) -> void:
+	dir = p_dir
+	_levels.clear()
+
+
+## Identifiant posé automatiquement (« p3 » par le plateau, « d2 » par l'éditeur, « f1 » au
+## chargement), qu'on peut renuméroter sans rien casser.
+static func is_auto_id(id: String) -> bool:
+	return id == "" or (id.length() > 1 and id[0] in ["p", "d", "f"] and id.substr(1).is_valid_int())
+
+
+## Nouveaux identifiants du décor : ancien → nouveau. Les noms parlants sont gardés.
+static func decor_ids(decor: Array) -> Dictionary:
+	var named := {}
+	for entry: Dictionary in decor:
+		if not is_auto_id(entry.get("id", "")):
+			named[entry.id] = true
+	var ids := {}
+	var next := 1
+	for entry: Dictionary in decor:
+		var old: String = entry.get("id", "")
+		if not is_auto_id(old):
+			ids[old] = old
+			continue
+		while named.has("d%d" % next):
+			next += 1
+		ids[old] = "d%d" % next
+		next += 1
+	return ids
+
+
+## Copie de pièces dont les identifiants, et les attaches des cordes, suivent `ids`.
+static func remap_ids(entries: Array, ids: Dictionary) -> Array:
+	var out: Array = []
+	for entry: Dictionary in entries:
+		var copy: Dictionary = entry.duplicate(true)
+		if copy.has("id") and ids.has(copy.id):
+			copy.id = ids[copy.id]
+		for key: String in ["from", "to"]:
+			if copy.has(key):
+				copy[key] = ids.get(copy[key], copy[key])
+		if copy.has("via"):
+			var via: Array = []
+			for v: String in copy.via:
+				via.append(ids.get(v, v))
+			copy.via = via
+		out.append(copy)
+	return out
+
+
+## Niveau du jeu tiré d'un niveau de l'éditeur : fiche (`meta` : id, world, intro, hint, par_time,
+## tutorial), solution vérifiée, et décor débarrassé des identifiants auxquels rien ne se réfère.
+static func to_official(level: Dictionary, meta: Dictionary, solution: Array) -> Dictionary:
+	var used := {}
+	for entry: Dictionary in level.fixed + solution:
+		for key: String in ["from", "to"]:
+			if entry.has(key):
+				used[entry[key]] = true
+		for v: String in entry.get("via", []):
+			used[v] = true
+	for step: Dictionary in meta.get("tutorial", []):
+		var target: String = step.get("target", "")
+		if target.begins_with("part:"):
+			used[target.substr(5)] = true
+	var fixed: Array = []
+	for entry: Dictionary in level.fixed:
+		var copy: Dictionary = entry.duplicate(true)
+		if is_auto_id(copy.get("id", "")) and not used.has(copy.get("id", "")):
+			copy.erase("id")
+		fixed.append(copy)
+	var official := {
+		"id": meta.id, "world": meta.world, "name": level.name, "goal_text": level.goal_text,
+		"intro": meta.get("intro", level.goal_text), "hint": meta.get("hint", ""),
+		"fixed": fixed, "inventory": level.inventory, "solution": solution.duplicate(true),
+	}
+	if meta.get("par_time", 0.0) > 0.0:
+		official.par_time = meta.par_time
+	if level.get("gravity", 1.0) != 1.0:
+		official.gravity = level.gravity
+	if level.get("wind", Vector2.ZERO) != Vector2.ZERO:
+		official.wind = level.wind
+	if not meta.get("tutorial", []).is_empty():
+		official.tutorial = meta.tutorial
+	return official

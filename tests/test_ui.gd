@@ -89,6 +89,7 @@ func _run() -> void:
 	await _test_replay()
 	await _test_chrono()
 	await _test_title_and_transitions()
+	await _test_official_levels()
 
 	_finish("INTERFACE OK")
 
@@ -757,3 +758,65 @@ func _test_title_and_transitions() -> void:
 	main.load_level(2)
 	await process_frame
 	_check("transition : pas pour recharger le même niveau", not main.transition.is_playing())
+
+
+## Niveaux du jeu dans l'éditeur, sur une copie de levels/ : un niveau rouvert puis réenregistré
+## tel quel redonne le même fichier ; renommé, il change de fichier ; retouché sans nouvel essai,
+## il est refusé.
+func _test_official_levels() -> void:
+	var dir := "user://test_officiels"
+	DirAccess.make_dir_recursive_absolute(dir)
+	for name in DirAccess.get_files_at(LevelFile.DIR):
+		if name.get_extension() == LevelFile.EXTENSION:
+			DirAccess.copy_absolute(LevelFile.DIR.path_join(name), dir.path_join(name))
+	LevelData.set_dir(dir)
+	main.official_dir = dir
+	var path := dir.path_join("07_contrepoids.cfg")
+	var original := FileAccess.get_file_as_string(path)
+	main.load_level(0)
+	await _steps(2)
+	main.edit_official(path)
+	await _steps(2)
+	_check("jeu : niveau ouvert dans l'éditeur", main.is_editor() and main.editor.official_box.visible
+			and main.board.placed.size() == 4)
+	var level: Dictionary = main._editor_level("x")
+	_check("jeu : sa solution vaut preuve", main.editor.is_proven(level))
+	main._ask_save_official()
+	_check("jeu : fiche préremplie", main.official_dialog.visible and main.official_dialog.id_edit.text == "contrepoids"
+			and main.official_dialog.meta().world == "atelier")
+	main.official_dialog._confirm()
+	await _steps(2)
+	_check("jeu : réenregistré à l'identique", FileAccess.get_file_as_string(path) == original)
+	var same: Array = []
+	for file: Dictionary in LevelFile.list_dir(dir):
+		var text := FileAccess.get_file_as_string(file.path)
+		main.edit_official(file.path)
+		main._ask_save_official()
+		main.official_dialog._confirm()
+		if FileAccess.get_file_as_string(file.path) == text:
+			same.append(file.level.id)
+		else:
+			print("    différent : ", file.path.get_file())
+	_check("jeu : les 18 niveaux reviennent identiques (%d)" % same.size(), same.size() == 18)
+	main.edit_official(path)
+	main._ask_save_official()
+	main.official_dialog.id_edit.text = "contrepoids_bis"
+	main.official_dialog._confirm()
+	await _steps(2)
+	var renamed := dir.path_join("07_contrepoids_bis.cfg")
+	_check("jeu : renommé, il change de fichier", FileAccess.file_exists(renamed) and not FileAccess.file_exists(path))
+	_check("jeu : la liste des niveaux suit", main.levels.any(
+			func(l: Dictionary) -> bool: return l.id == "contrepoids_bis"))
+	main.board.apply_layout([{"kind": "crate", "pos": Vector2(500, 300)}])
+	main._commit()
+	main._ask_save_official()
+	_check("jeu : retouché sans essai, refusé", main._status.text.contains("Essayer")
+			and not main.official_dialog.visible)
+	main.official_dialog.hide()
+	main._editor_reset()
+	for name in DirAccess.get_files_at(dir):
+		DirAccess.remove_absolute(dir.path_join(name))
+	DirAccess.remove_absolute(dir)
+	LevelData.set_dir(LevelFile.DIR)
+	main.official_dir = LevelFile.DIR
+	main._reload_level_list(func() -> int: return 0)

@@ -289,6 +289,17 @@ gagner de nouveau. Dans l'écran de sélection, un niveau qui n'a pas été rés
 Le bouton **Modifier**, en haut d'un de tes niveaux, le rouvre dans l'éditeur ; **Supprimer** l'efface
 de « Mes niveaux » et **Nouveau** vide le plan de travail. Ton brouillon est gardé entre deux parties.
 
+**Niveaux du jeu.** Quand le jeu est lancé depuis ses sources (Godot ouvert sur le projet), deux
+boutons de plus permettent de travailler sur les niveaux officiels du dossier `levels/` :
+
+- **Ouvrir (jeu)…** liste ces niveaux et en charge un dans l'éditeur, avec sa solution, qui sert
+  de preuve tant que rien ne change.
+- **Enregistrer (jeu)…** demande sa fiche (identifiant, monde, introduction, indice, temps de
+  l'objectif « Rapide ») et écrit le fichier. Un nouveau niveau est numéroté après les autres ; un
+  niveau ouvert garde son fichier, ou est renommé si son identifiant change. Comme pour le partage,
+  il faut l'avoir gagné avec « Essayer » : sa solution est enregistrée avec lui. Le tutoriel d'un
+  niveau ouvert est conservé.
+
 ## Partager
 
 Les niveaux et les solutions se partagent sous forme d'un **code** à copier-coller (il commence

@@ -10,6 +10,8 @@ signal save_requested
 signal delete_requested
 signal reset_requested
 signal share_requested
+signal open_official_requested
+signal save_official_requested
 
 ## Identifiant du niveau personnel en cours d'édition ; vide pour un nouveau niveau.
 var custom_id := ""
@@ -17,6 +19,9 @@ var custom_id := ""
 var inventory := {}
 ## Preuve que l'auteur a résolu le niveau : {"signature": empreinte, "solution": disposition}.
 var proof := {}
+## Niveau du jeu ouvert depuis `levels/` : {"path": fichier, "meta": fiche (id, monde, textes…)}.
+var source := {}
+var official_box: HBoxContainer
 
 var name_edit: LineEdit
 var goal_edit: LineEdit
@@ -36,6 +41,7 @@ func _init() -> void:
 	add_child(title)
 	name_edit = _line("Nom du niveau")
 	goal_edit = _line("Objectif affiché au joueur")
+	goal_edit.max_length = 160  # Les objectifs des niveaux du jeu dépassent parfois 60 signes.
 	proof_label = Label.new()
 	proof_label.add_theme_font_size_override("font_size", 13)
 	proof_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -55,6 +61,13 @@ func _init() -> void:
 	delete_button.pressed.connect(func() -> void: delete_requested.emit())
 	var share_button := _button(self, "Partager le niveau…", "Code ou fichier à donner à d'autres joueurs. Le niveau doit être résolu.")
 	share_button.pressed.connect(func() -> void: share_requested.emit())
+	official_box = HBoxContainer.new()
+	add_child(official_box)
+	var open_official := _button(official_box, "Ouvrir (jeu)…", "Ouvre un niveau du jeu, du dossier levels/.")
+	open_official.pressed.connect(func() -> void: open_official_requested.emit())
+	var save_official := _button(official_box, "Enregistrer (jeu)…", "Enregistre ce niveau dans levels/, avec sa solution vérifiée.")
+	save_official.pressed.connect(func() -> void: save_official_requested.emit())
+	official_box.visible = false
 	inventory_button.pressed.connect(open_inventory)
 	_build_dialog()
 
@@ -79,6 +92,7 @@ func _button(parent: Control, text: String, tip: String) -> Button:
 
 ## Remet l'éditeur à zéro, ou le prépare pour modifier un niveau personnel existant.
 func load_from(level: Dictionary) -> void:
+	source = {}
 	custom_id = level.get("id", "")
 	name_edit.text = level.get("name", "")
 	goal_edit.text = level.get("goal_text", "")
