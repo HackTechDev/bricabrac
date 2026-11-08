@@ -22,7 +22,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Confort de jeu
 
-- Trajectoire fantôme du dernier essai, pour ajuster une pose sans tout revoir.
 - Indices progressifs : un premier indice vague, puis la position d'une pièce clé, puis la
   solution complète, en échange des étoiles du niveau.
 - Record personnel par niveau (temps et pièces), affiché sur sa vignette.

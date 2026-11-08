@@ -14,6 +14,11 @@ const WALL := 100.0
 ## Le vent pousse un objet en proportion de sa surface rapportée à sa masse : une valeur de vent
 ## est l'accélération subie par un objet de cette densité (masse par pixel carré).
 const AIR_DENSITY := 0.001
+## Trace du dernier essai : un point tous les GHOST_EVERY pas de physique, au plus GHOST_MAX par
+## objet, et seuls les objets qui ont parcouru plus de GHOST_MIN pixels sont gardés.
+const GHOST_EVERY := 3
+const GHOST_MAX := 1200
+const GHOST_MIN := 24.0
 
 var level := {}
 var placed: Array[Dictionary] = []
@@ -26,6 +31,15 @@ var elapsed := 0.0
 var channel_on: Array[bool] = [true, false, false, false]
 var sfx := Sfx.new()
 var probe := CircleShape2D.new()
+## Trajectoires fantômes du dernier essai : [{points: PackedVector2Array, goal: bool}], dessinées
+## sous les pièces pour ajuster une pose sans relancer.
+var ghost: Array = []
+var show_ghost := true:
+	set(value):
+		show_ghost = value
+		queue_redraw()
+var _trails := {}
+var _ghost_tick := 0
 
 var _next_id := 1
 ## Paires de roues qui engrènent, calculées au lancement.
@@ -53,6 +67,9 @@ func load_level(p_level: Dictionary) -> void:
 	placed.clear()
 	_next_id = 1
 	_apply_physics()
+	running = false  # Pas de trace venue d'un autre niveau.
+	ghost.clear()
+	queue_redraw()
 	_rebuild(false)
 	inventory_changed.emit()
 
@@ -352,6 +369,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_blow()
 	_solve_gears()
+	_record_trails()
 	if has_won:
 		return
 	elapsed += delta
@@ -368,6 +386,10 @@ func _physics_process(delta: float) -> void:
 
 func _rebuild(run: bool) -> void:
 	var was_running := running
+	if was_running and not run:
+		_keep_ghost()
+	_trails.clear()
+	_ghost_tick = 0
 	running = run
 	has_won = false
 	elapsed = 0.0
@@ -498,10 +520,59 @@ func _draw() -> void:
 	while y <= SIZE.y:
 		draw_line(Vector2(0, y), Vector2(SIZE.x, y), major if int(y) % 200 == 0 else minor)
 		y += 40.0
+	if show_ghost:
+		_draw_ghost()
 	_draw_wind()
 
 
 ## Traînées qui défilent dans le sens du vent, plus vite quand il est fort.
+# --- Trajectoire fantôme --------------------------------------------------------------
+
+func _record_trails() -> void:
+	_ghost_tick += 1
+	if _ghost_tick % GHOST_EVERY != 1:
+		return
+	for part in parts:
+		for child in part.get_children():
+			var body := child as RigidBody2D
+			if body == null or body.freeze:
+				continue
+			var key := body.get_instance_id()
+			if not _trails.has(key):
+				_trails[key] = {"points": PackedVector2Array(), "goal": part.entry.get("goal", false)}
+			var points: PackedVector2Array = _trails[key].points
+			if points.size() < GHOST_MAX:
+				points.append(to_local(body.global_position))
+				_trails[key].points = points
+
+
+## À l'arrêt, les trajets de l'essai deviennent la trace fantôme.
+func _keep_ghost() -> void:
+	ghost.clear()
+	for trail: Dictionary in _trails.values():
+		var points: PackedVector2Array = trail.points
+		var travel := 0.0
+		for i in range(1, points.size()):
+			travel += points[i].distance_to(points[i - 1])
+		if travel > GHOST_MIN:
+			ghost.append(trail)
+	queue_redraw()  # Le plateau ne se redessine pas de lui-même hors du vent.
+
+
+func _draw_ghost() -> void:
+	for trail: Dictionary in ghost:
+		var points: PackedVector2Array = trail.points
+		var col := Color(Part.GOLD, 0.6) if trail.goal else Color(1, 1, 1, 0.45)
+		# Un chapelet de perles régulièrement espacées le long du trajet, et un anneau à l'arrivée.
+		var gap := 0.0
+		for i in range(1, points.size()):
+			gap += points[i].distance_to(points[i - 1])
+			if gap >= 14.0:
+				gap = 0.0
+				draw_circle(points[i], 2.5, col)
+		draw_arc(points[points.size() - 1], 9.0, 0.0, TAU, 20, col, 2.0)
+
+
 func _draw_wind() -> void:
 	var w := wind()
 	if w == Vector2.ZERO:

@@ -95,6 +95,7 @@ func _run() -> void:
 	await _test_gallery()
 	await _test_challenges()
 	await _test_speed()
+	await _test_ghost()
 
 	_finish("INTERFACE OK")
 
@@ -1064,4 +1065,32 @@ func _test_speed() -> void:
 	main.toggle_run()
 	_check("arrêt : fin de la pause et cadence normale", not main.paused
 			and Engine.physics_ticks_per_second == 120 and Engine.time_scale == 1.0)
+	board.clear_placed()
+
+
+## Trace fantôme : après un essai, la trajectoire de la bille reste dessinée ; T la masque ; un
+## autre niveau l'efface.
+func _test_ghost() -> void:
+	var board: Board = main.board
+	main.load_level(0)
+	await _steps(2)
+	board.clear_placed()
+	_check("trace : rien avant le premier essai", board.ghost.is_empty())
+	main.toggle_run()
+	await _steps(120)
+	main.toggle_run()
+	var start: Vector2 = main.levels[0].fixed[0].pos
+	_check("trace : la chute de la bille est gardée", board.ghost.size() == 1
+			and board.ghost[0].points[0].distance_to(start) < 20.0
+			and board.ghost[0].points[board.ghost[0].points.size() - 1].y > start.y + 300.0)
+	board.place("plank", Vector2(190, 240))
+	_check("trace : reste pendant les retouches", board.ghost.size() == 1)
+	await _key(KEY_T)
+	_check("trace : T la masque", not board.show_ghost)
+	await _key(KEY_T)
+	main.load_level(1)
+	await _steps(2)
+	_check("trace : effacée par un autre niveau", board.ghost.is_empty() and board.show_ghost)
+	main.load_level(0)
+	await _steps(2)
 	board.clear_placed()

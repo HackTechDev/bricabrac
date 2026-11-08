@@ -363,7 +363,7 @@ func _exit_tree() -> void:
 func _refresh_speed() -> void:
 	if not board.running:
 		paused = false
-	_pause_button.text = "▶" if paused else "⏸"
+	_pause_button.text = "Reprendre" if paused else "Pause"
 	_pause_button.disabled = not board.running
 	_speed_button.text = "×%d" % speed
 	_apply_speed()
@@ -447,6 +447,9 @@ func _handle_key(event: InputEventKey) -> void:
 			_toggle_sound()
 		KEY_P:
 			toggle_pause()
+		KEY_T:
+			board.show_ghost = not board.show_ghost
+			_status.text = "Trace du dernier essai : " + ("affichée." if board.show_ghost else "masquée (T pour la revoir).")
 		KEY_V:
 			cycle_speed()
 		KEY_TAB:
@@ -919,6 +922,7 @@ func _build_top_bar() -> void:
 
 	_pause_button = Button.new()
 	_pause_button.focus_mode = Control.FOCUS_NONE
+	_pause_button.custom_minimum_size.x = 96
 	_pause_button.tooltip_text = "Met la simulation en pause, ou la reprend (P)"
 	_pause_button.pressed.connect(toggle_pause)
 	row.add_child(_pause_button)

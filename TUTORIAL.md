@@ -65,15 +65,18 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Annuler | Ctrl+Z, ou bouton Annuler |
 | Rétablir | Ctrl+Y ou Ctrl+Maj+Z, ou bouton Rétablir |
 | Lancer ou arrêter | Espace |
-| Mettre en pause ou reprendre | P, ou bouton ⏸ |
+| Mettre en pause ou reprendre | P, ou bouton Pause |
 | Accélérer la simulation (×1, ×2, ×4) | V, ou bouton ×1 |
+| Montrer ou masquer la trace du dernier essai | T |
 | Couper le son | M |
 | Choisir un niveau | Tab, ou le bouton en haut à gauche |
 | Revenir à l'écran titre | Échap, quand rien n'est sélectionné ni en cours |
 | Marquer l'objectif (éditeur) | G |
 
 L'accélération ne change rien au résultat : la machine fait exactement la même chose, seulement plus
-vite. La pause fige tout, le temps du chrono compris. Les boutons du panneau de droite font la même
+vite. La pause fige tout, le temps du chrono compris. Après chaque essai, le trajet des objets reste
+dessiné en pointillés (en doré pour l'objectif), jusqu'au lancement suivant : de quoi retoucher une
+pose sans tout revoir. Les boutons du panneau de droite font la même
 chose que R, F et C. Ils restent grisés quand la pièce
 sélectionnée ne propose pas l'action.
 
