@@ -44,7 +44,8 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 - `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio, dont les sons continus du
   tapis et du ventilateur ; `music.gd` : musique d'atelier, composée par le code elle aussi.
 - `scripts/options_panel.gd` : fenêtre d'options ; `accessibility.gd` : couleurs de canaux
-  adaptées et animations réduites ; `effects.gd` : particules décoratives ; `darkness.gd` et
+  adaptées et animations réduites ; `effects.gd` : particules décoratives (éclats, fumée, poussière, gouttes,
+  étincelles) ; `darkness.gd` et
   `shaders/darkness.gdshader` : obscurité du grenier, percée par les lampes.
 - `scripts/lang.gd` et `i18n/en.json` : traduction anglaise. Les textes sont écrits en français
   dans le code (`Lang.t("…")`) et dans les niveaux ; le fichier JSON associe à chacun sa

@@ -503,6 +503,23 @@ func _test_effects() -> void:
 	board.start()
 	await _steps(70)
 	_check("fumée : le canon fume (%d)" % board.effects.count(), board.effects.count() > 0)
+	_level([
+		{"kind": "water", "pos": Vector2(300, 560)},
+		{"kind": "ball", "pos": Vector2(300, 200)},
+	])
+	board.start()
+	var drops := 0
+	for i in 150:
+		await _steps(1)
+		drops = maxi(drops, board.effects.count())
+	_check("gouttes : la bille éclabousse en tombant dans l'eau (%d)" % drops, drops >= 3)
+	_level([
+		{"kind": "motor", "pos": Vector2(300, 300)},
+		{"kind": "gear", "pos": Vector2(300 + GearPart.MOTOR_RADIUS + GearPart.GEAR_RADIUS, 300)},
+	])
+	board.start()
+	await _steps(60)
+	_check("étincelles : les engrenages rapides en crachent (%d)" % board.effects.count(), board.effects.count() > 0)
 	Accessibility.apply(false, true)
 	board.start()
 	await _steps(70)

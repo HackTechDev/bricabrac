@@ -169,7 +169,8 @@ Une plaque met en marche toutes les pièces qui partagent son numéro de canal, 
 tirer. Le numéro s'affiche sur la pastille colorée de chaque pièce, et la touche C le change.
 Dans les options, « Couleurs de canaux adaptées au daltonisme » remplace le rouge, le jaune et le
 vert des canaux par de l'orange, du bleu ciel et du violet ; « Réduire les animations » retire le
-balayage entre les niveaux, les particules et les mouvements décoratifs.
+balayage entre les niveaux, les particules (éclats des ballons, fumée du canon, poussière des
+chocs, gouttes du bac d'eau, étincelles des engrenages) et les mouvements décoratifs.
 
 - **Plaque, canon et lampe :** canaux 1 à 3.
 - **Portail :** canaux 1 à 3, mais le numéro ne sert qu'à relier deux portails entre eux.

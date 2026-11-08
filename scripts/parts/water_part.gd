@@ -27,7 +27,9 @@ func _build() -> void:
 	var water := add_visual(tank, _paint_water)
 	water.z_index = 1
 	add_visual(tank, paint)
-	area = add_sensor(Vector2(INNER.x, DEPTH), Vector2(0, _surface_y() + DEPTH / 2.0))
+	area = add_sensor(Vector2(INNER.x, DEPTH), Vector2(0, _surface_y() + DEPTH / 2.0), _splash)
+	if area != null:
+		area.body_exited.connect(_splash)
 
 
 func icon_scale() -> float:
@@ -46,6 +48,22 @@ func describe() -> PackedStringArray:
 	var lines := super()
 	lines.append(Lang.t("Fait flotter la caisse, le domino et la balle rebond ; la bille et le boulet coulent."))
 	return lines
+
+
+## Vitesse en dessous de laquelle un objet entre ou sort de l'eau sans éclabousser.
+const SPLASH_SPEED := 90.0
+const SPLASH_FULL := 600.0
+
+
+## Gouttes à la surface quand un objet y plonge ou en ressort assez vite.
+func _splash(node: Node) -> void:
+	var body := node as RigidBody2D
+	if body == null or body.linear_velocity.length() < SPLASH_SPEED:
+		return
+	var local := to_local(body.global_position)
+	var x := clampf(local.x, -INNER.x / 2.0, INNER.x / 2.0)
+	board.effects.splash(board.to_local(to_global(Vector2(x, _surface_y()))),
+			body.linear_velocity.length() / SPLASH_FULL)
 
 
 ## Ordonnée locale de la surface de l'eau.

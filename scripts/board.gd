@@ -332,6 +332,31 @@ func _find_gear_pairs() -> void:
 				_gear_pairs.append([parts[i], other])
 
 
+## Vitesse de bord au-delà de laquelle deux roues qui engrènent crachent des étincelles, et
+## intervalle entre deux gerbes.
+const SPARK_SPEED := 60.0
+const SPARK_EVERY := 0.15
+var _spark_time := 0.0
+
+
+func _gear_sparks(delta: float) -> void:
+	if _gear_pairs.is_empty() or not Effects.enabled:
+		return
+	_spark_time += delta
+	if _spark_time < SPARK_EVERY:
+		return
+	_spark_time = 0.0
+	for pair: Array in _gear_pairs:
+		var a: Part = pair[0]
+		var b: Part = pair[1]
+		var spin: float = a.gear_body().angular_velocity
+		if absf(spin) * a.gear_radius() < SPARK_SPEED:
+			continue
+		var normal := (b.global_position - a.global_position).normalized()
+		var contact := to_local(a.global_position + normal * a.gear_radius())
+		effects.sparks(contact, normal.orthogonal() * -signf(spin))
+
+
 ## Les roues liées gardent des vitesses de bord égales et opposées : w1·r1 + w2·r2 = 0.
 ## Un moteur allumé impose sa vitesse (inertie infinie). Quelques passes suffisent pour un train.
 func _solve_gears() -> void:
@@ -403,6 +428,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_blow()
 	_solve_gears()
+	_gear_sparks(delta)
 	_record_trails()
 	_update_hums()
 	if has_won:
@@ -444,6 +470,7 @@ func _rebuild(run: bool) -> void:
 	elapsed = 0.0
 	channel_on = [true, false, false, false]
 	effects.clear()
+	_spark_time = 0.0
 	sfx.stop_hums()
 	_surfaces.clear()
 	for part in parts:

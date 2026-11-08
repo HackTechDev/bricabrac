@@ -1,6 +1,6 @@
 class_name Effects
 extends Node2D
-## Particules décoratives (éclats, fumée, poussière), dessinées par-dessus les pièces. Elles ne
+## Particules décoratives (éclats, fumée, poussière, gouttes, étincelles), dessinées par-dessus les pièces. Elles ne
 ## touchent rien et n'influent pas sur la simulation ; leur hasard a sa propre graine.
 
 const MAX_PARTICLES := 400
@@ -42,6 +42,25 @@ func dust(at: Vector2, normal: Vector2, strength: float) -> void:
 		_add({"pos": at, "vel": spread * _rng.randf_range(40.0, 120.0) * clampf(strength + 0.4, 0.5, 1.4),
 				"life": _rng.randf_range(0.3, 0.55), "size": _rng.randf_range(2.0, 3.5),
 				"color": Color(0.85, 0.78, 0.62), "kind": "dust", "gravity": 0.25})
+
+
+## Gouttes d'un objet qui frappe la surface de l'eau ; `strength` de 0 à 1.
+func splash(at: Vector2, strength: float) -> void:
+	var count := int(clampf(strength, 0.25, 1.0) * 10.0)
+	for i in count:
+		var v := Vector2.UP.rotated(_rng.randf_range(-0.8, 0.8)) * _rng.randf_range(90.0, 260.0) \
+				* clampf(strength + 0.3, 0.5, 1.2)
+		_add({"pos": at + Vector2(_rng.randf_range(-8.0, 8.0), 0.0), "vel": v,
+				"life": _rng.randf_range(0.35, 0.6), "size": _rng.randf_range(2.0, 3.5),
+				"color": Color(0.6, 0.85, 1.0), "kind": "drop", "gravity": 1.0})
+
+
+## Étincelles là où deux engrenages rapides se touchent, lancées le long de `along`.
+func sparks(at: Vector2, along: Vector2) -> void:
+	for i in 3:
+		var v := along.rotated(_rng.randf_range(-0.5, 0.5)) * _rng.randf_range(80.0, 200.0)
+		_add({"pos": at, "vel": v, "life": _rng.randf_range(0.18, 0.32), "size": _rng.randf_range(1.5, 2.5),
+				"color": Color(1.0, 0.8, 0.35), "kind": "spark", "gravity": 0.6})
 
 
 func clear() -> void:
@@ -93,6 +112,12 @@ func _draw() -> void:
 				for k in 3:
 					tri.append(p.pos + Vector2.from_angle(p.angle + TAU * k / 3.0) * s * (1.0 if k else 1.6))
 				draw_colored_polygon(tri, col)
+			"spark":
+				col.a = 1.0 - t
+				draw_line(p.pos, p.pos - p.vel.normalized() * p.size * 3.0, col, p.size)
+			"drop":
+				col.a = 0.85 * (1.0 - t * t)
+				draw_circle(p.pos, p.size, col)
 			"smoke":
 				col.a = 0.45 * (1.0 - t)
 				draw_circle(p.pos, p.size * (1.0 + 1.8 * t), col)

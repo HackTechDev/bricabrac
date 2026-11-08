@@ -60,7 +60,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 - Atténuer la musique pendant la simulation et la remonter à l'atelier, pour mieux entendre la
   machine.
 - Une musique par monde, sur la même trame que celle de l'atelier.
-- D'autres particules : gouttes du bac d'eau, étincelles des engrenages.
 - Montrer aussi l'ombre du souffle des ventilateurs.
 - Faire relire la traduction anglaise par un anglophone, puis ajouter d'autres langues
   (un fichier `i18n/<code>.json` et une ligne dans `Lang.LANGUAGES`).
