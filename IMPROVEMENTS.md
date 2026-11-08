@@ -20,6 +20,8 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 - Essayer l'entonnoir, le tuyau coudé, l'aimant répulsif et la bougie dans le bac à sable avant
   de bâtir des niveaux autour d'eux : taille de l'ouverture, vitesse de sortie du coude, délai
   de chauffe de la bougie.
+- Rejouer la Catapulte refaite (boulet à droite, panier en hauteur à gauche) et juger si le
+  délai de 1,2 s avant l'écran de victoire est assez long sur les machines qui finissent lentement.
 - Régler l'obscurité du grenier en jouant : opacité du voile, taille du halo du pointeur, portée
   de la lampe de poche, seuil de la cellule et du chat.
 
@@ -81,6 +83,8 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 - Détecter automatiquement, dans `test_levels.gd`, les surfaces fixes qui se chevauchent à la
   même hauteur : un objet posé sur la jointure touche deux formes, dans un ordre qui change
   d'un essai à l'autre (c'était la cause de la variation de durée du niveau Dominos).
+- Étendre à tous les réglages la vérification des angles de `test_levels.gd` : longueur du
+  tuyau droit, délai, mou et tension doivent eux aussi tomber sur les pas du jeu.
 - Signaler dans `test_levels.gd` les solutions dont la durée varie de plus de 0,2 s sur leurs
   8 essais, signe d'une machine fragile.
 - Lancer les tests automatiquement sur GitHub Actions à chaque envoi, `test_render.gd` compris

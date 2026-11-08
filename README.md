@@ -66,14 +66,17 @@ sauvegarde reste dans le navigateur, et le bouton Quitter n'y apparaît pas.
 
 **Vérifié :**
 
-- Le paquet `index.pck` contient les 43 niveaux de `levels/`, la galerie `gallery/index.cfg`,
+- Le paquet `index.pck` contient les 46 niveaux de `levels/`, la galerie `gallery/index.cfg`,
   la traduction `i18n/en.json` et le shader du grenier. Vérification faite en chargeant le
   paquet dans Godot (`--main-pack`) et en listant ses dossiers.
 - Le paquet exporté, lancé hors navigateur, démarre sans erreur.
-- Les tests automatiques passent après les deux corrections ci-dessous.
+- Les tests automatiques passent après les corrections ci-dessous.
 
 **Corrigé pour le web :**
 
+- **Dossier de sortie embarqué.** Godot importait les icônes de la page exportée
+  (`build/web/*.png`) et les ajoutait à `index.pck` à l'export suivant. `build/*` est exclu du
+  préréglage, et un fichier `build/.gdignore` (non suivi) évite leur import.
 - **Traduction absente.** `Lang` lit `i18n/en.json` comme un fichier brut, et le préréglage
   n'exportait que `levels/*.cfg` et `gallery/*.cfg` : le choix de l'anglais n'aurait rien fait.
   `i18n/*.json` est maintenant inclus.
@@ -138,7 +141,7 @@ sauvegarde reste dans le navigateur, et le bouton Quitter n'y apparaît pas.
 ## Tests
 
     export GODOT=/chemin/vers/Godot_v4.7.2-stable_linux.x86_64
-    $GODOT --headless --path . --fixed-fps 120 -s tests/test_levels.gd   # chaque niveau est faisable
+    $GODOT --headless --path . --fixed-fps 120 -s tests/test_levels.gd   # chaque niveau est faisable, aux angles du joueur
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_ui.gd       # souris et clavier
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_rope.gd     # physique de la corde, sons
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_parts.gd    # pièces mécaniques
@@ -171,7 +174,8 @@ Pour ajouter un niveau : le construire dans l'éditeur du jeu lancé depuis les 
 avec « Essayer », puis « Écrire (jeu)… » écrit son fichier dans `levels/` avec sa solution.
 On peut aussi écrire le fichier à la main (format décrit en tête de `scripts/level_file.gd`, le
 préfixe numérique fixe sa place) et chercher une large zone gagnante avec `sweep.gd`.
-`test_levels.gd` vérifie ensuite que la solution gagne.
+`test_levels.gd` vérifie ensuite que la solution gagne, et que ses angles tombent sur les crans
+de rotation des pièces (15° pour une planche) : sinon le joueur ne pourrait pas la reproduire.
 
 ## Licence
 

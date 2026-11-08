@@ -50,7 +50,8 @@ Le niveau 1, *Première pente*, te demande d'amener la bille dans le panier dor�
 
 Si elle tombe à côté, reviens à l'atelier, déplace la planche de quelques cases et réessaie. Tâtonner
 fait partie du jeu : rien n'est perdu quand une tentative échoue, et tes pièces restent en place.
-Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
+Le niveau est gagné quand la bille reste une demi-seconde dans le panier. L'écran de victoire
+vient un peu après, le temps de voir la machine finir son mouvement.
 
 ## Les commandes
 
@@ -58,7 +59,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | --- | --- |
 | Placer une pièce | La glisser depuis le bac |
 | Sélectionner ou déplacer une pièce posée | Clic gauche, en maintenant pour déplacer |
-| Pivoter, ou régler le délai d'une minuterie | R ou molette ; Maj+R dans l'autre sens |
+| Pivoter, ou régler le délai d'une minuterie | R ou molette ; Maj+R dans l'autre sens. La plupart des pièces tournent par crans de 15° |
 | Retourner (miroir) | F |
 | Allonger ou raccourcir (tuyau droit) | + et − |
 | Changer de canal | C |
@@ -101,7 +102,8 @@ présents dans le niveau restent en place.
   poids. L'incliner suffit à viser.
 - **Tapis :** entraîne ce qui se pose dessus. Le miroir inverse son sens.
 - **Bascule :** démarre penchée d'un côté. Une charge qui tombe sur le côté haut catapulte ce qui
-  repose sur le côté bas. Le miroir change le côté bas.
+  repose sur le côté bas, vers le haut et du côté de la charge. Plus la charge tombe loin du
+  pivot, plus le lancer est fort. Le miroir change le côté bas.
 - **Entonnoir :** rassemble ce qui tombe entre ses parois vers son ouverture, assez large pour le
   boulet. Il pivote par pas de 15°.
 - **Tuyau coudé :** ce qui entre par le haut glisse le long du coude et ressort à l'horizontale,
@@ -269,7 +271,8 @@ marge. Sa vignette reste fermée (🔒) tant que les autres niveaux du monde n'o
 2. **Par-dessus le mur :** le ressort.
 3. **Effet domino :** transmettre un choc au-delà d'une fosse.
 4. **Courant d'air :** le ventilateur et le ballon.
-5. **Catapulte :** la bascule, un niveau plus exigeant.
+5. **Catapulte :** la bascule ; le boulet, roulé jusqu'à son côté haut, envoie la bille dans un
+   panier en hauteur.
 6. **Coup de canon :** les canaux et la visée.
 7. **Contrepoids :** les poulies et la corde.
 8. **Le pendule :** la corde comme balancier.

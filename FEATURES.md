@@ -168,7 +168,8 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
 
 - Niveaux en fichiers texte lisibles (`levels/NN_id.cfg`), avec leur solution de référence.
 - Tests automatiques :
-  - chaque niveau est faisable, ne se gagne pas seul et tient son temps « Rapide » ;
+  - chaque niveau est faisable, ne se gagne pas seul et tient son temps « Rapide », avec une
+    solution que le joueur peut reproduire (angles sur les crans de rotation) ;
   - interface à la souris et au clavier ;
   - pièces ;
   - corde et sons ;
