@@ -17,6 +17,7 @@ func _run() -> void:
 	await _test_suction()
 	await _test_cart()
 	await _test_mouse_wheel()
+	await _test_cat()
 	_end("PIÈCES OK")
 
 
@@ -280,6 +281,27 @@ func _test_mouse_wheel() -> void:
 	_check("souris : réveillée par la bille", (board.find_part("s") as MouseWheelPart).awake)
 	_near("souris : entraîne l'engrenage", _spin("g"), -MouseWheelPart.RUN_SPEED * 44.0 / 40.0, 0.03)
 	_check("souris : l'autre dort encore", not (board.find_part("s2") as MouseWheelPart).awake)
+
+
+## Le chat bondit sur la bille qui roule devant lui et la rattrape ; tourné de l'autre côté, il ne
+## voit rien et reste assis.
+func _test_cat() -> void:
+	for facing: int in [1, -1]:
+		_level([
+			{"kind": "cat", "id": "chat", "pos": Vector2(300, 625), "dir": facing},
+			{"kind": "ball", "id": "b", "pos": Vector2(700, 624), "vel": Vector2(-150, 0)},
+		])
+		board.start()
+		var closest := INF
+		for i in 240:
+			await _steps(1)
+			closest = minf(closest, _pos("chat").distance_to(_pos("b")))
+		var cat := board.find_part("chat") as CatPart
+		if facing == 1:
+			_check("chat : bondit sur ce qui bouge", cat.leaps >= 1)
+			_check("chat : atteint la bille (%.0f px)" % closest, closest < 45.0)
+		else:
+			_check("chat : ne voit pas derrière lui", cat.leaps == 0)
 
 
 func _lamp() -> LampPart:

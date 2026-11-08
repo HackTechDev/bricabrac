@@ -121,6 +121,9 @@ présents dans le niveau restent en place.
 - **Souris :** elle dort dans sa roue jusqu'à ce qu'un objet heurte la roue ou que son canal
   s'allume. Réveillée, elle court sans s'arrêter, et sa roue entraîne les engrenages qu'elle touche,
   comme un moteur. Le miroir change le sens de sa course.
+- **Chat :** assis, il guette le côté où il regarde. Dès qu'un objet passe en mouvement à moins de
+  320 px, il bondit dessus en visant l'endroit où l'objet sera à son arrivée, puis se remet en
+  position. Le miroir le fait regarder de l'autre côté.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.
