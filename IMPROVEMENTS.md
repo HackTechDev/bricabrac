@@ -7,7 +7,7 @@ section, les idées les plus utiles ou les moins coûteuses viennent en premier.
 
 Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
-- Faire essayer les 24 niveaux à de vrais joueurs et noter où ils bloquent.
+- Faire essayer les 25 niveaux à de vrais joueurs et noter où ils bloquent.
 - Revoir la difficulté de la Catapulte et du Pendule, dont les zones gagnantes sont étroites.
 - Régler en jouant le chat, l'élastique et la corde qui s'accroche aux obstacles, jusqu'ici
   réglés seulement par des tests.
@@ -16,8 +16,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Nouveaux niveaux
 
-- **Accroche-cœur** (usine) : une corde de pendule qui s'enroule autour d'un poteau, ce qui
-  raccourcit son rayon et change sa trajectoire.
 - **À l'abri du vent** (espace) : un vent fort ; il faut poser des planches pour protéger un
   ballon et le laisser monter droit.
 - **Un monde « Jardin »** : eau, vent, animaux et contrepoids, avec cinq niveaux plus longs

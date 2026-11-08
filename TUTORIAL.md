@@ -202,7 +202,7 @@ au-delà de son point d'attache, de quoi fabriquer une fronde. Il s'amincit à m
 
 ## Les niveaux
 
-Les 24 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
+Les 25 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
 dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
 Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles.
 Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran. L'écran s'ouvre sur la vignette du niveau
@@ -238,12 +238,13 @@ Le bouton **Indice** donne un coup de pouce sans tout révéler.
 19. **Le palan magnétique :** soulever une bille avec l'aimant.
 20. **Ventilation :** un vent permanent contrarie le ballon.
 21. **Le wagonnet :** le chariot, à hisser jusqu'en haut de son rail.
+22. **Accroche-cœur :** une corde qui s'enroule autour d'un poteau et fait boucler le pendule.
 
 **L'espace**, où la gravité est faible :
 
-22. **Bond lunaire :** un saut sur ressort qui porte très loin.
-23. **Le sas :** les portails.
-24. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
+23. **Bond lunaire :** un saut sur ressort qui porte très loin.
+24. **Le sas :** les portails.
+25. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
 
 ## Les objectifs bonus
 
