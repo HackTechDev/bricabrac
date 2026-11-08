@@ -1,7 +1,8 @@
 class_name RopePart
 extends Part
 ## Corde : relie deux pièces, en passant éventuellement par des poulies.
-## Sa longueur totale ne peut pas augmenter : elle tire, mais ne pousse jamais.
+## Sa longueur totale est celle de la pose plus un mou réglable (R, molette) : elle ne peut pas
+## dépasser cette longueur, elle tire mais ne pousse jamais.
 ## Elle ne heurte rien. Godot n'ayant pas de joint poulie en 2D, la contrainte est résolue ici.
 
 const COLOR := Color("e8d9b5")
@@ -58,8 +59,16 @@ func _build() -> void:
 	add_visual(self, paint)
 	if running and _resolve():
 		var path := points()
-		rest_length = _measure(path)
+		rest_length = _measure(path) + slack()
 		_first_span = path[0].distance_to(path[1])
+
+
+func slack() -> float:
+	return entry.get("slack", 0.0)
+
+
+func setting() -> Dictionary:
+	return {"key": "slack", "step": 20.0, "min": 0.0, "max": 400.0, "default": 0.0, "label": "Mou (R)"}
 
 
 func is_animated() -> bool:
@@ -187,8 +196,12 @@ func _measure(path: PackedVector2Array) -> float:
 
 
 func describe() -> PackedStringArray:
+	var lines := PackedStringArray()
 	var via: int = entry.get("via", []).size()
-	return PackedStringArray(["Passe par %d poulie(s)" % via] if via > 0 else [])
+	if via > 0:
+		lines.append("Passe par %d poulie(s)" % via)
+	lines.append("Mou : %d px" % slack() if slack() > 0.0 else "Tendue (R : ajouter du mou)")
+	return lines
 
 
 func paint(c: CanvasItem) -> void:
@@ -196,14 +209,18 @@ func paint(c: CanvasItem) -> void:
 	if path.size() < 2:
 		return
 	var col := Color.WHITE if selected else COLOR
-	var slack := rest_length - _measure(path) if running else 0.0
+	var slack := rest_length - _measure(path) if running else slack()
 	var sag := minf(sqrt(maxf(slack, 0.0)) * 4.0, 90.0) if slack > 2.0 else 0.0
 	for i in range(1, path.size()):
 		if sag > 0.0:
+			# Le mou fait ployer la corde vers le bas, ou sur le côté si elle est verticale.
+			var bow := (path[i] - path[i - 1]).orthogonal().normalized()
+			if bow.y < 0.0 or (is_zero_approx(bow.y) and bow.x < 0.0):
+				bow = -bow
 			var curve := PackedVector2Array()
 			for s in 13:
 				var t := s / 12.0
-				curve.append(path[i - 1].lerp(path[i], t) + Vector2.DOWN * sag * 4.0 * t * (1.0 - t))
+				curve.append(path[i - 1].lerp(path[i], t) + bow * sag * 4.0 * t * (1.0 - t))
 			c.draw_polyline(curve, col, 2.5)
 		else:
 			c.draw_line(path[i - 1], path[i], col, 2.5)

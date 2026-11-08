@@ -129,8 +129,10 @@ dessus. Retirer une pièce ou une poulie renvoie aussi au bac les cordes qui y s
 
 À retenir :
 
-- **Elle tire mais ne pousse pas :** elle garde sa longueur de pose, et se détend si ses deux bouts
-  se rapprochent.
+- **Elle tire mais ne pousse pas :** elle se pose tendue et ne peut pas dépasser sa longueur. Elle
+  se détend si ses deux bouts se rapprochent.
+- **Le mou se règle :** sélectionne une corde, puis R ou la molette pour ajouter ou retirer du mou
+  par pas de 20 px. Un objet retenu par une corde détendue tombe librement avant d'être rattrapé.
 - **Le plus lourd l'emporte :** de part et d'autre d'une poulie, le boulet fait monter une bille.
 - **Elle traverse tout :** seuls ses deux bouts agissent, et elle ne heurte aucun objet.
 - **Le point d'attache compte :** sur une planche, une bascule ou un domino, il dépend de l'endroit

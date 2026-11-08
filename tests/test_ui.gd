@@ -70,6 +70,7 @@ func _run() -> void:
 	await _test_sound_toggle()
 	await _test_board_tooltips()
 	await _test_timer_setting()
+	await _test_rope_slack()
 	await _test_undo()
 	await _test_persistence()
 	await _test_undo_cascade()
@@ -161,6 +162,28 @@ func _test_timer_setting() -> void:
 	_check("délai minimal 0,5 s", main.selected.entry.delay == 0.5)
 	board.remove(main.selected)
 	main._select(null)
+
+
+## R et la molette donnent du mou à la corde sélectionnée.
+func _test_rope_slack() -> void:
+	var board: Board = main.board
+	main.load_level(7)
+	await _steps(2)
+	board.clear_placed()
+	await _click(_bin_pos("rope"), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(120, 300)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(400, 60)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(260, 180)), MOUSE_BUTTON_LEFT)
+	_check("corde sélectionnée : bouton Mou", main.selected is RopePart and main._ctx_buttons.rotate.text == "Mou (R)")
+	await _key(KEY_R)
+	await _key(KEY_R)
+	_check("R deux fois : 40 px de mou", main.selected.entry.slack == 40.0)
+	await _button(board.to_global(Vector2(260, 180)), MOUSE_BUTTON_WHEEL_UP, true)
+	_check("molette vers le haut : 20 px", main.selected.entry.slack == 20.0)
+	await _key(KEY_Z, true)
+	_check("Ctrl+Z : 40 px", board.placed[0].slack == 40.0)
+	board.clear_placed()
+	main._commit()
 
 
 ## Survoler une pièce du plateau affiche son infobulle, avec ses réglages.

@@ -9,6 +9,7 @@ func _run() -> void:
 	await _test_equal_masses()
 	await _test_pendulum()
 	await _test_only_pulls()
+	await _test_slack()
 	await _test_balloon_cut()
 	_test_cascade()
 	_test_sound_bank()
@@ -92,6 +93,25 @@ func _test_only_pulls() -> void:
 	await _steps(30)
 	# Vol libre sur 0,25 s : 400 - 500 x 0,25 + 490 x 0,25² = 305.
 	_near("corde détendue : la bille monte en vol libre", _pos("m").y, 305.0, 0.02)
+
+
+## Corde de 200 px avec 100 px de mou : chute libre sur 100 px, puis la corde retient la bille.
+func _test_slack() -> void:
+	_level([
+		{"kind": "plank", "id": "p", "pos": Vector2(500, 100), "len": 100.0, "locked": true},
+		{"kind": "ball", "id": "m", "pos": Vector2(500, 300)},
+		{"kind": "rope", "from": "m", "to": "p", "slack": 100.0},
+	])
+	board.start()
+	_near("mou : longueur de la corde", _rope().rest_length, 300.0, 0.001)
+	await _steps(15)
+	_near("mou : chute libre au début", _pos("m").y, 300.0 + 0.5 * G * 0.125 * 0.125, 0.01)
+	var lowest := 0.0
+	for i in 240:
+		await physics_frame
+		lowest = maxf(lowest, _pos("m").y)
+	_check("mou : la corde retient la bille à 400 px (%.1f)" % lowest, lowest < 403.0)
+	_near("mou : la bille finit pendue au bout", _pos("m").y, 400.0, 0.01)
 
 
 func _test_balloon_cut() -> void:

@@ -392,7 +392,7 @@ func _finish_rope(target: Part) -> void:
 	board.sfx.play("place")
 	_cancel_rope()
 	_commit()
-	_status.text = "Corde posée. Elle garde cette longueur : elle tire mais ne pousse pas."
+	_status.text = "Corde posée, tendue. Sélectionne-la et appuie sur R pour lui donner du mou."
 
 
 func _cancel_rope() -> void:

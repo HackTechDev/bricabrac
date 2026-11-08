@@ -20,7 +20,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Nouvelles pièces
 
-- Corde détendue, avec une longueur réglable à la pose.
 - Aimant qui attire le boulet et les objets métalliques.
 - Engrenages et moteur pour transmettre une rotation.
 - Portails qui téléportent un objet en conservant sa vitesse.
