@@ -9,10 +9,11 @@ const THUMB := Vector2(192, 118)
 const COLUMNS := 5
 
 var _levels: Array = []
-var _cards: Array[Button] = []
-var _status: Array[Label] = []
+## Vignettes et lignes d'état, par indice de niveau (les niveaux cachés n'en ont pas).
+var _cards := {}
+var _status := {}
 var _thumbs_built := false
-var _thumb_rects: Array[TextureRect] = []
+var _thumb_rects := {}
 
 
 func setup(levels: Array) -> void:
@@ -58,7 +59,7 @@ func setup(levels: Array) -> void:
 	for group: Array in groups:
 		var indices: Array[int] = []
 		for i in levels.size():
-			if levels[i].get("world", "") == group[1]:
+			if levels[i].get("world", "") == group[1] and not levels[i].get("hidden", false):
 				indices.append(i)
 		if indices.is_empty():
 			continue
@@ -93,7 +94,7 @@ func _make_card(index: int) -> Button:
 	thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	thumb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(thumb)
-	_thumb_rects.append(thumb)
+	_thumb_rects[index] = thumb
 	var name_label := Label.new()
 	name_label.text = "%d. %s" % [index + 1, _levels[index].name]
 	name_label.custom_minimum_size.x = THUMB.x
@@ -104,19 +105,19 @@ func _make_card(index: int) -> Button:
 	status.add_theme_font_size_override("font_size", 13)
 	status.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(status)
-	_cards.append(card)
-	_status.append(status)
+	_cards[index] = card
+	_status[index] = status
 	return card
 
 
 ## Ouvre l'écran ; `statuses` donne, par niveau, la ligne d'état (terminé, étoiles).
 func open(current: int, statuses: Array) -> void:
-	for i in _cards.size():
+	for i: int in _cards:
 		_status[i].text = statuses[i]
 		_cards[i].modulate = Color(1.15, 1.15, 0.85) if i == current else Color.WHITE
 	if not _thumbs_built:
 		_thumbs_built = true
-		for i in _levels.size():
+		for i: int in _thumb_rects:
 			_thumb_rects[i].texture = _render_thumb(_levels[i])
 	show()
 

@@ -41,6 +41,13 @@ var saved_layouts := {}
 var tutorials_done := {}
 var show_tutorials := true
 var tutorial: Tutorial
+## Niveaux créés dans l'éditeur, enregistrés avec la progression.
+var custom_levels: Array = []
+var editor: LevelEditor
+## Brouillon de l'éditeur (nom, objectif, inventaire), gardé entre deux sessions.
+var _editor_draft := {}
+## Niveau construit par « Essayer », joué depuis l'éditeur.
+var _test_level := {}
 
 var _level_button: Button
 var _level_select: LevelSelect
@@ -56,6 +63,7 @@ var _win_bonus: Label
 var _gravity_button: Button
 var _wind_button: Button
 var _win_next: Button
+var _edit_button: Button
 var _rope_preview: Line2D
 var _sound_button: Button
 var _mouse := Vector2.ZERO
@@ -66,9 +74,8 @@ var _hover_time := 0.0
 
 
 func _ready() -> void:
-	levels = LevelData.all()
-	levels.append(LevelData.sandbox())
 	_load_progress()
+	_assemble_levels()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	theme = _make_theme()
@@ -95,11 +102,47 @@ func _ready() -> void:
 	tutorial.finished.connect(_on_tutorial_finished)
 	add_child(tutorial)
 	_build_win_overlay()
+	_build_level_select()
+	editor.load_from(_editor_draft)
+	load_level(_first_unsolved())
+
+
+## Ordre des niveaux : ceux du jeu, le bac à sable, les niveaux personnels, puis l'éditeur et
+## l'essai en cours, qui n'ont pas de vignette.
+func _assemble_levels() -> void:
+	levels = LevelData.all()
+	levels.append(LevelData.sandbox())
+	levels.append_array(custom_levels)
+	levels.append(LevelData.editor_level())
+	if _test_level.is_empty():
+		_test_level = {"id": "essai_editeur", "name": "Essai", "goal_text": "", "fixed": [],
+				"inventory": {}, "hidden": true, "world": "perso"}
+	levels.append(_test_level)
+
+
+func _build_level_select() -> void:
+	if _level_select != null:
+		_level_select.queue_free()
 	_level_select = LevelSelect.new()
 	add_child(_level_select)
 	_level_select.setup(levels)
 	_level_select.chosen.connect(load_level)
-	load_level(_first_unsolved())
+
+
+func editor_index() -> int:
+	return levels.size() - 2
+
+
+func test_index() -> int:
+	return levels.size() - 1
+
+
+func is_editor() -> bool:
+	return levels[current].get("editor", false)
+
+
+func is_testing() -> bool:
+	return levels[current].get("id", "") == "essai_editeur"
 
 
 ## Rappel des conditions inhabituelles du niveau, à la suite de l'objectif.
@@ -143,6 +186,8 @@ func load_level(index: int) -> void:
 	_rebuild_bin()
 	_refresh_level_picker()
 	_refresh_controls()
+	editor.visible = is_editor()
+	editor.refresh()
 	tutorial.stop()
 	if show_tutorials and levels[index].has("tutorial") and not completed.has(level_id) \
 			and not tutorials_done.has(level_id):
@@ -207,6 +252,8 @@ func _handle_key(event: InputEventKey) -> void:
 			_toggle_sound()
 		KEY_TAB:
 			open_level_select()
+		KEY_G:
+			_toggle_goal()
 		KEY_ESCAPE:
 			if rope_tool:
 				_cancel_rope()
@@ -525,7 +572,10 @@ func _edit_selected(key: String, value: Variant) -> void:
 	var was_dragging := drag_part == selected
 	var part := board.rebuild_part(selected)
 	if not was_dragging and not board.is_valid(part):
-		part.entry[key] = old
+		if old == null:
+			part.entry.erase(key)
+		else:
+			part.entry[key] = old
 		part = board.rebuild_part(part)
 		_status.text = "Pas assez de place pour cela."
 		board.sfx.play("deny")
@@ -613,6 +663,15 @@ func _build_top_bar() -> void:
 	_wind_button.pressed.connect(func() -> void: _cycle_sandbox_physics(0, 1))
 	row.add_child(_wind_button)
 
+	_edit_button = Button.new()
+	_edit_button.focus_mode = Control.FOCUS_NONE
+	_edit_button.pressed.connect(func() -> void:
+		if is_testing():
+			load_level(editor_index())
+		else:
+			edit_level(levels[current]))
+	row.add_child(_edit_button)
+
 	_sound_button = Button.new()
 	_sound_button.focus_mode = Control.FOCUS_NONE
 	_sound_button.pressed.connect(_toggle_sound)
@@ -665,6 +724,15 @@ func _build_side_panel() -> void:
 	_bin = VBoxContainer.new()
 	_bin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(_bin)
+
+	editor = LevelEditor.new()
+	editor.visible = false
+	col.add_child(editor)
+	editor.try_requested.connect(_editor_try)
+	editor.save_requested.connect(_editor_save)
+	editor.delete_requested.connect(_editor_delete)
+	editor.reset_requested.connect(_editor_reset)
+	editor.goal_button.pressed.connect(_toggle_goal)
 
 	col.add_child(HSeparator.new())
 	var grid := GridContainer.new()
@@ -721,8 +789,7 @@ func _build_win_overlay() -> void:
 	_win_bonus.add_theme_font_size_override("font_size", 17)
 	box.add_child(_win_bonus)
 	_win_next = Button.new()
-	_win_next.pressed.connect(func() -> void:
-		load_level((current + 1) % levels.size()))
+	_win_next.pressed.connect(func() -> void: load_level(_next_index()))
 	box.add_child(_win_next)
 	var again := Button.new()
 	again.text = "Revenir à l'atelier"
@@ -807,6 +874,9 @@ func _refresh_controls() -> void:
 	_wind_button.text = "Vent : " + ("aucun" if w == Vector2.ZERO else _wind_arrow(w))
 	_sound_button.text = "Son : non" if muted else "Son : oui"
 	AudioServer.set_bus_mute(0, muted)
+	_edit_button.visible = is_testing() or levels[current].get("custom", false)
+	_edit_button.disabled = board.running
+	_edit_button.text = "Retour à l'éditeur" if is_testing() else "Modifier"
 
 
 func _refresh_level_picker() -> void:
@@ -817,6 +887,8 @@ func _refresh_level_picker() -> void:
 
 ## Ligne d'état d'une vignette : terminé ou non, étoiles des objectifs bonus.
 func _level_status(level: Dictionary) -> String:
+	if level.get("editor", false):
+		return "Crée tes propres niveaux"
 	if level.get("sandbox", false):
 		return "Toutes les pièces, sans objectif"
 	if not completed.has(level.id):
@@ -851,6 +923,11 @@ func _stars(level: Dictionary) -> String:
 
 func _on_won() -> void:
 	var level: Dictionary = levels[current]
+	if level.get("sandbox", false):
+		return  # Ni le bac à sable ni l'éditeur n'ont d'objectif à remplir.
+	if is_testing():
+		_on_test_won()
+		return
 	completed[level.id] = true
 	var got: Array = bonuses.get(level.id, [])
 	var now := Bonus.earned(level, board.placed.size(), board.elapsed)
@@ -868,9 +945,29 @@ func _on_won() -> void:
 	_save_progress()
 	_refresh_level_picker()
 	board.sfx.play("win")
-	var next: Dictionary = levels[(current + 1) % levels.size()]
+	var next: Dictionary = levels[_next_index()]
 	_win_next.text = "Ouvrir le bac à sable" if next.get("sandbox", false) \
-			else "Rejouer le premier niveau" if current == levels.size() - 1 else "Niveau suivant"
+			else "Rejouer le premier niveau" if _next_index() == 0 else "Niveau suivant"
+	_win_overlay.show()
+
+
+## Niveau proposé après une victoire : l'éditeur après un essai, sinon le suivant de la liste,
+## en revenant au premier plutôt que d'ouvrir l'éditeur.
+func _next_index() -> int:
+	if is_testing():
+		return editor_index()
+	var next := current + 1
+	if next >= levels.size() or levels[next].get("editor", false) or levels[next].get("hidden", false):
+		return 0
+	return next
+
+
+## Victoire pendant un essai depuis l'éditeur.
+func _on_test_won() -> void:
+	_win_bonus.text = "Ton niveau peut se gagner avec %d pièce(s), en %s s." % [board.placed.size(),
+			String.num(board.elapsed, 1).replace(".", ",")]
+	board.sfx.play("win")
+	_win_next.text = "Retour à l'éditeur"
 	_win_overlay.show()
 
 
@@ -965,7 +1062,9 @@ func _toggle_sound() -> void:
 
 func _first_unsolved() -> int:
 	for i in levels.size():
-		if not completed.has(levels[i].id) and not levels[i].get("sandbox", false):
+		var extra: bool = levels[i].get("sandbox", false) or levels[i].get("custom", false) \
+				or levels[i].get("hidden", false)
+		if not completed.has(levels[i].id) and not extra:
 			return i
 	return 0
 
@@ -980,6 +1079,8 @@ func _load_progress() -> void:
 		for id: String in cfg.get_value("progress", "tutorials", []):
 			tutorials_done[id] = true
 		bonuses = cfg.get_value("progress", "bonuses", {})
+		custom_levels = cfg.get_value("custom", "levels", [])
+		_editor_draft = cfg.get_value("custom", "draft", {})
 
 
 func _save_progress() -> void:
@@ -989,4 +1090,138 @@ func _save_progress() -> void:
 	cfg.set_value("progress", "bonuses", bonuses)
 	cfg.set_value("settings", "muted", muted)
 	cfg.set_value("layouts", "by_level", saved_layouts)
+	cfg.set_value("custom", "levels", custom_levels)
+	if editor != null:
+		cfg.set_value("custom", "draft", {"id": editor.custom_id, "name": editor.name_edit.text,
+				"goal_text": editor.goal_edit.text, "inventory": editor.inventory})
 	cfg.save(save_path)
+
+
+# --- Éditeur de niveaux ---------------------------------------------------------
+
+## Ouvre l'éditeur sur un niveau personnel : son décor revient sur le plan de travail.
+func edit_level(level: Dictionary) -> void:
+	load_level(editor_index())
+	editor.load_from(level)
+	board.set_physics(level.get("gravity", 1.0), level.get("wind", Vector2.ZERO))
+	board.set_layout(level.get("fixed", []))
+	_commit()
+	_refresh_controls()
+	_status.text = "Niveau « %s » ouvert dans l'éditeur." % level.name
+
+
+func _toggle_goal() -> void:
+	if not is_editor() or board.running:
+		return
+	if selected == null:
+		_status.text = "Sélectionne d'abord un panier, une lampe ou un ballon."
+		board.sfx.play("deny")
+		return
+	if not LevelData.GOAL_KINDS.has(selected.kind):
+		_status.text = "Seuls un panier, une lampe ou un ballon peuvent servir d'objectif."
+		board.sfx.play("deny")
+		return
+	var goal: bool = not selected.entry.get("goal", false)
+	_edit_selected("goal", goal)
+	if selected.entry.get("goal", false) == goal:
+		_status.text = "Objectif du niveau." if goal else "Ce n'est plus un objectif."
+
+
+## Niveau jouable tiré du plan de travail, ou message d'erreur s'il n'est pas complet.
+func _editor_level(id: String) -> Variant:
+	var name := editor.name_edit.text.strip_edges()
+	var goal := editor.goal_edit.text.strip_edges()
+	var level := LevelData.from_editor(id, name if name != "" else "Sans nom",
+			goal if goal != "" else "Atteins l'objectif.", board.layout(), editor.inventory,
+			board.gravity_factor(), board.wind())
+	if not LevelData.has_goal(level):
+		return "Il manque un objectif : sélectionne un panier, une lampe ou un ballon, puis G."
+	if level.inventory.is_empty():
+		return "Le joueur n'a aucune pièce : règle l'inventaire."
+	return level
+
+
+func _editor_try() -> void:
+	if board.running:
+		return
+	var level: Variant = _editor_level("essai_editeur")
+	if level is String:
+		_status.text = level
+		board.sfx.play("deny")
+		return
+	_save_progress()
+	_test_level.clear()
+	_test_level.merge(level)
+	_test_level.hidden = true
+	_test_level.custom = false
+	histories.erase("essai_editeur")
+	load_level(test_index())
+	_status.text = "Essai de ton niveau. « Retour à l'éditeur » pour le retoucher."
+
+
+func _editor_save() -> void:
+	if board.running:
+		return
+	if editor.name_edit.text.strip_edges() == "":
+		_status.text = "Donne un nom à ton niveau."
+		board.sfx.play("deny")
+		return
+	var id := editor.custom_id if editor.custom_id != "" else "perso_%d" % int(Time.get_unix_time_from_system())
+	var level: Variant = _editor_level(id)
+	if level is String:
+		_status.text = level
+		board.sfx.play("deny")
+		return
+	var replaced := false
+	for i in custom_levels.size():
+		if custom_levels[i].id == id:
+			custom_levels[i] = level
+			replaced = true
+	if not replaced:
+		custom_levels.append(level)
+	editor.custom_id = id
+	_reload_level_list(editor_index)
+	board.sfx.play("place")
+	_status.text = "« %s » est enregistré dans « Mes niveaux »." % level.name
+
+
+func _editor_delete() -> void:
+	if board.running or editor.custom_id == "":
+		return
+	for i in custom_levels.size():
+		if custom_levels[i].id == editor.custom_id:
+			custom_levels.remove_at(i)
+			break
+	completed.erase(editor.custom_id)
+	bonuses.erase(editor.custom_id)
+	saved_layouts.erase(editor.custom_id)
+	editor.custom_id = ""
+	_reload_level_list(editor_index)
+	board.sfx.play("remove")
+	_status.text = "Niveau supprimé. Le plan de travail reste là si tu veux le réenregistrer."
+
+
+func _editor_reset() -> void:
+	if board.running:
+		return
+	_select(null)
+	editor.load_from({})
+	board.set_physics(1.0, Vector2.ZERO)
+	board.clear_placed()
+	_commit()
+	_refresh_controls()
+	_status.text = "Plan de travail vide : à toi de jouer."
+
+
+## Reconstruit la liste des niveaux (et l'écran de sélection) en restant sur `index_of`.
+func _reload_level_list(index_of: Callable) -> void:
+	var physics := [board.gravity_factor(), board.wind()]
+	_assemble_levels()
+	_build_level_select()
+	current = index_of.call()
+	board.level = levels[current]
+	board.set_physics(physics[0], physics[1])
+	_save_progress()
+	editor.refresh()
+	_refresh_level_picker()
+	_refresh_controls()

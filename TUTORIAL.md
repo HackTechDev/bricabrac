@@ -58,6 +58,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Lancer ou arrêter | Espace |
 | Couper le son | M |
 | Choisir un niveau | Tab, ou le bouton en haut à gauche |
+| Marquer l'objectif (éditeur) | G |
 
 Les boutons du panneau de droite font la même chose que R, F et C. Ils restent grisés quand la pièce
 sélectionnée ne propose pas l'action.
@@ -242,6 +243,24 @@ apparaissent en haut de l'écran :
 
 Ces réglages ne changent qu'à l'atelier, pas pendant la simulation. Comme dans les niveaux, ta
 machine est sauvegardée et Ctrl+Z annule tes actions.
+
+## L'éditeur de niveaux
+
+La vignette **Éditeur de niveaux**, dans « Création libre », ouvre un plan de travail où toutes les
+pièces sont disponibles sans limite. Tout ce que tu y poses forme le **décor** de ton niveau. Le
+panneau « Éditeur de niveaux », sous le bac, règle le reste :
+
+1. **Nom et objectif :** le nom du niveau et la phrase d'objectif affichée au joueur.
+2. **Objectif (G) :** sélectionne un panier, une lampe ou un ballon et appuie sur G. Une étoile
+   dorée le signale ; il en faut au moins un. Pour une lampe, pense à poser de quoi l'allumer.
+3. **Inventaire… :** les pièces offertes au joueur, de 0 à 9 de chaque sorte.
+4. **Gravité et vent :** les deux boutons du haut, comme dans le bac à sable.
+5. **Essayer :** joue ton niveau tel que le verra le joueur. « Retour à l'éditeur » ramène au
+   plan de travail, intact.
+6. **Enregistrer :** range le niveau dans le monde « Mes niveaux » de l'écran de sélection.
+
+Le bouton **Modifier**, en haut d'un de tes niveaux, le rouvre dans l'éditeur ; **Supprimer** l'efface
+de « Mes niveaux » et **Nouveau** vide le plan de travail. Ton brouillon est gardé entre deux parties.
 
 ## Conseils
 

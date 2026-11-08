@@ -51,8 +51,19 @@ func setup(p_entry: Dictionary, p_board: Board, p_running: bool) -> void:
 
 func _ready() -> void:
 	_build()
+	if entry.get("goal", false) and main_body != null:
+		add_visual(main_body, _paint_goal_mark).z_index = 2
 	set_physics_process(running)
 	set_process(running and is_animated())
+
+
+## Étoile dorée au-dessus des pièces qui forment l'objectif du niveau.
+func _paint_goal_mark(c: CanvasItem) -> void:
+	var star := PackedVector2Array()
+	for i in 10:
+		var r := 9.0 if i % 2 == 0 else 4.0
+		star.append(Vector2(0, -54) + Vector2.from_angle(-PI / 2.0 + TAU * i / 10.0) * r)
+	poly(c, star, GOLD)
 
 
 func _process(delta: float) -> void:

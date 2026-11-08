@@ -84,6 +84,7 @@ func _run() -> void:
 	await _test_sandbox()
 	await _test_level_select()
 	await _test_elastic_tool()
+	await _test_editor()
 
 	_finish("INTERFACE OK")
 
@@ -408,10 +409,13 @@ func _test_sound_toggle() -> void:
 ## jamais proposé comme « premier niveau à finir ».
 func _test_sandbox() -> void:
 	var board: Board = main.board
-	var index: int = main.levels.size() - 1
+	var index: int = -1
+	for i in main.levels.size():
+		if main.levels[i].id == "bac_a_sable":
+			index = i
 	main.load_level(index)
 	await _steps(2)
-	_check("bac à sable : dernier de la liste", main.is_sandbox())
+	_check("bac à sable : ouvert", main.is_sandbox() and not main.is_editor())
 	_check("bac à sable : toutes les pièces", main._items.size() == Catalog.INFO.size())
 	_check("bac à sable : quantité illimitée affichée", main._items[0]._count_label.text == "∞")
 	_check("bac à sable : boutons de physique visibles", main._gravity_button.visible and main._wind_button.visible)
@@ -442,7 +446,7 @@ func _test_level_select() -> void:
 	await _click(main._level_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	await _steps(2)
 	_check("sélection : ouverte par le bouton", select.visible)
-	_check("sélection : une vignette par niveau", select._cards.size() == main.levels.size())
+	_check("sélection : une vignette par niveau", select._cards.size() == main.levels.size() - 1)
 	_check("sélection : vignettes rendues", select._thumb_rects[9].texture != null)
 	_check("sélection : niveau terminé et étoiles", select.status_text(0).begins_with("Terminé")
 			and select.status_text(0).ends_with("★★☆"))
@@ -462,7 +466,7 @@ func _test_level_select() -> void:
 ## L'élastique se pose avec l'outil des cordes, puis R règle sa tension.
 func _test_elastic_tool() -> void:
 	var board: Board = main.board
-	main.load_level(main.levels.size() - 1)
+	main.load_level(main.editor_index())
 	await _steps(2)
 	board.clear_placed()
 	board.place("ball", Vector2(300, 300))
@@ -479,3 +483,68 @@ func _test_elastic_tool() -> void:
 	await _key(KEY_R)
 	_check("élastique : R règle la tension", board.placed.back().get("tension", 0.0) == 10.0)
 	board.clear_placed()
+
+
+## Éditeur : poser un décor, désigner l'objectif, régler l'inventaire, essayer, gagner, enregistrer,
+## retrouver le niveau après un redémarrage, le modifier puis le supprimer.
+func _test_editor() -> void:
+	var board: Board = main.board
+	main.load_level(main.editor_index())
+	await _steps(2)
+	_check("éditeur : panneau visible", main.editor.visible and main.is_editor())
+	main._editor_reset()
+	board.place("ball", Vector2(150, 60))
+	board.place("basket", Vector2(480, 590))
+	main._commit()
+	main._editor_try()
+	_check("éditeur : essai refusé sans objectif", main.is_editor() and main._status.text.contains("objectif"))
+	main._select(board.part_at(Vector2(480, 620)))
+	await _key(KEY_G)
+	_check("éditeur : G marque l'objectif", board.placed[1].get("goal", false))
+	main._editor_try()
+	_check("éditeur : essai refusé sans inventaire", main.is_editor() and main._status.text.contains("inventaire"))
+	(main.editor._spins["plank"] as SpinBox).value = 1
+	_check("éditeur : inventaire réglé", main.editor.inventory == {"plank": 1})
+	main._editor_try()
+	await _steps(2)
+	_check("éditeur : essai lancé", main.is_testing() and board.remaining("plank") == 1)
+	_check("éditeur : décor repris", board.parts.size() == 2 and board.find_part("d2").entry.goal)
+	board.apply_layout([{"kind": "plank", "pos": Vector2(190, 240), "rot": 30.0}])
+	await _key(KEY_SPACE)
+	for i in 600:
+		await physics_frame
+		if main._win_overlay.visible:
+			break
+	_check("éditeur : essai gagné", main._win_overlay.visible and main._win_next.text == "Retour à l'éditeur")
+	await _steps(2)
+	await _click(main._win_next.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("éditeur : retour au plan de travail", main.is_editor() and board.placed.size() == 2)
+	main._editor_save()
+	_check("éditeur : nom exigé", main.custom_levels.is_empty())
+	main.editor.name_edit.text = "Mon premier niveau"
+	main.editor.goal_edit.text = "Mets la bille au panier."
+	main._editor_save()
+	_check("éditeur : niveau enregistré", main.custom_levels.size() == 1 and main.is_editor())
+
+	await _restart()
+	board = main.board
+	var index := -1
+	for i in main.levels.size():
+		if main.levels[i].get("custom", false):
+			index = i
+	_check("éditeur : niveau retrouvé après redémarrage", index >= 0)
+	main.open_level_select()
+	await _steps(2)
+	_check("éditeur : vignette dans « Mes niveaux »", main._level_select.card(index) != null)
+	main._level_select.hide()
+	main.load_level(index)
+	await _steps(2)
+	_check("niveau personnel : jouable", board.remaining("plank") == 1 and main._goal_label.text.begins_with("Mets la bille"))
+	_check("niveau personnel : bouton Modifier", main._edit_button.visible)
+	await _click(main._edit_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	await _steps(2)
+	_check("niveau personnel : rouvert dans l'éditeur", main.is_editor() and board.placed.size() == 2
+			and main.editor.name_edit.text == "Mon premier niveau")
+	main._editor_delete()
+	_check("niveau personnel : supprimé", main.custom_levels.is_empty())
+	main._editor_reset()

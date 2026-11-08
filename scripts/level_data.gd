@@ -41,7 +41,10 @@ const WORLDS: Array[Dictionary] = [
 	{"id": "cuisine", "name": "Cuisine", "color": Color("3a2a24")},
 	{"id": "usine", "name": "Usine", "color": Color("262d2a")},
 	{"id": "espace", "name": "Espace", "color": Color("120f2a")},
+	{"id": "perso", "name": "Mes niveaux", "color": Color("23303a")},
 ]
+## Pièces qui peuvent servir d'objectif à un niveau.
+const GOAL_KINDS: Array[String] = ["basket", "lamp", "balloon"]
 
 
 static func world(id: String) -> Dictionary:
@@ -49,6 +52,58 @@ static func world(id: String) -> Dictionary:
 		if w.id == id:
 			return w
 	return WORLDS[0]
+
+
+## Plan de travail de l'éditeur : toutes les pièces, sans limite ; ce qu'on y pose devient le décor.
+static func editor_level() -> Dictionary:
+	var level := sandbox()
+	level.merge({
+		"id": "editeur",
+		"name": "Éditeur de niveaux",
+		"editor": true,
+		"goal_text": "Pose le décor et marque l'objectif avec G.",
+		"intro": "Tout ce que tu poses ici fait partie du décor. G marque l'objectif : panier, lampe ou ballon.",
+		"hint": "Un bon niveau : un objectif, un décor qui l'empêche de se gagner seul, et juste assez de pièces.",
+	}, true)
+	return level
+
+
+## Niveau jouable tiré du plan de travail de l'éditeur. Les pièces du décor reçoivent des
+## identifiants « d1, d2… » (les cordes suivent) pour ne jamais croiser ceux du joueur.
+static func from_editor(id: String, name: String, goal_text: String, decor: Array, inventory: Dictionary,
+		gravity: float, wind: Vector2) -> Dictionary:
+	var ids := {}
+	var fixed: Array = []
+	for entry: Dictionary in decor:
+		ids[entry.get("id", "")] = "d%d" % (ids.size() + 1)
+	for entry: Dictionary in decor:
+		var copy: Dictionary = entry.duplicate(true)
+		copy.id = ids[entry.get("id", "")]
+		for key: String in ["from", "to"]:
+			if copy.has(key):
+				copy[key] = ids.get(copy[key], copy[key])
+		if copy.has("via"):
+			var via: Array = []
+			for v: String in copy.via:
+				via.append(ids.get(v, v))
+			copy.via = via
+		fixed.append(copy)
+	var counts := {}
+	for kind: String in inventory:
+		if inventory[kind] > 0:
+			counts[kind] = inventory[kind]
+	return {
+		"id": id, "name": name, "goal_text": goal_text, "world": "perso", "custom": true,
+		"intro": goal_text, "hint": "Niveau créé dans l'éditeur.",
+		"fixed": fixed, "inventory": counts, "gravity": gravity, "wind": wind,
+	}
+
+
+static func has_goal(level: Dictionary) -> bool:
+	for entry: Dictionary in level.get("fixed", []):
+		if entry.get("goal", false):
+			return true
+	return false
 
 
 static func all() -> Array:
