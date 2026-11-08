@@ -2,7 +2,8 @@ class_name CatPart
 extends Part
 ## Chat : assis, il guette devant lui. Dès qu'un objet passe en mouvement à portée de vue, il
 ## bondit dessus en visant l'endroit où l'objet sera à son arrivée. Après chaque saut, il lui faut
-## un instant pour se remettre en position. Miroir : côté vers lequel il regarde.
+## un instant pour se remettre en position. Miroir : côté vers lequel il regarde. Dans le noir du
+## grenier, il ne voit que ce qui est éclairé.
 
 const SIZE := Vector2(46, 30)
 const SIGHT := 320.0
@@ -10,6 +11,8 @@ const SIGHT := 320.0
 const MIN_SPEED := 60.0
 const MAX_LEAP := 950.0
 const REST := 1.0
+## Lumière qu'il faut à un objet pour que le chat le voie, dans un niveau sombre.
+const SEE_LIGHT := 0.3
 
 var body: RigidBody2D
 var leaps := 0
@@ -43,6 +46,8 @@ func impact_sound() -> String:
 func describe() -> PackedStringArray:
 	var lines := super()
 	lines.append(Lang.t("Bondit sur ce qui bouge devant lui, jusqu'à %d px.") % SIGHT)
+	if board != null and board.is_dark():
+		lines.append(Lang.t("Dans le noir, il ne voit que ce qui est éclairé."))
 	return lines
 
 
@@ -73,6 +78,9 @@ func _spot() -> RigidBody2D:
 			if offset.x * dir <= 0.0:
 				continue
 			var d := offset.length()
+			if d < best_d and board.is_dark() \
+					and board.light_at(board.to_local(other.global_position), [other.get_rid(), body.get_rid()]) < SEE_LIGHT:
+				continue
 			if d < best_d:
 				best = other
 				best_d = d

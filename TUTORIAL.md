@@ -156,7 +156,8 @@ présents dans le niveau restent en place.
   comme un moteur. Le miroir change le sens de sa course.
 - **Chat :** assis, il guette le côté où il regarde. Dès qu'un objet passe en mouvement à moins de
   320 px, il bondit dessus en visant l'endroit où l'objet sera à son arrivée, puis se remet en
-  position. Le miroir le fait regarder de l'autre côté.
+  position. Le miroir le fait regarder de l'autre côté. Dans le noir du grenier, il ne voit que
+  ce qui est éclairé.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Bougie :** sa chaleur monte et fait éclater un ballon qui reste un court instant au-dessus de
@@ -164,6 +165,10 @@ présents dans le niveau restent en place.
   sa portée. Canal 0 : allumée dès le départ ; canaux 1 à 3 : s'allume avec son canal.
 - **Lampe de poche :** son faisceau éclaire le grenier, sur 460 px devant elle. Elle pivote par
   crans de 15°. Canal 0 : allumée dès le départ ; canaux 1 à 3 : s'allume avec son canal.
+- **Cellule :** allume son canal tant qu'une lampe l'éclaire assez (lampe de poche, lampe allumée
+  ou bougie), et l'éteint dans l'ombre. Un objet posé ou lancé dans le faisceau lui fait de
+  l'ombre. En miroir (petite flèche vers le bas), c'est l'inverse : elle allume son canal quand on
+  lui coupe la lumière, comme une barrière lumineuse. Canaux 1 à 3.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.
 
 ## Les canaux
@@ -175,7 +180,7 @@ vert des canaux par de l'orange, du bleu ciel et du violet ; « Réduire les ani
 balayage entre les niveaux, les particules (éclats des ballons, fumée du canon, poussière des
 chocs, gouttes du bac d'eau, étincelles des engrenages) et les mouvements décoratifs.
 
-- **Plaque, canon et lampe :** canaux 1 à 3.
+- **Plaque, canon, lampe et cellule :** canaux 1 à 3.
 - **Portail :** canaux 1 à 3, mais le numéro ne sert qu'à relier deux portails entre eux.
 - **Tapis, ventilateur, aimants, bougie, lampe de poche et moteur :** canaux 1 à 3, ou canal 0 pour fonctionner en permanence.
 
@@ -233,7 +238,7 @@ au-delà de son point d'attache, de quoi fabriquer une fronde. Il s'amincit à m
 
 ## Les niveaux
 
-Les 43 niveaux sont regroupés en six mondes, chacun avec sa couleur de fond. Tous sont accessibles
+Les 46 niveaux sont regroupés en six mondes, chacun avec sa couleur de fond. Tous sont accessibles
 dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
 Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles et
 de ton record (meilleur temps et plus petit nombre de pièces). Un record battu est annoncé à la
@@ -307,12 +312,16 @@ marge. Sa vignette reste fermée (🔒) tant que les autres niveaux du monde n'o
 
 **Le grenier**, plongé dans le noir. Seuls les faisceaux des lampes de poche, les lampes allumées,
 les bougies et, à l'atelier, un petit halo autour du pointeur éclairent le décor ; les étoiles des
-objectifs restent visibles. L'obscurité ne change rien à la physique :
+objectifs restent visibles. L'obscurité ne change rien à la physique, mais elle compte : la
+cellule réagit à la lumière, et le chat ne voit que ce qui est éclairé :
 
 40. **La lampe de poche :** une étagère cachée dans le noir.
 41. **L'interrupteur :** une lampe de poche qui s'allume avec l'interrupteur.
 42. **Les ballons perdus :** la bougie et les pointes, pour deux ballons coincés sous le toit.
-43. **Défi : les combles :** un ressort, l'interrupteur au mur et le panier dessous.
+43. **La cellule :** éclairer une cellule pour ouvrir une trappe.
+44. **La barrière :** couper un faisceau avec la bille.
+45. **Le chat dans le noir :** éclairer le ballon pour que le chat le voie.
+46. **Défi : les combles :** un ressort, l'interrupteur au mur et le panier dessous.
 
 ## Les objectifs bonus
 

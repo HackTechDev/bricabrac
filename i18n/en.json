@@ -609,5 +609,21 @@
  "Rester": "Stay",
  "%d essai": "%d try",
  "%d essais": "%d tries",
- "\nEn dessous : nombre de lancements de la machine dans ce niveau.": "\nBelow: number of times the machine was run in this level."
+ "\nEn dessous : nombre de lancements de la machine dans ce niveau.": "\nBelow: number of times the machine was run in this level.",
+ "Cellule": "Light sensor",
+ "Allume son canal quand une lampe l'éclaire. Miroir : quand la lumière est coupée.": "Turns its channel on when a lamp lights it. Mirror: when the light is cut off.",
+ "Allume son canal quand une lampe l'éclaire.": "Turns its channel on when a lamp lights it.",
+ "Allume son canal quand on lui coupe la lumière.": "Turns its channel on when its light is cut off.",
+ "Dans le noir, il ne voit que ce qui est éclairé.": "In the dark, it only sees what is lit.",
+ "La cellule": "The light sensor",
+ "Amène la bille dans le panier : la trappe s'ouvre quand la cellule voit de la lumière.": "Get the marble into the basket: the trapdoor opens when the sensor sees light.",
+ "Nouvelle pièce : la cellule. Elle allume son canal tant qu'une lampe l'éclaire ; une caisse ou une bille dans le faisceau lui fait de l'ombre.": "New part: the light sensor. It keeps its channel on while a lamp lights it; a crate or a marble in the beam casts a shadow on it.",
+ "Pose la lampe de poche face à la cellule, à moins de 300 px, le faisceau vers la droite.": "Put the flashlight facing the sensor, less than 300 px away, with the beam pointing right.",
+ "La barrière": "The light barrier",
+ "Allume la lampe : coupe le faisceau avec la bille.": "Light the lamp: cut the beam with the marble.",
+ "Cette cellule est en miroir : elle allume son canal quand on lui coupe la lumière, comme une barrière lumineuse.": "This sensor is mirrored: it turns its channel on when its light is cut off, like a light barrier.",
+ "Une planche inclinée sous la bille l'envoie à travers le faisceau.": "A tilted plank under the marble sends it through the beam.",
+ "Le chat dans le noir": "The cat in the dark",
+ "Dans le noir, le chat ne voit que ce qui est éclairé. Le ballon monte juste devant lui… sans qu'il le remarque.": "In the dark, the cat only sees what is lit. The balloon rises right in front of it… without it noticing.",
+ "Éclaire le ballon : la lampe de poche à gauche du chat, inclinée vers le haut.": "Light up the balloon: the flashlight to the left of the cat, tilted upwards."
 }

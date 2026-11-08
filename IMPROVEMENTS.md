@@ -7,7 +7,7 @@ section, les idées les plus utiles ou les moins coûteuses viennent en premier.
 
 Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
-- Faire essayer les 43 niveaux à de vrais joueurs et noter où ils bloquent.
+- Faire essayer les 46 niveaux à de vrais joueurs et noter où ils bloquent.
 - Revoir la difficulté de la Catapulte et du Pendule, dont les zones gagnantes sont étroites.
 - Régler en jouant le chat, l'élastique et la corde qui s'accroche aux obstacles, jusqu'ici
   réglés seulement par des tests.
@@ -21,12 +21,12 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
   de bâtir des niveaux autour d'eux : taille de l'ouverture, vitesse de sortie du coude, délai
   de chauffe de la bougie.
 - Régler l'obscurité du grenier en jouant : opacité du voile, taille du halo du pointeur, portée
-  de la lampe de poche.
+  de la lampe de poche, seuil de la cellule et du chat.
 
 ## Nouveaux niveaux
 
-- D'autres niveaux pour le grenier (il n'en a que quatre), et une obscurité qui compte en jeu :
-  un chat qui ne voit que ce qui est éclairé, une cellule qui allume son canal dans un faisceau.
+- D'autres niveaux pour la cellule ailleurs qu'au grenier : elle marche dans tous les mondes,
+  avec une lampe de poche.
 
 ## Confort de jeu
 
@@ -58,6 +58,8 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Présentation
 
+- Dessiner l'ombre des objets dans le faisceau des lampes de poche : la cellule et le chat en
+  tiennent compte, mais le voile du grenier ne la montre pas encore.
 - Atténuer la musique pendant la simulation et la remonter à l'atelier, pour mieux entendre la
   machine.
 - Une musique par monde, sur la même trame que celle de l'atelier.

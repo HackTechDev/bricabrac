@@ -45,20 +45,25 @@ func sources() -> Array:
 
 
 ## Part de lumière reçue en un point du plateau (0 : noir complet, 1 : pleine lumière), comme le
-## calcule le shader.
+## calcule le shader : sans ombres, halo du pointeur compris.
 func light_at(point: Vector2) -> float:
 	var lit := 0.0
 	for light: Dictionary in sources():
-		var d: Vector2 = point - light.pos
-		var dist := d.length()
-		var f := 1.0 - smoothstep(light.range * 0.45, light.range, dist)
-		if light.has("half"):
-			var c := d.normalized().dot(light.dir) if dist > 0.001 else 1.0
-			var edge := cos(float(light.half))
-			f *= smoothstep(edge - 0.06, edge + 0.03, c)
-			f = maxf(f, 1.0 - smoothstep(10.0, 26.0, dist))
-		lit = maxf(lit, f * light.get("strength", 1.0))
+		lit = maxf(lit, intensity(light, point))
 	return lit
+
+
+## Éclairement d'un point par une lumière, avant toute ombre ; même formule que le shader.
+static func intensity(light: Dictionary, point: Vector2) -> float:
+	var d: Vector2 = point - light.pos
+	var dist := d.length()
+	var f := 1.0 - smoothstep(light.range * 0.45, light.range, dist)
+	if light.has("half"):
+		var c := d.normalized().dot(light.dir) if dist > 0.001 else 1.0
+		var edge := cos(float(light.half))
+		f *= smoothstep(edge - 0.06, edge + 0.03, c)
+		f = maxf(f, 1.0 - smoothstep(10.0, 26.0, dist))
+	return f * light.get("strength", 1.0)
 
 
 func _process(_delta: float) -> void:

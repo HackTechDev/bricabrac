@@ -7,7 +7,7 @@ const PANEL_X := 1040.0
 const BIN_ORDER: Array[String] = [
 	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "switch", "timer", "trapdoor", "door", "scissors", "magnet", "magnet_repel", "motor", "gear", "portal", "water", "suction", "cart", "mousewheel", "cat",
 	"cannon",
-	"pulley", "rope", "elastic", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes", "candle", "flashlight", "funnel", "pipe",
+	"pulley", "rope", "elastic", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes", "candle", "flashlight", "cell", "funnel", "pipe",
 	"lamp", "basket",
 ]
 ## Entrées du menu du clic droit.

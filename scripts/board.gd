@@ -110,6 +110,29 @@ func gravity_factor() -> float:
 	return level.get("gravity", 1.0)
 
 
+## Lumière que reçoit un point du plateau, pour le jeu : seules les pièces éclairent (pas le halo
+## du pointeur), et un faisceau s'arrête au premier obstacle. `exclude` : corps qui ne font pas
+## d'ombre (celui qu'on éclaire, la cellule elle-même).
+func light_at(point: Vector2, exclude: Array[RID] = []) -> float:
+	var lit := 0.0
+	var space := get_world_2d().direct_space_state
+	for part in parts:
+		for light: Dictionary in part.light_sources():
+			var f := Darkness.intensity(light, point)
+			if f <= lit:
+				continue
+			var skip: Array[RID] = exclude.duplicate()
+			skip.append(_walls.get_rid())
+			for child in part.get_children():
+				if child is CollisionObject2D:
+					skip.append((child as CollisionObject2D).get_rid())
+			var query := PhysicsRayQueryParameters2D.create(to_global(light.pos), to_global(point),
+					Part.LAYER_WORLD, skip)
+			if space.intersect_ray(query).is_empty():
+				lit = f
+	return lit
+
+
 ## Le plateau se redessine à chaque image quand une ombre de vent peut bouger : vent du niveau
 ## ou ventilateur posé.
 func _update_redraw() -> void:

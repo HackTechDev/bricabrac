@@ -27,6 +27,7 @@ func _run() -> void:
 	await _test_hums()
 	await _test_darkness()
 	await _test_fan_shadow()
+	await _test_cell()
 	_end("PIÈCES OK")
 
 
@@ -588,4 +589,49 @@ func _test_fan_shadow() -> void:
 	await _steps(2)
 	var shadows := board.fan_shadows().size()
 	_check("ombre du souffle : en marche, seul le ventilateur allumé (%d)" % shadows, shadows == 1)
+	board.stop()
+
+
+## Cellule : éclairée par une lampe de poche, elle allume son canal ; une caisse posée dans le
+## faisceau lui fait de l'ombre. En miroir, c'est l'ombre qui allume. Hors de portée : rien.
+func _test_cell() -> void:
+	_level([
+		{"kind": "flashlight", "pos": Vector2(100, 300)},
+		{"kind": "cell", "id": "cellule", "pos": Vector2(400, 300), "rot": 270.0, "channel": 1},
+		{"kind": "lamp", "id": "lampe", "pos": Vector2(900, 600), "channel": 1},
+		{"kind": "cell", "id": "barriere", "pos": Vector2(400, 500), "rot": 270.0, "channel": 2, "dir": -1},
+		{"kind": "lamp", "id": "alarme", "pos": Vector2(800, 600), "channel": 2},
+	])
+	board.start()
+	await _steps(3)
+	_check("cellule : éclairée, elle allume la lampe", board.find_part("lampe").powered)
+	_check("cellule en miroir : dans l'ombre, elle allume son canal", board.find_part("alarme").powered)
+	_level([
+		{"kind": "flashlight", "pos": Vector2(100, 300)},
+		{"kind": "crate", "pos": Vector2(250, 300)},
+		{"kind": "cell", "pos": Vector2(400, 300), "rot": 270.0, "channel": 1},
+		{"kind": "lamp", "id": "lampe", "pos": Vector2(900, 600), "channel": 1},
+		{"kind": "flashlight", "pos": Vector2(100, 100)},
+		{"kind": "cell", "pos": Vector2(900, 100), "rot": 270.0, "channel": 2},
+		{"kind": "lamp", "id": "loin", "pos": Vector2(800, 600), "channel": 2},
+	])
+	board.start()
+	await _steps(3)
+	_check("cellule : une caisse dans le faisceau lui fait de l'ombre", not board.find_part("lampe").powered)
+	_check("cellule : hors de portée, rien", not board.find_part("loin").powered)
+	board.stop()
+	# Le chat du grenier ne voit que ce qui est éclairé.
+	for lit: bool in [false, true]:
+		var fixed: Array = [
+			{"kind": "cat", "id": "chat", "pos": Vector2(150, 625)},
+			{"kind": "balloon", "pos": Vector2(330, 600)},
+		]
+		if lit:
+			fixed.append({"kind": "flashlight", "pos": Vector2(40, 300), "rot": 30.0})
+		_level(fixed, {}, {"world": "grenier"})
+		board.start()
+		await _steps(90)
+		var leaps: int = (board.find_part("chat") as CatPart).leaps
+		_check("chat du grenier : %s (%d saut)" % ["bondit sur le ballon éclairé" if lit else "ne voit pas le ballon dans le noir", leaps],
+				(leaps > 0) == lit)
 	board.stop()

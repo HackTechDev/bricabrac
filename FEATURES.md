@@ -16,13 +16,14 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
 
 ## Contenu
 
-- **43 niveaux** répartis en **six mondes**, chacun avec sa couleur de fond :
+- **46 niveaux** répartis en **six mondes**, chacun avec sa couleur de fond :
   - l'**atelier**, 12 niveaux : les bases ;
   - la **cuisine**, 8 niveaux : minuteries, bac d'eau, souris, chat, bougie ;
   - l'**usine**, 7 niveaux : engrenages, aimants, ventilation, chariot, tri ;
   - l'**espace**, 6 niveaux : gravité faible, portails, vent solaire ;
   - le **jardin**, 6 niveaux : plusieurs mécanismes enchaînés ;
-  - le **grenier**, 4 niveaux : plongé dans le noir, éclairé par des lampes de poche.
+  - le **grenier**, 7 niveaux : plongé dans le noir, éclairé par des lampes de poche ; la
+    cellule y réagit à la lumière et le chat n'y voit que ce qui est éclairé.
 - Un **niveau défi** clôt chaque monde : peu de pièces, presque aucune marge. Il reste fermé tant
   que les autres niveaux du monde n'ont pas toutes leurs étoiles.
 - Des niveaux à **physique particulière** : gravité faible ou forte, vent permanent.
@@ -32,7 +33,7 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
 
 ## Les pièces
 
-38 sortes de pièces, chacune avec une infobulle qui explique son rôle et ses réglages.
+39 sortes de pièces, chacune avec une infobulle qui explique son rôle et ses réglages.
 
 - **Guidage :** planche, ressort, tapis roulant, bascule, entonnoir, tuyau coudé.
 - **Objets mobiles :** bille, balle rebond, boulet, caisse, domino, ballon.
@@ -53,6 +54,7 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
   - pointes ;
   - bougie qui fait éclater les ballons ;
   - lampe de poche ;
+  - cellule photoélectrique, qui allume son canal à la lumière (ou quand on la coupe) ;
   - lampe.
 - **Liens :** corde (avec poulies, mou réglable, accroche aux coins des obstacles) et élastique
   (tension de départ réglable, de quoi faire une fronde).
