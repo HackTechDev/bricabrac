@@ -275,7 +275,10 @@ panneau « Éditeur de niveaux », sous le bac, règle le reste :
 2. **Objectif (G) :** sélectionne un panier, une lampe ou un ballon et appuie sur G. Une étoile
    dorée le signale ; il en faut au moins un. Pour une lampe, pense à poser de quoi l'allumer.
 3. **Inventaire… :** les pièces offertes au joueur, de 0 à 9 de chaque sorte.
-4. **Gravité et vent :** les deux boutons du haut, comme dans le bac à sable.
+4. **Physique… :** la gravité, de ×0,1 à ×2, et le vent, dans l'une des huit directions avec
+   une force de 30 à 300 (à 120, il emporte un ballon). Le bouton résume le réglage en cours, qui
+   est gardé avec ton brouillon. Les deux boutons du haut proposent aussi les réglages rapides du
+   bac à sable.
 5. **Essayer :** joue ton niveau tel que le verra le joueur. « Retour à l'éditeur » ramène au
    plan de travail, intact.
 6. **Enregistrer :** range le niveau dans le monde « Mes niveaux » de l'écran de sélection.
@@ -298,7 +301,7 @@ boutons de plus permettent de travailler sur les niveaux officiels du dossier `l
 
 - **Ouvrir (jeu)…** liste ces niveaux et en charge un dans l'éditeur, avec sa solution, qui sert
   de preuve tant que rien ne change.
-- **Enregistrer (jeu)…** demande sa fiche (identifiant, monde, introduction, indice, temps de
+- **Écrire (jeu)…** demande sa fiche (identifiant, monde, introduction, indice, temps de
   l'objectif « Rapide ») et écrit le fichier. Un nouveau niveau est numéroté après les autres ; un
   niveau ouvert garde son fichier, ou est renommé si son identifiant change. Comme pour le partage,
   il faut l'avoir gagné avec « Essayer » : sa solution est enregistrée avec lui. Le tutoriel d'un

@@ -198,10 +198,13 @@ func _announce(shot: Texture2D) -> void:
 ## Ordre des niveaux : ceux du jeu, le bac à sable, les niveaux personnels, puis l'éditeur et
 ## l'essai en cours, qui n'ont pas de vignette.
 func _assemble_levels() -> void:
+	var physics := _editor_physics()
 	levels = LevelData.all()
 	levels.append(LevelData.sandbox())
 	levels.append_array(custom_levels)
-	levels.append(LevelData.editor_level())
+	var editor_level := LevelData.editor_level()
+	editor_level.merge(physics, true)
+	levels.append(editor_level)
 	if _test_level.is_empty():
 		_test_level = {"id": "essai_editeur", "name": "Essai", "goal_text": "", "fixed": [],
 				"inventory": {}, "hidden": true, "world": "perso"}
@@ -217,6 +220,12 @@ func _build_level_select() -> void:
 	_level_select.chosen.connect(load_level)
 	_level_select.import_requested.connect(func() -> void: share_dialog.show_import())
 	_level_select.title_requested.connect(func() -> void: open_title())
+
+
+## Gravité et vent du plan de travail : ceux de la partie en cours, sinon ceux du brouillon.
+func _editor_physics() -> Dictionary:
+	var source: Dictionary = levels[editor_index()] if levels.size() >= 2 else _editor_draft
+	return {"gravity": source.get("gravity", 1.0), "wind": source.get("wind", Vector2.ZERO)}
 
 
 func editor_index() -> int:
@@ -857,6 +866,13 @@ func _build_side_panel() -> void:
 	editor.reset_requested.connect(_editor_reset)
 	editor.share_requested.connect(_share_level)
 	editor.open_official_requested.connect(_open_official)
+	editor.physics_changed.connect(func(gravity: float, wind: Vector2) -> void:
+		if board.running or not is_editor():
+			return
+		board.set_physics(gravity, wind)
+		_refresh_proof()
+		_refresh_controls()
+		_save_progress())
 	editor.save_official_requested.connect(_ask_save_official)
 	official_dialog = OfficialDialog.new()
 	add_child(official_dialog)
@@ -1028,6 +1044,8 @@ func _refresh_controls() -> void:
 	_edit_button.visible = is_testing() or levels[current].get("custom", false)
 	_edit_button.disabled = board.running
 	_edit_button.text = "Retour à l'éditeur" if is_testing() else "Modifier"
+	if editor != null and is_editor():
+		editor.show_physics(board.gravity_factor(), board.wind())
 
 
 func _refresh_level_picker() -> void:
@@ -1290,8 +1308,10 @@ func _save_progress() -> void:
 	cfg.set_value("settings", "muted", muted)
 	cfg.set_value("layouts", "by_level", saved_layouts)
 	if editor != null:
-		cfg.set_value("custom", "draft", {"id": editor.custom_id, "name": editor.name_edit.text,
-				"goal_text": editor.goal_edit.text, "inventory": editor.inventory, "proof": editor.proof})
+		var draft := {"id": editor.custom_id, "name": editor.name_edit.text,
+				"goal_text": editor.goal_edit.text, "inventory": editor.inventory, "proof": editor.proof}
+		draft.merge(_editor_physics())
+		cfg.set_value("custom", "draft", draft)
 	cfg.save(save_path)
 
 

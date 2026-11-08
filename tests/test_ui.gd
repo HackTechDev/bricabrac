@@ -91,6 +91,7 @@ func _run() -> void:
 	await _test_title_and_transitions()
 	await _test_official_levels()
 	await _test_custom_migration()
+	await _test_editor_physics()
 
 	_finish("INTERFACE OK")
 
@@ -851,3 +852,47 @@ func _saved_custom_levels() -> bool:
 	var cfg := ConfigFile.new()
 	cfg.load(SAVE)
 	return cfg.has_section_key("custom", "levels")
+
+
+## Gravité et vent réglés finement dans l'éditeur : appliqués au plan de travail, repris par
+## l'essai et le niveau enregistré, gardés au redémarrage ; la preuve est perdue s'ils changent.
+func _test_editor_physics() -> void:
+	main.load_level(main.editor_index())
+	await _steps(2)
+	main._editor_reset()
+	var editor: LevelEditor = main.editor
+	editor.gravity_slider.value = 0.5
+	editor.wind_direction.select(5)
+	editor.wind_direction.item_selected.emit(5)
+	editor.wind_force.value = 150.0
+	_check("physique : appliquée au plan de travail", is_equal_approx(main.board.gravity_factor(), 0.5)
+			and main.board.wind() == Vector2(-150, 0))
+	_check("physique : résumée sur le bouton", editor.physics_button.text.contains("×0,5")
+			and editor.physics_button.text.contains("← 150"))
+	main.board.place("ball", Vector2(150, 60))
+	main.board.place("basket", Vector2(480, 590))
+	main.board.placed[1].goal = true
+	main._commit()
+	editor.inventory = {"plank": 1}
+	var level: Dictionary = main._editor_level("x")
+	_check("physique : reprise par le niveau", is_equal_approx(level.gravity, 0.5) and level.wind == Vector2(-150, 0))
+	main._editor_try()
+	await _steps(2)
+	_check("physique : reprise par l'essai", is_equal_approx(main.board.gravity_factor(), 0.5)
+			and main.board.wind() == Vector2(-150, 0))
+	main.load_level(main.editor_index())
+	await _steps(2)
+	editor.proof = {"signature": LevelData.signature(main._editor_level("x")), "solution": []}
+	main._refresh_proof()
+	_check("physique : preuve valable avant retouche", editor.is_proven(main._editor_level("x")))
+	editor.gravity_slider.value = 0.6
+	_check("physique : retouchée, preuve perdue", not editor.is_proven(main._editor_level("x"))
+			and editor.proof_label.text.begins_with("✘"))
+	await _restart()
+	main.load_level(main.editor_index())
+	await _steps(2)
+	_check("physique : gardée au redémarrage", is_equal_approx(main.board.gravity_factor(), 0.6)
+			and main.board.wind() == Vector2(-150, 0) and main.editor.physics_button.text.contains("×0,6"))
+	main._editor_reset()
+	_check("physique : « Nouveau » la remet à zéro", main.board.gravity_factor() == 1.0
+			and main.board.wind() == Vector2.ZERO)

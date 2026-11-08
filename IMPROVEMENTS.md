@@ -53,7 +53,6 @@ pour les pièces de base.
 
 ## Éditeur et communauté
 
-- Choix de la gravité et du vent dans l'éditeur, comme dans le bac à sable.
 - Galerie de niveaux partagés, triée par difficulté mesurée (nombre d'essais avant victoire).
 
 ## Contenu et rejouabilité

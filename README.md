@@ -55,7 +55,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
     CAPTURE_DIR=dossier $GODOT --path . -s tests/capture.gd              # captures (affichage requis)
 
 Pour ajouter un niveau : le construire dans l'éditeur du jeu lancé depuis les sources, le gagner
-avec « Essayer », puis « Enregistrer (jeu)… » écrit son fichier dans `levels/` avec sa solution.
+avec « Essayer », puis « Écrire (jeu)… » écrit son fichier dans `levels/` avec sa solution.
 On peut aussi écrire le fichier à la main (format décrit en tête de `scripts/level_file.gd`, le
 préfixe numérique fixe sa place) et chercher une large zone gagnante avec `sweep.gd`.
 `test_levels.gd` vérifie ensuite que la solution gagne.
