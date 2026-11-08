@@ -13,6 +13,7 @@ func _run() -> void:
 	await _test_gears()
 	await _test_portals()
 	await _test_water()
+	await _test_level_physics()
 	_end("PIÈCES OK")
 
 
@@ -153,8 +154,8 @@ func _test_portals() -> void:
 			await _steps(1)
 		var after := _rigid("b").linear_velocity
 		var label := "portail %d°" % exit_rot
-		_near(label + " : la bille ressort de l'autre", _pos("b").x, 700.0, 5.0)
-		_near(label + " : même vitesse", after.length(), before.length(), 15.0)
+		_near(label + " : la bille ressort de l'autre", _pos("b").x, 700.0, 0.01)
+		_near(label + " : même vitesse", after.length(), before.length(), 0.03)
 		var expected := Vector2.DOWN if exit_rot == 90.0 else Vector2.RIGHT
 		_check(label + " : direction tournée", after.normalized().dot(expected) > 0.95)
 		await _steps(60)
@@ -166,7 +167,7 @@ func _test_portals() -> void:
 	])
 	board.start()
 	await _steps(120)
-	_near("portail seul : la bille le traverse", _pos("b").x, 200.0, 5.0)
+	_near("portail seul : la bille le traverse", _pos("b").x, 200.0, 0.01)
 
 
 ## Lâchés au-dessus du bac, les objets légers flottent et les lourds coulent jusqu'au fond.
@@ -190,6 +191,34 @@ func _test_water() -> void:
 	for id: String in ["bille", "boulet"]:
 		_check("eau : %s au fond (%.0f)" % [id, _pos(id).y], _pos(id).y > bottom - 30.0)
 	_check("eau : le bac retient tout", absf(_pos("caisse").x - tank.x) < WaterPart.INNER.x / 2.0)
+
+
+## Gravité réduite : chute quatre fois plus courte. Vent : il pousse le léger bien plus que le lourd,
+## et tout redevient normal au niveau suivant.
+func _test_level_physics() -> void:
+	var drop := {}
+	for g: float in [1.0, 0.25]:
+		_level([{"kind": "ball", "id": "b", "pos": Vector2(200, 100)}], {}, {"gravity": g})
+		board.start()
+		await _steps(60)
+		drop[g] = _pos("b").y - 100.0
+	_near("gravité ×0,25 : chute réduite d'autant", drop[0.25] / drop[1.0], 0.25, 0.03)
+	_level([
+		{"kind": "ball_bouncy", "id": "balle", "pos": Vector2(200, 100)},
+		{"kind": "ball_heavy", "id": "boulet", "pos": Vector2(500, 100)},
+	], {}, {"wind": Vector2(300, 0)})
+	board.start()
+	await _steps(60)
+	var light := _pos("balle").x - 200.0
+	var heavy := _pos("boulet").x - 500.0
+	_near("vent : la balle rebond dérive", light, 0.5 * 0.25 * 300.0 * 0.001 * PI * 15.0 * 15.0 / 0.8, 0.1)
+	_check("vent : le boulet dérive trois fois moins (%.0f contre %.0f px)" % [heavy, light],
+			heavy > 0.0 and heavy * 3.0 < light)
+	_level([{"kind": "ball", "id": "b", "pos": Vector2(200, 100)}])
+	board.start()
+	await _steps(60)
+	_near("niveau suivant : gravité normale", _pos("b").y - 100.0, drop[1.0], 0.01)
+	_near("niveau suivant : pas de vent", _pos("b").x, 200.0, 0.001)
 
 
 func _lamp() -> LampPart:

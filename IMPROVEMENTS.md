@@ -26,7 +26,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 ## Contenu et rejouabilité
 
 - Davantage de niveaux, regroupés en mondes à thème : atelier, cuisine, usine, espace.
-- Physique variable selon le niveau : gravité faible, vent permanent.
 - Objectifs bonus : gagner avec peu de pièces, en peu de temps, ou utiliser toutes les pièces.
 - Mode bac à sable, sans objectif et avec toutes les pièces.
 - Personnages ou animaux aux réactions simples, pour donner de l'humour aux machines.

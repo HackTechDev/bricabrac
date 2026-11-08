@@ -85,6 +85,21 @@ func _ready() -> void:
 	load_level(_first_unsolved())
 
 
+## Rappel des conditions inhabituelles du niveau, à la suite de l'objectif.
+static func _physics_note(level: Dictionary) -> String:
+	var notes: PackedStringArray = []
+	var g: float = level.get("gravity", 1.0)
+	if g < 1.0:
+		notes.append("gravité faible (×%s)" % String.num(g, 2).replace(".", ","))
+	elif g > 1.0:
+		notes.append("gravité forte (×%s)" % String.num(g, 2).replace(".", ","))
+	var w: Vector2 = level.get("wind", Vector2.ZERO)
+	if w != Vector2.ZERO:
+		var arrows := ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"]
+		notes.append("vent %s" % arrows[wrapi(roundi(w.angle() / (PI / 4.0)), 0, 8)])
+	return "" if notes.is_empty() else "  —  " + ", ".join(notes)
+
+
 func load_level(index: int) -> void:
 	_stop_drag()
 	_hide_tooltip()
@@ -97,7 +112,7 @@ func load_level(index: int) -> void:
 	var dropped := board.restore_layout(saved_layouts.get(level_id, []))
 	if not histories.has(level_id):
 		histories[level_id] = History.new(board.layout())
-	_goal_label.text = levels[index].goal_text
+	_goal_label.text = levels[index].goal_text + _physics_note(levels[index])
 	_status.text = levels[index].get("intro", "")
 	if not board.placed.is_empty():
 		_status.text = "Ta machine a été remise en place. Ctrl+Z annule ta dernière action."

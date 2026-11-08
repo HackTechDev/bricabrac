@@ -127,6 +127,17 @@ tirer. Le numéro s'affiche sur la pastille colorée de chaque pièce, et la tou
 Par exemple, pour déclencher un canon, pose une plaque là où un objet va tomber, puis mets la plaque
 et le canon sur le même numéro.
 
+## Gravité et vent
+
+Certains niveaux changent les lois de l'atelier, ce que rappelle la fin de l'objectif en haut de
+l'écran :
+
+- **Gravité faible ou forte :** tout tombe plus lentement ou plus vite, y compris les ballons qui
+  montent moins vite. Les sauts et les tirs de canon portent donc plus ou moins loin.
+- **Vent permanent :** des traînées traversent le plateau dans son sens. Il pousse les objets en
+  proportion de leur taille rapportée à leur poids : il emporte un ballon, dévie une balle rebond et
+  touche à peine le boulet. Un objet posé sur un support résiste grâce au frottement.
+
 ## Les cordes et les poulies
 
 La corde relie deux pièces, avec des poulies en chemin si besoin. Elle se pose en plusieurs clics :

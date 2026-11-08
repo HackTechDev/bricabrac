@@ -9,6 +9,9 @@ signal inventory_changed
 const SIZE := Vector2(1040, 640)
 const GRID := 10.0
 const WALL := 100.0
+## Le vent pousse un objet en proportion de sa surface rapportée à sa masse : une valeur de vent
+## est l'accélération subie par un objet de cette densité (masse par pixel carré).
+const AIR_DENSITY := 0.001
 
 var level := {}
 var placed: Array[Dictionary] = []
@@ -44,8 +47,37 @@ func load_level(p_level: Dictionary) -> void:
 			fixed[i]["id"] = "f%d" % i
 	placed.clear()
 	_next_id = 1
+	PhysicsServer2D.area_set_param(get_world_2d().space, PhysicsServer2D.AREA_PARAM_GRAVITY,
+			ProjectSettings.get_setting("physics/2d/default_gravity") * gravity_factor())
+	set_process(wind() != Vector2.ZERO)
+	queue_redraw()
 	_rebuild(false)
 	inventory_changed.emit()
+
+
+## Physique propre au niveau : gravité relative (1 : normale) et vent permanent.
+func gravity_factor() -> float:
+	return level.get("gravity", 1.0)
+
+
+func wind() -> Vector2:
+	return level.get("wind", Vector2.ZERO)
+
+
+func _blow() -> void:
+	var w := wind()
+	if w == Vector2.ZERO:
+		return
+	for part in parts:
+		for col in part.solids:
+			var body := col.get_parent() as RigidBody2D
+			if body != null and not body.freeze:
+				var surface := WaterPart._shape_area(WaterPart._outline(col.shape))
+				body.apply_central_force(w * AIR_DENSITY * surface)
+
+
+func _process(_delta: float) -> void:
+	queue_redraw()
 
 
 func start() -> void:
@@ -281,6 +313,7 @@ func _spawn_now(entry: Dictionary) -> void:
 func _physics_process(_delta: float) -> void:
 	if not running:
 		return
+	_blow()
 	_solve_gears()
 	if has_won:
 		return
@@ -422,3 +455,21 @@ func _draw() -> void:
 	while y <= SIZE.y:
 		draw_line(Vector2(0, y), Vector2(SIZE.x, y), major if int(y) % 200 == 0 else minor)
 		y += 40.0
+	_draw_wind()
+
+
+## Traînées qui défilent dans le sens du vent, plus vite quand il est fort.
+func _draw_wind() -> void:
+	var w := wind()
+	if w == Vector2.ZERO:
+		return
+	var along := w.normalized()
+	var t := Time.get_ticks_msec() / 1000.0
+	var streak := along * clampf(w.length() * 0.2, 16.0, 48.0)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	for i in 28:
+		var base := Vector2(rng.randf() * SIZE.x, rng.randf() * SIZE.y)
+		var p := base + along * fmod(t * w.length() * 0.8 + rng.randf() * 1000.0, SIZE.length())
+		p = Vector2(fposmod(p.x, SIZE.x), fposmod(p.y, SIZE.y))
+		draw_line(p, p + streak, Color(1, 1, 1, 0.10), 2.0)
