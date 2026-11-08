@@ -22,7 +22,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Confort de jeu
 
-- Bouton d'accélération de la simulation (x2, x4) et mode pause.
 - Trajectoire fantôme du dernier essai, pour ajuster une pose sans tout revoir.
 - Indices progressifs : un premier indice vague, puis la position d'une pièce clé, puis la
   solution complète, en échange des étoiles du niveau.

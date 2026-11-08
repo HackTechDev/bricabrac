@@ -94,6 +94,7 @@ func _run() -> void:
 	await _test_editor_physics()
 	await _test_gallery()
 	await _test_challenges()
+	await _test_speed()
 
 	_finish("INTERFACE OK")
 
@@ -1024,3 +1025,43 @@ func _test_challenges() -> void:
 	main.open_level_select()
 	main.completed = saved_completed
 	main.bonuses = saved_bonuses
+
+
+## Vitesse ×1/×2/×4 et pause : l'accélération ne change pas le résultat (même temps de victoire),
+## la pause gèle la simulation, et l'arrêt rend au moteur sa cadence normale.
+func _test_speed() -> void:
+	var board: Board = main.board
+	var times: Array[float] = []
+	for value: int in [1, 4]:
+		main.load_level(0)
+		await _steps(2)
+		board.clear_placed()
+		board.apply_layout(main.levels[0].solution)
+		main.set_speed(value)
+		main.toggle_run()
+		_check("vitesse ×%d : moteur à %d pas par seconde" % [value, 120 * value],
+				Engine.physics_ticks_per_second == 120 * value and Engine.time_scale == value)
+		for i in 1200:
+			await physics_frame
+			if board.has_won:
+				break
+		times.append(board.elapsed)
+	_check("vitesse : même victoire en ×1 et ×4 (%.3f / %.3f s)" % times, times[0] == times[1] and times[0] > 0.0)
+	main.cycle_speed()
+	_check("vitesse : ×4 puis ×1", main.speed == 1 and main._speed_button.text == "×1")
+	main.toggle_run()
+	board.clear_placed()
+	main.toggle_run()
+	await _steps(10)
+	main.toggle_pause()
+	var at := board.elapsed
+	await _steps(30)
+	_check("pause : le temps est figé", main.paused and board.elapsed == at)
+	main.toggle_pause()
+	await _steps(30)
+	_check("pause : reprise", not main.paused and board.elapsed > at)
+	main.toggle_pause()
+	main.toggle_run()
+	_check("arrêt : fin de la pause et cadence normale", not main.paused
+			and Engine.physics_ticks_per_second == 120 and Engine.time_scale == 1.0)
+	board.clear_placed()

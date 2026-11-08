@@ -27,7 +27,7 @@ func verify(level: Dictionary) -> String:
 			reason = "La solution pose une pièce là où elle n'a pas la place."
 	if reason == "":
 		board.start()
-		var ticks := int(TIMEOUT * Engine.physics_ticks_per_second)
+		var ticks := int(TIMEOUT * ProjectSettings.get_setting("physics/common/physics_ticks_per_second"))
 		for i in ticks:
 			await get_tree().physics_frame
 			if board.has_won:

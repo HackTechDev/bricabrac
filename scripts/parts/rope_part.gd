@@ -179,7 +179,7 @@ func _physics_process(_delta: float) -> void:
 	if softness <= 0.0:
 		return
 	# Vitesse d'allongement autorisée : la corde peut se tendre, puis se rattrape si elle a trop cédé.
-	var dt := 1.0 / Engine.physics_ticks_per_second
+	var dt := get_physics_process_delta_time()  # Fixe, même en accéléré.
 	var allowed := -stretch / dt
 	if stretch > 0.0:
 		allowed = -minf(STIFFNESS * stretch / dt, MAX_CORRECTION)

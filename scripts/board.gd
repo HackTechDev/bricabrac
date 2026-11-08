@@ -5,6 +5,8 @@ extends Node2D
 
 signal won
 signal inventory_changed
+## Lancement ou arrêt de la simulation.
+signal running_changed
 
 const SIZE := Vector2(1040, 640)
 const GRID := 10.0
@@ -365,6 +367,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _rebuild(run: bool) -> void:
+	var was_running := running
 	running = run
 	has_won = false
 	elapsed = 0.0
@@ -384,6 +387,8 @@ func _rebuild(run: bool) -> void:
 				_make(entry)
 	if run:
 		_find_gear_pairs()
+	if run or was_running:
+		running_changed.emit()
 
 
 func _make(entry: Dictionary) -> Part:

@@ -50,7 +50,8 @@ func _physics_process(_delta: float) -> void:
 	var force := STIFF * stretch + DAMP * maxf(rate, 0.0)
 	if force <= 0.0:
 		return
-	var impulse := force / Engine.physics_ticks_per_second
+	# Pas de physique, fixe même quand la simulation est accélérée.
+	var impulse := force * get_physics_process_delta_time()
 	for end in ends:
 		end.apply(impulse)
 

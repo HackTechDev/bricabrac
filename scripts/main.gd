@@ -72,6 +72,11 @@ var _level_button: Button
 var _level_select: LevelSelect
 var _run_button: Button
 var _clear_button: Button
+var _speed_button: Button
+var _pause_button: Button
+## Vitesse de la simulation (1, 2 ou 4), appliquée seulement pendant qu'elle tourne.
+var speed := 1
+var paused := false
 var _goal_label: Label
 var _status: Label
 var _bin: VBoxContainer
@@ -116,6 +121,7 @@ func _ready() -> void:
 	add_child(board)
 	board.won.connect(_on_won)
 	board.inventory_changed.connect(_refresh_bin)
+	board.running_changed.connect(_refresh_speed)
 	_rope_preview = Line2D.new()
 	_rope_preview.width = 2.5
 	_rope_preview.default_color = Color(RopePart.COLOR, 0.8)
@@ -326,6 +332,54 @@ func load_level(index: int) -> void:
 		_announce(shot)
 
 
+## Vitesse suivante : ×1, ×2, ×4, puis de nouveau ×1.
+func cycle_speed() -> void:
+	set_speed(2 if speed == 1 else 4 if speed == 2 else 1)
+
+
+func set_speed(value: int) -> void:
+	speed = value
+	_refresh_speed()
+
+
+func toggle_pause() -> void:
+	if board.running:
+		paused = not paused
+		_refresh_speed()
+
+
+func _exit_tree() -> void:
+	# Le moteur est global : on le rend tel qu'on l'a trouvé.
+	speed = 1
+	paused = false
+	Engine.time_scale = 1.0
+	Engine.physics_ticks_per_second = ProjectSettings.get_setting("physics/common/physics_ticks_per_second")
+	PhysicsServer2D.set_active(true)
+
+
+## Accélère la simulation sans changer son résultat : le moteur fait plus de pas par seconde,
+## mais chaque pas couvre toujours le même temps (1/120 s). En pause, le moteur physique et le
+## plateau sont gelés. À l'arrêt, tout revient à la normale pour l'interface.
+func _refresh_speed() -> void:
+	if not board.running:
+		paused = false
+	_pause_button.text = "▶" if paused else "⏸"
+	_pause_button.disabled = not board.running
+	_speed_button.text = "×%d" % speed
+	_apply_speed()
+
+
+func _apply_speed() -> void:
+	var base: int = ProjectSettings.get_setting("physics/common/physics_ticks_per_second")
+	var factor := speed if board.running and not paused else 1
+	Engine.time_scale = factor
+	Engine.physics_ticks_per_second = base * factor
+	Engine.max_physics_steps_per_frame = maxi(8, 4 * factor)
+	var frozen := board.running and paused
+	PhysicsServer2D.set_active(not frozen)
+	board.process_mode = Node.PROCESS_MODE_DISABLED if frozen else Node.PROCESS_MODE_INHERIT
+
+
 func toggle_run() -> void:
 	if replay_mode != "":
 		_finish_replay()
@@ -391,6 +445,10 @@ func _handle_key(event: InputEventKey) -> void:
 			toggle_run()
 		KEY_M:
 			_toggle_sound()
+		KEY_P:
+			toggle_pause()
+		KEY_V:
+			cycle_speed()
 		KEY_TAB:
 			open_level_select()
 		KEY_G:
@@ -859,6 +917,18 @@ func _build_top_bar() -> void:
 	chrono = Chrono.new()
 	row.add_child(chrono)
 
+	_pause_button = Button.new()
+	_pause_button.focus_mode = Control.FOCUS_NONE
+	_pause_button.tooltip_text = "Met la simulation en pause, ou la reprend (P)"
+	_pause_button.pressed.connect(toggle_pause)
+	row.add_child(_pause_button)
+	_speed_button = Button.new()
+	_speed_button.focus_mode = Control.FOCUS_NONE
+	_speed_button.custom_minimum_size.x = 44
+	_speed_button.tooltip_text = "Vitesse de la simulation : ×1, ×2 ou ×4 (V)"
+	_speed_button.pressed.connect(cycle_speed)
+	row.add_child(_speed_button)
+
 	_run_button = Button.new()
 	_run_button.custom_minimum_size.x = 110
 	_run_button.focus_mode = Control.FOCUS_NONE
@@ -1060,6 +1130,7 @@ func is_sandbox() -> bool:
 
 func _refresh_controls() -> void:
 	_run_button.text = "Arrêter" if board.running else "Lancer"
+	_refresh_speed()
 	_clear_button.disabled = board.running
 	_gravity_button.visible = is_sandbox()
 	_wind_button.visible = is_sandbox()
