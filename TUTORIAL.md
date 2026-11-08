@@ -115,6 +115,9 @@ présents dans le niveau restent en place.
 - **Ventouse :** retient le premier objet qui touche sa coupelle rouge, qu'il peut pivoter autour du
   point de contact. Sur le canal 0, elle ne le lâche jamais ; sur les canaux 1 à 3, elle le lâche
   quand son canal s'allume, par exemple avec une minuterie.
+- **Chariot sur rail :** le wagonnet ne peut que rouler le long de son rail, d'un butoir à l'autre,
+  et emporte ce qu'on pose dessus. Incliné avec R, le rail le fait descendre tout seul ; sinon, un
+  choc ou un ventilateur le mettent en route.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.

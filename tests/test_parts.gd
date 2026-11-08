@@ -15,6 +15,7 @@ func _run() -> void:
 	await _test_water()
 	await _test_level_physics()
 	await _test_suction()
+	await _test_cart()
 	_end("PIÈCES OK")
 
 
@@ -239,6 +240,26 @@ func _test_suction() -> void:
 	await _steps(120)
 	_check("ventouse : lâchée par son canal", _pos("b").y > 450.0)
 	_check("ventouse canal 0 : garde sa prise", _pos("b2").y < 360.0)
+
+
+## Rail incliné : le chariot descend jusqu'au butoir sans quitter le rail. Rail plat : un boulet
+## tombé dessus reste à bord pendant que le ventilateur pousse le chariot.
+func _test_cart() -> void:
+	_level([{"kind": "cart", "id": "c", "pos": Vector2(500, 300), "rot": 15.0}])
+	board.start()
+	await _steps(360)
+	var along := (_pos("c") - Vector2(500, 300)).rotated(-deg_to_rad(15.0))
+	_near("chariot : au bout du rail", along.x, (CartPart.RAIL.x - CartPart.CART.x) / 2.0, 0.05)
+	_near("chariot : reste sur le rail", along.y, -CartPart.RIDE, 0.05)
+	_level([
+		{"kind": "cart", "id": "c", "pos": Vector2(500, 400)},
+		{"kind": "ball_heavy", "id": "k", "pos": Vector2(500, 300)},
+		{"kind": "fan", "pos": Vector2(250, 385)},
+	])
+	board.start()
+	await _steps(240)
+	_check("chariot : poussé par le vent (%.0f)" % _pos("c").x, _pos("c").x > 560.0)
+	_check("chariot : le boulet reste à bord", absf(_pos("k").x - _pos("c").x) < 30.0 and _pos("k").y < 400.0)
 
 
 func _lamp() -> LampPart:
