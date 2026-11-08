@@ -7,7 +7,7 @@ section, les idées les plus utiles ou les moins coûteuses viennent en premier.
 
 Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
-- Faire essayer les 31 niveaux à de vrais joueurs et noter où ils bloquent.
+- Faire essayer les 36 niveaux à de vrais joueurs et noter où ils bloquent.
 - Revoir la difficulté de la Catapulte et du Pendule, dont les zones gagnantes sont étroites.
 - Régler en jouant le chat, l'élastique et la corde qui s'accroche aux obstacles, jusqu'ici
   réglés seulement par des tests.
@@ -16,8 +16,9 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Nouveaux niveaux
 
-- **Niveaux « défi »** après chaque monde : peu de pièces, gros décor, une seule solution
-  propre, pour les joueurs qui ont toutes les étoiles.
+- Un sixième monde, par exemple un grenier sombre où une lampe de poche éclaire le décor.
+- Remplacer les niveaux « La fronde » et « Le hamster » de la galerie, qui ont maintenant leur
+  version officielle, par d'autres niveaux d'exemple.
 
 ## Confort de jeu
 

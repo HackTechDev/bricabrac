@@ -5,6 +5,7 @@ class_name LevelData
 ## `fixed` : décor ; `inventory` : pièces du joueur ; `gravity`, `wind` : physique du niveau ;
 ## `solution` : disposition rejouée par tests/test_levels.gd pour prouver que le niveau se résout ;
 ## `par_time` : temps de l'objectif bonus « Rapide », que la solution doit tenir ;
+## `challenge` : niveau « défi », fermé tant que son monde n'a pas toutes ses étoiles ;
 ## `tutorial` : étapes guidées du niveau.
 
 static var dir := LevelFile.DIR
@@ -155,8 +156,8 @@ static func remap_ids(entries: Array, ids: Dictionary) -> Array:
 	return out
 
 
-## Niveau du jeu tiré d'un niveau de l'éditeur : fiche (`meta` : id, world, intro, hint, par_time,
-## tutorial), solution vérifiée, et décor débarrassé des identifiants auxquels rien ne se réfère.
+## Niveau du jeu tiré d'un niveau de l'éditeur : fiche (`meta` : id, world, challenge, intro, hint,
+## par_time, tutorial), solution vérifiée, et décor débarrassé des identifiants auxquels rien ne se réfère.
 static func to_official(level: Dictionary, meta: Dictionary, solution: Array) -> Dictionary:
 	var used := {}
 	for entry: Dictionary in level.fixed + solution:
@@ -182,6 +183,8 @@ static func to_official(level: Dictionary, meta: Dictionary, solution: Array) ->
 	}
 	if meta.get("par_time", 0.0) > 0.0:
 		official.par_time = meta.par_time
+	if meta.get("challenge", false):
+		official.challenge = true
 	if level.get("gravity", 1.0) != 1.0:
 		official.gravity = level.gravity
 	if level.get("wind", Vector2.ZERO) != Vector2.ZERO:

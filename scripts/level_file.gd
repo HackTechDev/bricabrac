@@ -17,7 +17,7 @@ const SECTION := "niveau"
 const DIR := "res://levels"
 const EXTENSION := "cfg"
 ## Ordre d'écriture des champs connus, pour des fichiers faciles à relire ; les autres suivent.
-const ORDER: Array[String] = ["id", "world", "name", "par_time", "goal_text", "intro", "hint",
+const ORDER: Array[String] = ["id", "world", "name", "challenge", "par_time", "goal_text", "intro", "hint",
 		"gravity", "wind", "fixed", "inventory", "solution", "tutorial"]
 
 

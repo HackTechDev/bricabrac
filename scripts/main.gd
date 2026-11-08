@@ -1092,9 +1092,28 @@ func _level_status(level: Dictionary) -> String:
 		return "Crée tes propres niveaux"
 	if level.get("sandbox", false):
 		return "Toutes les pièces, sans objectif"
+	if is_locked(level):
+		return "🔒 Toutes les étoiles du monde"
 	if not completed.has(level.id):
 		return "À faire"
 	return "Terminé" + _stars(level)
+
+
+## Un niveau « défi » s'ouvre quand tous les autres niveaux de son monde sont terminés avec
+## toutes leurs étoiles.
+func is_locked(level: Dictionary) -> bool:
+	if not level.get("challenge", false):
+		return false
+	for other: Dictionary in levels:
+		if other.get("world", "") != level.get("world") or other.get("challenge", false) \
+				or other.get("custom", false):
+			continue
+		if not completed.has(other.id):
+			return true
+		for kind in Bonus.offered(other):
+			if not bonuses.get(other.id, []).has(kind):
+				return true
+	return false
 
 
 func open_level_select() -> void:
@@ -1105,9 +1124,11 @@ func open_level_select() -> void:
 	_cancel_rope()
 	_hide_tooltip()
 	var statuses: Array = []
+	var locked: Array = []
 	for level: Dictionary in levels:
 		statuses.append(_level_status(level))
-	_level_select.open(current, statuses)
+		locked.append(is_locked(level))
+	_level_select.open(current, statuses, locked)
 
 
 ## Étoiles des objectifs bonus : pleines pour ceux obtenus.
@@ -1165,6 +1186,9 @@ func _next_index() -> int:
 	if is_testing():
 		return editor_index()
 	var next := current + 1
+	# Un défi encore fermé se saute : on passe au monde suivant.
+	while next < levels.size() and is_locked(levels[next]):
+		next += 1
 	if next >= levels.size() or levels[next].get("editor", false) or levels[next].get("hidden", false):
 		return 0
 	return next
@@ -1276,7 +1300,7 @@ func _toggle_sound() -> void:
 func _first_unsolved() -> int:
 	for i in levels.size():
 		var extra: bool = levels[i].get("sandbox", false) or levels[i].get("custom", false) \
-				or levels[i].get("hidden", false)
+				or levels[i].get("hidden", false) or is_locked(levels[i])
 		if not completed.has(levels[i].id) and not extra:
 			return i
 	return 0
@@ -1509,7 +1533,7 @@ func edit_official(path: String) -> void:
 	editor.custom_id = ""
 	editor.refresh()
 	var meta := {}
-	for key: String in ["id", "world", "intro", "hint", "par_time", "tutorial"]:
+	for key: String in ["id", "world", "challenge", "intro", "hint", "par_time", "tutorial"]:
 		if level.has(key):
 			meta[key] = level[key]
 	editor.source = {"path": path, "meta": meta}

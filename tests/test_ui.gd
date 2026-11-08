@@ -93,6 +93,7 @@ func _run() -> void:
 	await _test_custom_migration()
 	await _test_editor_physics()
 	await _test_gallery()
+	await _test_challenges()
 
 	_finish("INTERFACE OK")
 
@@ -987,3 +988,39 @@ func _first_of_world(world: String) -> int:
 		if main.levels[i].get("world", "") == world:
 			return i
 	return -1
+
+
+## Niveaux défi : fermés tant que leur monde n'a pas toutes ses étoiles, sautés par « Niveau
+## suivant » ; ouverts une fois toutes les étoiles du monde gagnées.
+func _test_challenges() -> void:
+	var select: LevelSelect = main._level_select
+	var defi := -1
+	for i in main.levels.size():
+		if main.levels[i].get("challenge", false) and main.levels[i].world == "atelier":
+			defi = i
+	_check("défi : l'atelier en a un", defi > 0)
+	var saved_completed: Dictionary = main.completed.duplicate(true)
+	var saved_bonuses: Dictionary = main.bonuses.duplicate(true)
+	main.completed = {}
+	main.bonuses = {}
+	main.open_level_select()
+	await _steps(2)
+	_check("défi : fermé au départ", select.card(defi).disabled
+			and select.status_text(defi).begins_with("🔒"))
+	main.open_level_select()
+	main.load_level(defi - 1)
+	await _steps(2)
+	_check("défi : sauté par « Niveau suivant » (%d)" % main._next_index(),
+			main._next_index() != defi and main.levels[main._next_index()].world != "atelier")
+	for level: Dictionary in main.levels:
+		if level.get("world", "") == "atelier" and not level.get("challenge", false):
+			main.completed[level.id] = true
+			main.bonuses[level.id] = Bonus.offered(level)
+	main.open_level_select()
+	await _steps(2)
+	_check("défi : ouvert avec toutes les étoiles", not select.card(defi).disabled
+			and select.status_text(defi) == "À faire")
+	_check("défi : proposé après le dernier niveau du monde", main._next_index() == defi)
+	main.open_level_select()
+	main.completed = saved_completed
+	main.bonuses = saved_bonuses

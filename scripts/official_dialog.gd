@@ -10,6 +10,7 @@ signal save_confirmed(meta: Dictionary)
 var list: ItemList
 var id_edit: LineEdit
 var world_button: OptionButton
+var challenge_check: CheckBox
 var intro_edit: LineEdit
 var hint_edit: LineEdit
 var par_spin: SpinBox
@@ -58,6 +59,8 @@ func _init() -> void:
 	par_spin.min_value = 0.0
 	par_spin.max_value = 60.0
 	par_spin.step = 0.5
+	challenge_check = _field(grid, "Niveau défi", CheckBox.new())
+	challenge_check.text = "fermé tant que le monde n'a pas toutes ses étoiles"
 	file_label = Label.new()
 	file_label.add_theme_font_size_override("font_size", 13)
 	_form_box.add_child(file_label)
@@ -103,7 +106,7 @@ func show_list(files: Array) -> void:
 
 
 ## Fiche du niveau à enregistrer ; `meta` : valeurs de départ (id, world, intro, hint, par_time,
-## tutorial), `path` : fichier qui sera écrit si l'identifiant ne change pas.
+## challenge, tutorial), `path` : fichier qui sera écrit si l'identifiant ne change pas.
 func show_form(meta: Dictionary, path: String) -> void:
 	_list_box.visible = false
 	_form_box.visible = true
@@ -116,6 +119,7 @@ func show_form(meta: Dictionary, path: String) -> void:
 	intro_edit.text = meta.get("intro", "")
 	hint_edit.text = meta.get("hint", "")
 	par_spin.value = meta.get("par_time", 0.0)
+	challenge_check.button_pressed = meta.get("challenge", false)
 	file_label.text = "Fichier : " + (path.get_file() if path != "" else "nouveau, numéroté après les autres")
 	popup_centered(Vector2i(580, 330))
 
@@ -129,6 +133,10 @@ func meta() -> Dictionary:
 		"hint": hint_edit.text.strip_edges(),
 		"par_time": par_spin.value,
 	}, true)
+	if challenge_check.button_pressed:
+		out.challenge = true
+	else:
+		out.erase("challenge")
 	return out
 
 

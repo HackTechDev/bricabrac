@@ -132,11 +132,15 @@ func _make_card(index: int) -> Button:
 	return card
 
 
-## Ouvre l'écran ; `statuses` donne, par niveau, la ligne d'état (terminé, étoiles).
-func open(current: int, statuses: Array) -> void:
+## Ouvre l'écran ; `statuses` donne, par niveau, la ligne d'état (terminé, étoiles), et
+## `locked` les niveaux encore fermés, dont la vignette ne répond pas.
+func open(current: int, statuses: Array, locked: Array = []) -> void:
 	for i: int in _cards:
 		_status[i].text = statuses[i]
-		_cards[i].modulate = Color(1.15, 1.15, 0.85) if i == current else Color.WHITE
+		var closed: bool = i < locked.size() and locked[i]
+		_cards[i].disabled = closed
+		_cards[i].modulate = Color(1.15, 1.15, 0.85) if i == current \
+				else Color(1, 1, 1, 0.55) if closed else Color.WHITE
 	if not _thumbs_built:
 		_thumbs_built = true
 		for i: int in _thumb_rects:

@@ -202,12 +202,17 @@ au-delà de son point d'attache, de quoi fabriquer une fronde. Il s'amincit à m
 
 ## Les niveaux
 
-Les 31 niveaux sont regroupés en cinq mondes, chacun avec sa couleur de fond. Tous sont accessibles
+Les 36 niveaux sont regroupés en cinq mondes, chacun avec sa couleur de fond. Tous sont accessibles
 dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
 Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles.
 Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran. L'écran s'ouvre sur la vignette du niveau
 en cours.
 Le bouton **Indice** donne un coup de pouce sans tout révéler.
+
+Chaque monde se termine par un **niveau défi** : peu de pièces, beaucoup de décor et presque aucune
+marge. Sa vignette reste fermée (🔒) tant que les autres niveaux du monde n'ont pas toutes leurs
+étoiles, et « Niveau suivant » le saute jusque-là. Dans l'éditeur, la case « Niveau défi » de
+« Écrire (jeu)… » en fait un niveau défi.
 
 **L'atelier**, pour apprendre les bases :
 
@@ -222,38 +227,43 @@ Le bouton **Indice** donne un coup de pouce sans tout révéler.
 9. **Réaction en chaîne :** une machine complète, avec plusieurs mécanismes en cascade.
 10. **La fronde :** l'élastique tendu, qui lance la bille par-dessus un mur.
 11. **Couper le lien :** les ciseaux, qui libèrent un ballon retenu par deux cordes.
+12. **Défi : le grand saut :** un ressort, et une étagère coincée sous le plafond.
 
 **La cuisine**, avec ses minuteries et son bac d'eau :
 
-12. **Le minuteur :** la minuterie et la trappe.
-13. **La bouée :** faire flotter une caisse jusqu'à une plaque.
-14. **Le batteur :** le moteur et l'engrenage.
-15. **Prise ferme :** la ventouse, qui retient la bille jusqu'au bon moment.
-16. **Le hamster :** la souris, réveillée par une bille, entraîne les engrenages.
-17. **Le chat et la pelote :** le chat, qui bondit sur un ballon jusque dans les dominos.
+13. **Le minuteur :** la minuterie et la trappe.
+14. **La bouée :** faire flotter une caisse jusqu'à une plaque.
+15. **Le batteur :** le moteur et l'engrenage.
+16. **Prise ferme :** la ventouse, qui retient la bille jusqu'au bon moment.
+17. **Le hamster :** la souris, réveillée par une bille, entraîne les engrenages.
+18. **Le chat et la pelote :** le chat, qui bondit sur un ballon jusque dans les dominos.
+19. **Défi : au quart de seconde :** la ventouse, pour une fenêtre d'une demi-seconde.
 
 **L'usine**, avec ses machines et sa ventilation :
 
-18. **Train d'engrenages :** relier un moteur lointain par des roues.
-19. **Le palan magnétique :** soulever une bille avec l'aimant.
-20. **Ventilation :** un vent permanent contrarie le ballon.
-21. **Le wagonnet :** le chariot, à hisser jusqu'en haut de son rail.
-22. **Accroche-cœur :** une corde qui s'enroule autour d'un poteau et fait boucler le pendule.
+20. **Train d'engrenages :** relier un moteur lointain par des roues.
+21. **Le palan magnétique :** soulever une bille avec l'aimant.
+22. **Ventilation :** un vent permanent contrarie le ballon.
+23. **Le wagonnet :** le chariot, à hisser jusqu'en haut de son rail.
+24. **Accroche-cœur :** une corde qui s'enroule autour d'un poteau et fait boucler le pendule.
+25. **Défi : le détour :** quatre engrenages autour d'un mur.
 
 **L'espace**, où la gravité est faible :
 
-23. **Bond lunaire :** un saut sur ressort qui porte très loin.
-24. **Le sas :** les portails.
-25. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
-26. **À l'abri du vent :** un vent solaire, et des planches pour s'en protéger.
+26. **Bond lunaire :** un saut sur ressort qui porte très loin.
+27. **Le sas :** les portails.
+28. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
+29. **À l'abri du vent :** un vent solaire, et des planches pour s'en protéger.
+30. **Défi : le trou de serrure :** un ressort pour viser une fente.
 
 **Le jardin**, où les niveaux enchaînent plusieurs mécanismes :
 
-27. **Le bassin :** la bouée, puis une trappe qui lâche une bille vers le panier.
-28. **Le chat du potager :** le chat, les ciseaux et un ventilateur pour un ballon attaché.
-29. **Le puits :** un contrepoids remonte la bille, qui réveille la souris.
-30. **Le cerf-volant :** le vent, les ciseaux et une haie de planches.
-31. **La grande machine :** chariot, trappe, souris et engrenages à la suite.
+31. **Le bassin :** la bouée, puis une trappe qui lâche une bille vers le panier.
+32. **Le chat du potager :** le chat, les ciseaux et un ventilateur pour un ballon attaché.
+33. **Le puits :** un contrepoids remonte la bille, qui réveille la souris.
+34. **Le cerf-volant :** le vent, les ciseaux et une haie de planches.
+35. **La grande machine :** chariot, trappe, souris et engrenages à la suite.
+36. **Défi : contre le vent :** l'élastique, une haie et le vent de face.
 
 ## Les objectifs bonus
 
