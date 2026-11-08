@@ -471,10 +471,17 @@ func _test_effects() -> void:
 	])
 	board.start()
 	var most := 0
+	var flattest := 1.0
+	var falling := board.find_part("chute")
 	for i in 90:
 		await _steps(1)
 		most = maxi(most, board.effects.count())
+		var v: Node2D = falling.visuals[0]
+		flattest = minf(flattest, v.transform.basis_xform(Vector2.DOWN).length())
 	_check("poussière : une chute soulève de la poussière (%d)" % most, most > 0)
+	_check("écrasement : le boulet s'aplatit au choc (%.2f)" % flattest, flattest < 0.9)
+	await _steps(60)
+	_check("écrasement : il reprend sa forme", falling.visuals[0].transform.is_equal_approx(Transform2D.IDENTITY))
 	_level([
 		{"kind": "candle", "pos": Vector2(200, 600)},
 		{"kind": "balloon", "pos": Vector2(200, 500)},

@@ -15,6 +15,9 @@ const IMPACT_MIN_SPEED := 70.0
 const IMPACT_FULL_SPEED := 700.0
 ## Choc à partir duquel un nuage de poussière se lève.
 const IMPACT_DUST_SPEED := 160.0
+## Écrasement au plus fort d'un choc (part de la taille), et durée du retour à la forme.
+const SQUASH_MAX := 0.3
+const SQUASH_TIME := 0.3
 const CHANNEL_COLORS: Array[Color] = [
 	Color("8a94a6"), Color("ff5d5d"), Color("ffc94d"), Color("5dd39e"),
 ]
@@ -38,6 +41,10 @@ var anim := 0.0
 
 var _tracked: RigidBody2D
 var _velocity_before := Vector2.ZERO
+## Écrasement visuel après un choc : amplitude, temps écoulé, direction du choc (monde).
+var _squash := 0.0
+var _squash_time := 0.0
+var _squash_normal := Vector2.UP
 
 
 func setup(p_entry: Dictionary, p_board: Board, p_running: bool) -> void:
@@ -70,7 +77,10 @@ func _paint_goal_mark(c: CanvasItem) -> void:
 
 func _process(delta: float) -> void:
 	anim += delta
-	refresh()
+	if _squash > 0.0:
+		_update_squash(delta)
+	if is_animated():
+		refresh()
 
 
 func _physics_process(_delta: float) -> void:
@@ -308,6 +318,37 @@ func _on_contact(_other: Node) -> void:
 		board.sfx.play(sound, shock / IMPACT_FULL_SPEED)
 	if shock > IMPACT_DUST_SPEED:
 		_dust(shock)
+	if shock > IMPACT_MIN_SPEED and Effects.enabled:
+		_squash = clampf(shock / IMPACT_FULL_SPEED, 0.0, 1.0) * SQUASH_MAX
+		_squash_time = 0.0
+		_squash_normal = (_tracked.linear_velocity - _velocity_before).normalized()
+		set_process(true)
+
+
+## Le dessin s'aplatit dans la direction du choc et s'élargit en travers, puis rebondit et se
+## remet en forme. Seuls les nœuds de dessin changent : la forme physique reste la même.
+func _update_squash(delta: float) -> void:
+	_squash_time += delta
+	var t := _squash_time / SQUASH_TIME
+	var squash := Transform2D.IDENTITY
+	if t >= 1.0:
+		_squash = 0.0
+		if not is_animated():
+			set_process(false)
+	elif is_instance_valid(_tracked):
+		var a := _squash * pow(1.0 - t, 2.0) * cos(_squash_time * 30.0)
+		var n := _squash_normal.rotated(-_tracked.global_rotation)
+		var side := n.orthogonal()
+		var stretch := func(v: Vector2) -> Vector2:
+			return n * (1.0 - a) * v.dot(n) + side * (1.0 + a * 0.6) * v.dot(side)
+		squash = Transform2D(stretch.call(Vector2.RIGHT), stretch.call(Vector2.DOWN), Vector2.ZERO)
+	for v in visuals:
+		if is_instance_valid(v) and v.get_parent() == _tracked:
+			v.transform = squash
+
+
+func squash_amount() -> float:
+	return _squash
 
 
 ## Poussière au point de choc, estimé à partir du changement de vitesse : il repousse le corps
