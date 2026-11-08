@@ -6,7 +6,25 @@ extends "res://tests/board_driver.gd"
 func _run() -> void:
 	await _start_board()
 	await _test_switch()
+	await _test_timer()
 	_end("PIÈCES OK")
+
+
+## La lampe s'allume au délai près (une image de physique), et pas avant.
+func _test_timer() -> void:
+	_level([
+		{"kind": "timer", "pos": Vector2(300, 600), "channel": 2, "delay": 1.5},
+		{"kind": "lamp", "pos": Vector2(900, 600), "channel": 2},
+	])
+	board.start()
+	var lit_at := -1
+	for i in 300:
+		await physics_frame
+		if lit_at < 0 and _lamp().powered:
+			lit_at = i + 1
+	_check("minuterie : lampe allumée à 1,5 s (%d images)" % lit_at, absi(lit_at - 180) <= 1)
+	_level([{"kind": "timer", "pos": Vector2(300, 600), "channel": 1}])
+	_check("minuterie : délai par défaut 2 s", (board.parts[0] as TimerPart).delay() == 2.0)
 
 
 func _lamp() -> LampPart:

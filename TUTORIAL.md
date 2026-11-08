@@ -49,7 +49,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | --- | --- |
 | Placer une pièce | La glisser depuis le bac |
 | Sélectionner ou déplacer une pièce posée | Clic gauche, en maintenant pour déplacer |
-| Pivoter | R ou molette ; Maj+R dans l'autre sens |
+| Pivoter, ou régler le délai d'une minuterie | R ou molette ; Maj+R dans l'autre sens |
 | Retourner (miroir) | F |
 | Changer de canal | C |
 | Retirer une pièce | Clic droit, ou sélection puis Suppr |
@@ -92,6 +92,8 @@ présents dans le niveau restent en place.
   rebondit sur le levier ne compte qu'une fois.
 - **Ventilateur :** pousse fort ce qui est léger et presque pas ce qui est lourd. Son vent traverse
   les obstacles.
+- **Minuterie :** allume son canal un certain temps après le lancement. R et la molette règlent
+  ce délai, de 0,5 à 15 secondes.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.

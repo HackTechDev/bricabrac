@@ -69,6 +69,7 @@ func _run() -> void:
 	await _test_rope_tool()
 	await _test_sound_toggle()
 	await _test_board_tooltips()
+	await _test_timer_setting()
 	await _test_undo()
 	await _test_persistence()
 	await _test_undo_cascade()
@@ -139,6 +140,27 @@ func _test_rope_tool() -> void:
 	_check("corde vers une pièce de décor", board.remaining("rope") == 0)
 	var rope: RopePart = board.parts.back()
 	_check("corde vers le décor : tracé valide", rope.points().size() == 2)
+
+
+## R et la molette règlent le délai d'une minuterie au lieu de la faire pivoter.
+func _test_timer_setting() -> void:
+	var board: Board = main.board
+	main.load_level(0)
+	await _steps(2)
+	var timer := board.place("timer", Vector2(600, 300))
+	main._select(timer)
+	_check("minuterie : bouton Délai", main._ctx_buttons.rotate.text == "Délai (R)" \
+			and not main._ctx_buttons.rotate.disabled)
+	await _key(KEY_R)
+	_check("R : délai 2,5 s", main.selected.entry.delay == 2.5 and main.selected.entry.get("rot", 0.0) == 0.0)
+	await _key(KEY_R, false, true)
+	await _key(KEY_R, false, true)
+	_check("Maj+R : délai 1,5 s", main.selected.entry.delay == 1.5)
+	for i in 10:
+		await _button(board.to_global(Vector2(600, 300)), MOUSE_BUTTON_WHEEL_UP, true)
+	_check("délai minimal 0,5 s", main.selected.entry.delay == 0.5)
+	board.remove(main.selected)
+	main._select(null)
 
 
 ## Survoler une pièce du plateau affiche son infobulle, avec ses réglages.

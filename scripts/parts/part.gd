@@ -88,6 +88,12 @@ func can_flip() -> bool:
 	return false
 
 
+## Réglage numérique que R et la molette modifient à la place de la rotation, s'il existe :
+## {"key", "step", "min", "max", "default", "label"}. Vide pour une pièce qui pivote.
+func setting() -> Dictionary:
+	return {}
+
+
 ## Canaux possibles : la plaque et le canon exigent un canal, un tapis peut s'en passer.
 func channel_range() -> Vector2i:
 	return Vector2i(-1, -1)

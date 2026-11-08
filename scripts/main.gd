@@ -5,7 +5,7 @@ extends Control
 const TOP_H := 56.0
 const PANEL_X := 1040.0
 const BIN_ORDER: Array[String] = [
-	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "switch", "cannon",
+	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "switch", "timer", "cannon",
 	"pulley", "rope", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes",
 ]
 
@@ -495,7 +495,16 @@ func _edit_selected(key: String, value: Variant) -> void:
 
 
 func _rotate_selected(sign_value: float) -> void:
-	if selected == null or selected.rotate_step() <= 0.0:
+	if selected == null:
+		return
+	var setting := selected.setting()
+	if not setting.is_empty():
+		var value: float = selected.entry.get(setting.key, setting.default)
+		value = clampf(value + setting.step * sign_value, setting.min, setting.max)
+		_edit_selected(setting.key, value)
+		_status.text = selected.describe()[-1]
+		return
+	if selected.rotate_step() <= 0.0:
 		return
 	var rot: float = selected.entry.get("rot", 0.0) + selected.rotate_step() * sign_value
 	_edit_selected("rot", fposmod(rot, 360.0))
@@ -698,7 +707,9 @@ func _refresh_context() -> void:
 	if _ctx_buttons.is_empty():
 		return
 	var p := selected if is_instance_valid(selected) else null
-	_ctx_buttons.rotate.disabled = p == null or p.rotate_step() <= 0.0
+	var adjustable := p != null and not p.setting().is_empty()
+	_ctx_buttons.rotate.disabled = p == null or (p.rotate_step() <= 0.0 and not adjustable)
+	_ctx_buttons.rotate.text = p.setting().label if adjustable else "Pivoter (R)"
 	_ctx_buttons.flip.disabled = p == null or not p.can_flip()
 	_ctx_buttons.channel.disabled = p == null or not p.uses_channel()
 	_ctx_buttons.remove.disabled = p == null
