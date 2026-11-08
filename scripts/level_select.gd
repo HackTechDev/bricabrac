@@ -17,6 +17,7 @@ var _cards := {}
 var _status := {}
 var _thumbs_built := false
 var _thumb_rects := {}
+var _scroll: ScrollContainer
 
 
 func setup(levels: Array) -> void:
@@ -65,6 +66,7 @@ func setup(levels: Array) -> void:
 	head.add_child(close)
 
 	var scroll := ScrollContainer.new()
+	_scroll = scroll
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	outer.add_child(scroll)
@@ -140,6 +142,15 @@ func open(current: int, statuses: Array) -> void:
 		for i: int in _thumb_rects:
 			_thumb_rects[i].texture = _render_thumb(_levels[i])
 	show()
+	# La liste s'allonge : on l'ouvre sur le niveau en cours, une fois la mise en page faite.
+	_scroll.scroll_vertical = 0
+	reveal.call_deferred(current)
+
+
+## Fait défiler la liste jusqu'à la vignette d'un niveau.
+func reveal(index: int) -> void:
+	if _cards.has(index):
+		_scroll.ensure_control_visible(_cards[index])
 
 
 func card(index: int) -> Button:

@@ -202,10 +202,11 @@ au-delà de son point d'attache, de quoi fabriquer une fronde. Il s'amincit à m
 
 ## Les niveaux
 
-Les 23 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
+Les 24 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
 dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
 Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles.
-Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran.
+Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran. L'écran s'ouvre sur la vignette du niveau
+en cours.
 Le bouton **Indice** donne un coup de pouce sans tout révéler.
 
 **L'atelier**, pour apprendre les bases :
@@ -220,28 +221,29 @@ Le bouton **Indice** donne un coup de pouce sans tout révéler.
 8. **Le pendule :** la corde comme balancier.
 9. **Réaction en chaîne :** une machine complète, avec plusieurs mécanismes en cascade.
 10. **La fronde :** l'élastique tendu, qui lance la bille par-dessus un mur.
+11. **Couper le lien :** les ciseaux, qui libèrent un ballon retenu par deux cordes.
 
 **La cuisine**, avec ses minuteries et son bac d'eau :
 
-11. **Le minuteur :** la minuterie et la trappe.
-12. **La bouée :** faire flotter une caisse jusqu'à une plaque.
-13. **Le batteur :** le moteur et l'engrenage.
-14. **Prise ferme :** la ventouse, qui retient la bille jusqu'au bon moment.
-15. **Le hamster :** la souris, réveillée par une bille, entraîne les engrenages.
-16. **Le chat et la pelote :** le chat, qui bondit sur un ballon jusque dans les dominos.
+12. **Le minuteur :** la minuterie et la trappe.
+13. **La bouée :** faire flotter une caisse jusqu'à une plaque.
+14. **Le batteur :** le moteur et l'engrenage.
+15. **Prise ferme :** la ventouse, qui retient la bille jusqu'au bon moment.
+16. **Le hamster :** la souris, réveillée par une bille, entraîne les engrenages.
+17. **Le chat et la pelote :** le chat, qui bondit sur un ballon jusque dans les dominos.
 
 **L'usine**, avec ses machines et sa ventilation :
 
-17. **Train d'engrenages :** relier un moteur lointain par des roues.
-18. **Le palan magnétique :** soulever une bille avec l'aimant.
-19. **Ventilation :** un vent permanent contrarie le ballon.
-20. **Le wagonnet :** le chariot, à hisser jusqu'en haut de son rail.
+18. **Train d'engrenages :** relier un moteur lointain par des roues.
+19. **Le palan magnétique :** soulever une bille avec l'aimant.
+20. **Ventilation :** un vent permanent contrarie le ballon.
+21. **Le wagonnet :** le chariot, à hisser jusqu'en haut de son rail.
 
 **L'espace**, où la gravité est faible :
 
-21. **Bond lunaire :** un saut sur ressort qui porte très loin.
-22. **Le sas :** les portails.
-23. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
+22. **Bond lunaire :** un saut sur ressort qui porte très loin.
+23. **Le sas :** les portails.
+24. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
 
 ## Les objectifs bonus
 

@@ -7,7 +7,7 @@ section, les idées les plus utiles ou les moins coûteuses viennent en premier.
 
 Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
-- Faire essayer les 23 niveaux à de vrais joueurs et noter où ils bloquent.
+- Faire essayer les 24 niveaux à de vrais joueurs et noter où ils bloquent.
 - Revoir la difficulté de la Catapulte et du Pendule, dont les zones gagnantes sont étroites.
 - Régler en jouant le chat, l'élastique et la corde qui s'accroche aux obstacles, jusqu'ici
   réglés seulement par des tests.
@@ -16,11 +16,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Nouveaux niveaux
 
-Aucun niveau officiel n'utilise encore les ciseaux. Chaque niveau
-ci-dessous en présente un, comme les premiers niveaux le font pour les pièces de base.
-
-- **Couper le lien** (atelier) : un ballon retenu par une corde ; des ciseaux mobiles la
-  tranchent pour qu'il crève un ballon plus haut.
 - **Accroche-cœur** (usine) : une corde de pendule qui s'enroule autour d'un poteau, ce qui
   raccourcit son rayon et change sa trajectoire.
 - **À l'abri du vent** (espace) : un vent fort ; il faut poser des planches pour protéger un

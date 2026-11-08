@@ -469,9 +469,12 @@ func _test_level_select() -> void:
 	_check("sélection : Tab ouvre", select.visible)
 	await _steps(2)
 	var kitchen := _first_of_world("cuisine")
+	select.reveal(kitchen)
+	await _steps(2)
 	await _click(select.card(kitchen).get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	_check("sélection : clic sur une vignette", main.current == kitchen and not select.visible)
-	_check("sélection : nom du monde sur le bouton", main._level_button.text.contains("Cuisine"))
+	_check("sélection : nom du monde sur le bouton (%s)" % main._level_button.text,
+			main._level_button.text.contains("Cuisine"))
 
 
 ## L'élastique se pose avec l'outil des cordes, puis R règle sa tension.
