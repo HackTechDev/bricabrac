@@ -33,6 +33,20 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 | Options (volumes, langue) | O |
 | Écran titre | Échap, quand rien n'est sélectionné |
 
+### Version web (HTML)
+
+Le préréglage « Web » de `export_presets.cfg` produit une version jouable dans un navigateur, dans
+`build/web/` (modèles d'exportation de Godot 4.7.2 requis) :
+
+    $GODOT --headless --path . --export-release "Web" build/web/index.html
+    cd build/web && python3 -m http.server 8000    # puis ouvrir http://localhost:8000
+
+La page doit être servie par un serveur web (pas ouverte comme fichier). Elle n'utilise pas les
+fils d'exécution, donc aucun en-tête particulier n'est nécessaire, et elle se dépose telle quelle
+sur itch.io (zip du dossier). Les niveaux, la galerie et la traduction sont inclus dans le
+paquet ; la musique y est composée sur le fil principal une demi-seconde après le démarrage. La
+sauvegarde reste dans le navigateur, et le bouton Quitter n'y apparaît pas.
+
 ## Organisation
 
 - `scripts/board.gd` : mécanique de jeu (disposition, simulation, victoire), sans interface.

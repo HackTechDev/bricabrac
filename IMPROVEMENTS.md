@@ -89,9 +89,9 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Diffusion
 
-- Préparer les exports Linux, Windows et web. Pour le web, vérifier que les fichiers de
-  `levels/` et `i18n/` sont inclus, et que la musique, calculée dans un fil d'exécution, se
-  compose bien sans fils (sinon la calculer à l'avance ou sur le fil principal).
+- Préparer les exports Linux et Windows. La version web existe (voir le README) : l'essayer
+  dans plusieurs navigateurs, mesurer l'arrêt dû au calcul de la musique au démarrage, et
+  vérifier le son, la sauvegarde et la galerie en ligne.
 - Publier une démo jouable sur itch.io, avec une page en français et en anglais, pour
   recueillir des retours.
 - Illustrer le README avec des captures d'écran et un GIF, faits avec « Filmer en GIF ».

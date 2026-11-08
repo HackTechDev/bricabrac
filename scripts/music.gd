@@ -34,6 +34,10 @@ func _ready() -> void:
 		return
 	if _stream != null:
 		_start()
+	elif not OS.has_feature("threads"):
+		# Navigateur sans fils d'exécution : composée sur le fil principal, une fois l'écran
+		# affiché, au prix d'un court arrêt.
+		get_tree().create_timer(0.5).timeout.connect(_compose_now)
 	elif _thread == null:
 		_thread = Thread.new()
 		_thread.start(Music._compose)
@@ -56,6 +60,13 @@ func _exit_tree() -> void:
 		_thread = null
 	# Libérée avec le lecteur, pour que Godot ne la compte pas comme une fuite en quittant.
 	_stream = null
+
+
+func _compose_now() -> void:
+	if _stream == null:
+		_stream = Music._compose()
+	if is_inside_tree():
+		_start()
 
 
 func _start() -> void:
