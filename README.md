@@ -65,6 +65,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_tutorial.gd # tutoriel intégré
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_lang.gd     # traduction anglaise
     $GODOT --headless --path . --fixed-fps 120 -s tests/bench_perf.gd    # coût d'un pas de simulation
+    $GODOT --path . -s tests/test_render.gd    # vignettes et cartes de niveau (affichage requis)
     SWEEP=spec.json $GODOT --headless --path . --fixed-fps 120 -s tests/sweep.gd   # aide à la conception
     CAPTURE_DIR=dossier $GODOT --path . -s tests/capture.gd              # captures (affichage requis)
 

@@ -59,8 +59,7 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 - Alléger le vent et les cordes au-delà de 100 objets (voir « Performances » dans le README) :
   un seul rayon pour un corps à découvert, ne chercher les coins d'une corde que si ses segments
   ont bougé.
-- Vérifier les cartes de niveau et les vignettes par un test avec rendu, le mode sans écran ne
-  produisant pas d'image.
+- Lancer `test_render.gd` en intégration continue avec un affichage virtuel (Xvfb).
 
 ## Diffusion
 
