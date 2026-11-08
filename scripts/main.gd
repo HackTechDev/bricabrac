@@ -4,6 +4,8 @@ extends Control
 
 const TOP_H := 56.0
 const PANEL_X := 1040.0
+## Pause entre la victoire et son écran : le temps de voir la machine finir.
+const WIN_DELAY := 1.2
 const BIN_ORDER: Array[String] = [
 	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "switch", "timer", "trapdoor", "door", "scissors", "magnet", "magnet_repel", "motor", "gear", "portal", "water", "suction", "cart", "mousewheel", "cat",
 	"cannon",
@@ -130,6 +132,9 @@ var _items: Array[BinItem] = []
 var _ctx_buttons := {}
 var context_menu: PopupMenu
 var _win_overlay: Control
+## Délai entre la victoire et l'affichage de son écran, en secondes.
+var win_delay := WIN_DELAY
+var _win_token := 0
 var _win_bonus: Label
 var _gravity_button: Button
 var _wind_button: Button
@@ -369,6 +374,7 @@ func load_level(index: int) -> void:
 	current = index
 	_select(null)
 	_win_overlay.hide()
+	_win_token += 1
 	board.load_level(levels[index])
 	_show_hint_pieces()
 	var level_id: String = levels[index].id
@@ -453,6 +459,7 @@ func toggle_run() -> void:
 	_cancel_rope()
 	_select(null)
 	_win_overlay.hide()
+	_win_token += 1
 	board.sfx.play("stop" if board.running else "start")
 	if board.running:
 		board.stop()
@@ -1501,6 +1508,7 @@ func _build_win_overlay() -> void:
 	again.pressed.connect(toggle_run)
 	box.add_child(again)
 	_win_overlay.hide()
+	_win_token += 1
 
 
 func _make_theme() -> Theme:
@@ -1788,7 +1796,7 @@ func _on_won() -> void:
 	_open_folder.visible = last_recording != ""
 	_win_next.text = Lang.t("Ouvrir le bac à sable") if next.get("sandbox", false) \
 			else Lang.t("Rejouer le premier niveau") if _next_index() == 0 else Lang.t("Niveau suivant")
-	_win_overlay.show()
+	_show_win_later()
 
 
 ## Niveau proposé après une victoire : l'éditeur après un essai, sinon le suivant de la liste,
@@ -1816,7 +1824,17 @@ func _on_test_won() -> void:
 	_replay_row.visible = false
 	_open_folder.visible = false
 	_win_next.text = Lang.t("Retour à l'éditeur")
-	_win_overlay.show()
+	_show_win_later()
+
+
+## L'écran de victoire attend WIN_DELAY : on voit la machine finir son mouvement. Il ne vient
+## pas si, entre-temps, le joueur arrête la machine ou change de niveau.
+func _show_win_later() -> void:
+	_win_token += 1
+	var token := _win_token
+	get_tree().create_timer(win_delay).timeout.connect(func() -> void:
+		if token == _win_token and board.has_won and replay_mode == "":
+			_win_overlay.show())
 
 
 # --- Tutoriel intégré -----------------------------------------------------------
@@ -2521,6 +2539,7 @@ func replay(mode: String) -> void:
 	if replay_mode != "":
 		return
 	_win_overlay.hide()
+	_win_token += 1
 	board.stop()
 	board.start()
 	replay_mode = mode

@@ -41,18 +41,34 @@ func _run() -> void:
 	var ball := board.parts[0]
 	_check("arrêt : objets replacés", ball.get_child(0).global_position.is_equal_approx(board.to_global(Vector2(150, 60))))
 
-	# Lancer jusqu'à la victoire, passer au niveau suivant par le bouton.
+	# Victoire puis arrêt pendant l'attente : l'écran de victoire ne vient pas.
 	await _click(main._run_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	for i in 1200:
 		await physics_frame
+		if board.has_won:
+			break
+	_check("victoire : écran pas tout de suite", board.has_won and not main._win_overlay.visible)
+	_check("victoire : étoiles nouvelles annoncées", main._win_bonus.text.contains("nouveau"))
+	await _key(KEY_SPACE)
+	await create_timer(main.WIN_DELAY + 0.3).timeout
+	_check("victoire : arrêt pendant l'attente, pas d'écran", not main._win_overlay.visible)
+
+	# Lancer jusqu'à la victoire, passer au niveau suivant par le bouton.
+	await _click(main._run_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	var won_at := -1
+	for i in 1200:
+		await physics_frame
+		if board.has_won and won_at < 0:
+			won_at = i
 		if main._win_overlay.visible:
+			_check("victoire : écran après le délai", (i - won_at) / 120.0 >= main.WIN_DELAY - 0.1)
 			break
 	_check("écran de victoire", main._win_overlay.visible)
 	var got: Array = main.bonuses.get("pente", [])
 	_check("bonus Économe et Rapide obtenus", got.has("parts") and got.has("time"))
 	_check("bonus Complet manqué : une planche reste au bac", not got.has("all"))
 	_check("bonus affichés à la victoire", main._win_bonus.text.contains("★ Économe")
-			and main._win_bonus.text.contains("☆ Complet") and main._win_bonus.text.contains("nouveau"))
+			and main._win_bonus.text.contains("☆ Complet"))
 	_check("étoiles sur le bouton du niveau", main._level_button.text.ends_with("★★☆"))
 	await _steps(2)
 	await _click(main._win_next.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)

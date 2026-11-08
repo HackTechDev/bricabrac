@@ -103,8 +103,8 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
   confirmation.
 - Écran de sélection : une vignette par niveau, rangées par monde, avec état, étoiles et record.
 - Sauvegarde automatique de la progression, des réglages et de la machine posée dans chaque niveau.
-- Écran de victoire : étoiles gagnées, niveau suivant, revoir ou filmer la machine, partager sa
-  solution.
+- Écran de victoire, 1,2 s après la victoire pour voir la machine finir : étoiles gagnées,
+  niveau suivant, revoir ou filmer la machine, partager sa solution.
 
 ## Bac à sable et éditeur
 
