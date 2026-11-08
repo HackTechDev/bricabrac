@@ -603,5 +603,8 @@
  "Copier (Ctrl+C)": "Copy (Ctrl+C)",
  "Retirer (Suppr)": "Remove (Del)",
  "Retirer les %d pièces (Suppr)": "Remove the %d parts (Del)",
- "Pas de place ici.": "No room here."
+ "Pas de place ici.": "No room here.",
+ "Quitter le jeu": "Quit game",
+ "Veux-tu vraiment quitter le jeu ?\nTa progression et tes machines sont gardées.": "Do you really want to quit the game?\nYour progress and your machines are kept.",
+ "Rester": "Stay"
 }

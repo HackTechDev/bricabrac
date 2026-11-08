@@ -10,6 +10,8 @@ signal sandbox
 signal editor
 signal gallery
 signal options
+## Le joueur veut quitter : le jeu demande confirmation.
+signal quit_requested
 
 const BG := Color("14203a")
 const FADE := 0.3
@@ -46,7 +48,7 @@ func _init() -> void:
 		quit.text = Lang.t("Quitter")
 		quit.focus_mode = Control.FOCUS_NONE
 		quit.custom_minimum_size.y = 40
-		quit.pressed.connect(func() -> void: get_tree().quit())
+		quit.pressed.connect(func() -> void: quit_requested.emit())
 		_buttons.add_child(quit)
 	_progress = Label.new()
 	_progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

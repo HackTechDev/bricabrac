@@ -26,6 +26,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 | Ajuster la position | Flèches (Maj : 5 crans) |
 | Menu d'une pièce | Clic droit (pivoter, miroir, canal, copier, retirer) |
 | Retirer | Suppr, ou « Retirer » du menu |
+| Quitter le jeu | Ctrl+Q, « Quitter » (écran titre, écran de choix), avec confirmation |
 | Annuler / rétablir | Ctrl+Z / Ctrl+Y ou Ctrl+Maj+Z |
 | Lancer / arrêter | Espace |
 | Couper le son | M |

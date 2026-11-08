@@ -41,6 +41,8 @@ var hint_levels := {}
 var records := {}
 var _hint_button: Button
 var _hint_confirm: ConfirmationDialog
+## Confirmation avant de quitter le jeu (bouton Quitter, Ctrl+Q, fermeture de la fenêtre).
+var quit_dialog: ConfirmationDialog
 
 var selected: Part
 var drag_part: Part
@@ -218,6 +220,8 @@ func _ready() -> void:
 	title_screen.editor.connect(func() -> void: _enter(editor_index()))
 	title_screen.gallery.connect(open_gallery)
 	title_screen.options.connect(open_options)
+	title_screen.quit_requested.connect(ask_quit)
+	_build_quit_dialog()
 	title_screen.hide()
 	music = Music.new()
 	add_child(music)
@@ -302,6 +306,7 @@ func _build_level_select() -> void:
 	_level_select.import_requested.connect(func() -> void: share_dialog.show_import())
 	_level_select.title_requested.connect(func() -> void: open_title())
 	_level_select.gallery_requested.connect(func() -> void: open_gallery())
+	_level_select.quit_requested.connect(ask_quit)
 
 
 ## Gravité et vent du plan de travail : ceux de la partie en cours, sinon ceux du brouillon.
@@ -481,6 +486,37 @@ func _unhandled_input(event: InputEvent) -> void:
 		_handle_click(event.button_index, event.shift_pressed)
 
 
+func _build_quit_dialog() -> void:
+	quit_dialog = ConfirmationDialog.new()
+	quit_dialog.title = Lang.t("Quitter")
+	quit_dialog.dialog_text = Lang.t("Veux-tu vraiment quitter le jeu ?\nTa progression et tes machines sont gardées.")
+	quit_dialog.ok_button_text = Lang.t("Quitter")
+	quit_dialog.cancel_button_text = Lang.t("Rester")
+	quit_dialog.confirmed.connect(quit_game)
+	add_child(quit_dialog)
+	# La croix de la fenêtre passe aussi par la confirmation.
+	if not OS.has_feature("web"):
+		get_tree().auto_accept_quit = false
+
+
+## Demande confirmation avant de quitter ; sans effet dans un navigateur.
+func ask_quit() -> void:
+	if OS.has_feature("web") or quit_dialog.visible:
+		return
+	quit_dialog.popup_centered()
+	quit_dialog.get_cancel_button().grab_focus()  # Entrée par mégarde ne quitte pas.
+
+
+func quit_game() -> void:
+	_save_progress()  # Garde aussi les volumes réglés sans refermer les options.
+	get_tree().quit()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and quit_dialog != null:
+		ask_quit()
+
+
 func _handle_key(event: InputEventKey) -> void:
 	if title_screen.is_open() or options.visible:
 		return
@@ -504,6 +540,8 @@ func _handle_key(event: InputEventKey) -> void:
 				paste()
 			KEY_A:
 				select_all()
+			KEY_Q:
+				ask_quit()
 		return
 	match event.keycode:
 		KEY_SPACE:

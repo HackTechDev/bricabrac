@@ -7,6 +7,7 @@ signal chosen(index: int)
 signal import_requested
 signal title_requested
 signal gallery_requested
+signal quit_requested
 
 const THUMB := Vector2(192, 118)
 const COLUMNS := 5
@@ -65,6 +66,12 @@ func setup(levels: Array) -> void:
 	close.focus_mode = Control.FOCUS_NONE
 	close.pressed.connect(hide)
 	head.add_child(close)
+	if not OS.has_feature("web"):
+		var quit := Button.new()
+		quit.text = Lang.t("Quitter le jeu")
+		quit.focus_mode = Control.FOCUS_NONE
+		quit.pressed.connect(func() -> void: quit_requested.emit())
+		head.add_child(quit)
 
 	var scroll := ScrollContainer.new()
 	_scroll = scroll

@@ -101,6 +101,7 @@ func _run() -> void:
 	await _test_copy_paste()
 	await _test_marquee()
 	await _test_context_menu()
+	await _test_quit()
 	await _test_options()
 	await _test_accessibility()
 
@@ -1183,6 +1184,41 @@ func _test_records() -> void:
 
 
 ## Maj+clic, glisser d'un groupe, Ctrl+C / Ctrl+V avec la corde qui relie les deux caisses.
+## Quitter : le bouton de l'écran titre, celui de l'écran de choix, Ctrl+Q et la croix de la
+## fenêtre ouvrent tous une confirmation ; « Rester » ne quitte pas.
+func _test_quit() -> void:
+	var dialog: ConfirmationDialog = main.quit_dialog
+	_check("quitter : la croix de la fenêtre demande confirmation", not main.get_tree().auto_accept_quit)
+	main.open_title()
+	await process_frame
+	var quit_button: Button = main.title_screen._buttons.get_children().filter(
+			func(b: Button) -> bool: return b.text == "Quitter")[0]
+	await _click(quit_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	await process_frame
+	_check("quitter : l'écran titre demande confirmation", dialog.visible)
+	dialog.get_cancel_button().pressed.emit()
+	await process_frame
+	_check("quitter : « Rester » referme la fenêtre", not dialog.visible and main.title_screen.is_open())
+	await _click(main.title_screen.play_button().get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	await _steps(30)
+	await _key(KEY_Q, true)
+	_check("quitter : Ctrl+Q demande confirmation", dialog.visible)
+	dialog.hide()
+	main.open_level_select()
+	await process_frame
+	var buttons: Array = main._level_select.find_children("*", "Button", true, false).filter(
+			func(b: Button) -> bool: return b.text == "Quitter le jeu")
+	_check("quitter : bouton dans l'écran de choix", buttons.size() == 1)
+	await _click((buttons[0] as Button).get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("quitter : l'écran de choix demande confirmation", dialog.visible)
+	dialog.hide()
+	main._level_select.hide()
+	main.propagate_notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+	_check("quitter : la croix demande confirmation", dialog.visible)
+	dialog.hide()
+	await process_frame
+
+
 ## Clic droit sur une pièce, puis « Retirer » dans son menu.
 func _remove_by_menu(at: Vector2) -> void:
 	await _click(at, MOUSE_BUTTON_RIGHT)
