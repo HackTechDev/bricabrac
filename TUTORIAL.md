@@ -97,6 +97,8 @@ présents dans le niveau restent en place.
 - **Trappe et porte :** s'ouvrent quand leur canal s'allume et se referment quand il s'éteint. La
   trappe bascule vers le bas et lâche ce qu'elle porte ; la porte s'écarte vers la droite, ou vers
   la gauche après un miroir.
+- **Ciseaux :** quand leur canal s'allume, ils coupent toute corde qui passe entre leurs lames
+  (le cadre clair au-dessus du socle). Avec une minuterie, ils déclenchent un mécanisme à retardement.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.

@@ -8,6 +8,7 @@ func _run() -> void:
 	await _test_switch()
 	await _test_timer()
 	await _test_gates()
+	await _test_scissors()
 	_end("PIÈCES OK")
 
 
@@ -54,6 +55,30 @@ func _test_gates() -> void:
 	_check("porte fermée : la bille est bloquée", _pos("b").x < 460.0)
 	await _steps(240)
 	_check("porte ouverte : la bille est passée", _pos("b").x > 480.0)
+
+
+## Bille suspendue à une poutre ; les ciseaux coupent la corde à 1 s, et seulement celle-là.
+func _test_scissors() -> void:
+	_level([
+		{"kind": "plank", "id": "poutre", "pos": Vector2(500, 60), "len": 300.0, "locked": true},
+		{"kind": "ball", "id": "b", "pos": Vector2(400, 300)},
+		{"kind": "ball", "id": "autre", "pos": Vector2(600, 300)},
+		{"kind": "rope", "from": "b", "to": "poutre", "to_off": Vector2(-100, 0)},
+		{"kind": "rope", "from": "autre", "to": "poutre", "to_off": Vector2(100, 0)},
+		{"kind": "scissors", "pos": Vector2(400, 200), "channel": 1},
+		{"kind": "timer", "pos": Vector2(900, 600), "channel": 1, "delay": 1.0},
+	])
+	board.start()
+	await _steps(110)
+	_check("ciseaux : la bille reste suspendue avant le délai", absf(_pos("b").y - 300.0) < 3.0)
+	await _steps(60)
+	_check("ciseaux : corde coupée, la bille tombe", _pos("b").y > 360.0)
+	_check("ciseaux : l'autre corde tient", absf(_pos("autre").y - 300.0) < 3.0)
+	var cut := 0
+	for part in board.parts:
+		if part is RopePart and (part as RopePart).is_cut():
+			cut += 1
+	_check("ciseaux : une seule corde coupée", cut == 1)
 
 
 func _lamp() -> LampPart:

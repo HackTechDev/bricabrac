@@ -74,6 +74,16 @@ func icon_scale() -> float:
 	return 1.0
 
 
+## Coupée par des ciseaux : elle cesse de tirer et disparaît.
+func cut() -> void:
+	_cut = true
+	refresh()
+
+
+func is_cut() -> bool:
+	return _cut
+
+
 ## Fin de corde liée à une pièce donnée, ou passant par elle ?
 func depends_on(id: String) -> bool:
 	return entry.get("from", "") == id or entry.get("to", "") == id or entry.get("via", []).has(id)
