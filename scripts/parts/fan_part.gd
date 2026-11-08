@@ -1,7 +1,7 @@
 class_name FanPart
 extends Part
 ## Ventilateur : force constante, donc très efficace sur le léger et sans effet sur le lourd.
-## Le vent traverse les obstacles.
+## Son souffle s'arrête au premier obstacle : ce qui est caché derrière n'est pas poussé.
 
 const BODY_SIZE := Vector2(36, 70)
 const RANGE := 340.0
@@ -22,9 +22,13 @@ func _physics_process(_delta: float) -> void:
 	if not powered or wind == null:
 		return
 	var axis := Vector2.RIGHT.rotated(global_rotation) * dir
+	var face := main_body.global_position + axis * 20.0
+	var exclude: Array[RID] = [main_body.get_rid()]
+	var upwind := func(point: Vector2) -> float: return (point - face).dot(axis)
 	for node in wind.get_overlapping_bodies():
 		if node is RigidBody2D:
-			(node as RigidBody2D).apply_central_force(axis * FORCE)
+			var body := node as RigidBody2D
+			body.apply_central_force(axis * FORCE * Wind.exposure(body, axis, upwind, exclude))
 
 
 func rotate_step() -> float:

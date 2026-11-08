@@ -37,6 +37,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 - `scripts/parts/` : une classe par pièce, dessinée par le code. `catalog.gd` les référence.
 - `scripts/parts/rope_part.gd` : contrainte de longueur de la corde, enroulée sur les poulies et accrochée aux coins des obstacles (Godot n'a pas de joint poulie en 2D).
 - `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio.
+- `scripts/wind.gd` : abri du vent, par lancer de rayons depuis l'amont.
 - `levels/` : les niveaux du jeu, un fichier texte par niveau (`07_contrepoids.cfg`), joués dans
   l'ordre des noms ; chacun indique son monde et sa solution.
 - `scripts/level_file.gd` : lecture et écriture de ces fichiers ; `level_data.gd` : mondes, bac à

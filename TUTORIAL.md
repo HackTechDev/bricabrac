@@ -102,8 +102,9 @@ présents dans le niveau restent en place.
 - **Plaque :** un objet qui la touche allume son canal. Elle ne l'éteint jamais.
 - **Interrupteur :** chaque objet qui heurte son levier allume ou éteint son canal. Un objet qui
   rebondit sur le levier ne compte qu'une fois.
-- **Ventilateur :** pousse fort ce qui est léger et presque pas ce qui est lourd. Son vent traverse
-  les obstacles.
+- **Ventilateur :** pousse fort ce qui est léger et presque pas ce qui est lourd. Son souffle
+  s'arrête au premier obstacle : ce qui est caché derrière une planche ou un mur n'est pas poussé.
+  Incliné, il peut souffler par-dessus un rebord.
 - **Minuterie :** allume son canal un certain temps après le lancement. R et la molette règlent
   ce délai, de 0,5 à 15 secondes.
 - **Trappe et porte :** s'ouvrent quand leur canal s'allume et se referment quand il s'éteint. La
@@ -160,7 +161,9 @@ l'écran :
   montent moins vite. Les sauts et les tirs de canon portent donc plus ou moins loin.
 - **Vent permanent :** des traînées traversent le plateau dans son sens. Il pousse les objets en
   proportion de leur taille rapportée à leur poids : il emporte un ballon, dévie une balle rebond et
-  touche à peine le boulet. Un objet posé sur un support résiste grâce au frottement.
+  touche à peine le boulet. Un objet posé sur un support résiste grâce au frottement. Il entre par
+  le bord du plateau et s'arrête aux obstacles : derrière un mur, on est à l'abri, et un objet à
+  moitié caché ne reçoit qu'une partie de la poussée.
 
 ## Les cordes et les poulies
 

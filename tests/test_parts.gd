@@ -14,6 +14,7 @@ func _run() -> void:
 	await _test_portals()
 	await _test_water()
 	await _test_level_physics()
+	await _test_wind_shelter()
 	await _test_suction()
 	await _test_cart()
 	await _test_mouse_wheel()
@@ -223,6 +224,41 @@ func _test_level_physics() -> void:
 	await _steps(60)
 	_near("niveau suivant : gravité normale", _pos("b").y - 100.0, drop[1.0], 0.01)
 	_near("niveau suivant : pas de vent", _pos("b").x, 200.0, 0.001)
+
+
+## Le vent s'arrête aux obstacles : une balle posée derrière un mur ne bouge pas, une balle à
+## moitié cachée dérive moins qu'une balle à découvert. Pareil pour le souffle d'un ventilateur.
+func _test_wind_shelter() -> void:
+	var drift := {}
+	for wall: String in ["aucun", "entier", "bas"]:
+		var fixed: Array = [{"kind": "ball_bouncy", "id": "b", "pos": Vector2(600, 625)}]
+		if wall == "entier":
+			fixed.append({"kind": "plank", "pos": Vector2(500, 560), "len": 160.0, "rot": 90.0, "locked": true})
+		elif wall == "bas":
+			fixed.append({"kind": "plank", "pos": Vector2(500, 680), "len": 120.0, "rot": 90.0, "locked": true})
+		_level(fixed, {}, {"wind": Vector2(300, 0)})
+		board.start()
+		await _steps(60)
+		drift[wall] = _pos("b").x - 600.0
+	_check("vent : la balle à découvert dérive (%.1f px)" % drift["aucun"], drift["aucun"] > 5.0)
+	_check("vent : abritée derrière un mur, elle ne bouge pas (%.2f px)" % drift["entier"],
+			absf(drift["entier"]) < 0.05 * drift["aucun"])
+	_check("vent : à moitié abritée, elle dérive moins (%.1f px)" % drift["bas"],
+			drift["bas"] > 0.15 * drift["aucun"] and drift["bas"] < 0.8 * drift["aucun"])
+	var pushed := {}
+	for wall: bool in [false, true]:
+		var fixed: Array = [
+			{"kind": "fan", "pos": Vector2(200, 600)},
+			{"kind": "ball_bouncy", "id": "b", "pos": Vector2(420, 625)},
+		]
+		if wall:
+			fixed.append({"kind": "plank", "pos": Vector2(320, 580), "len": 120.0, "rot": 90.0, "locked": true})
+		_level(fixed)
+		board.start()
+		await _steps(60)
+		pushed[wall] = _pos("b").x - 420.0
+	_check("ventilateur : pousse la balle (%.1f px)" % pushed[false], pushed[false] > 5.0)
+	_check("ventilateur : le mur arrête son souffle (%.2f px)" % pushed[true], absf(pushed[true]) < 0.5)
 
 
 ## Lancée vers le haut, la bille frappe une ventouse retournée : elle est retenue, puis lâchée quand

@@ -30,6 +30,7 @@ var _next_id := 1
 var _gear_pairs: Array = []
 var _part_layer: Node2D
 var _wall_shapes: Array[CollisionShape2D] = []
+var _walls: StaticBody2D
 
 
 func _ready() -> void:
@@ -79,16 +80,34 @@ func wind() -> Vector2:
 	return level.get("wind", Vector2.ZERO)
 
 
+## Vent du niveau : il entre par le bord du plateau et s'arrête au premier obstacle ; un objet
+## abrité derrière un autre ne le reçoit qu'en partie, ou pas du tout.
 func _blow() -> void:
 	var w := wind()
 	if w == Vector2.ZERO:
 		return
+	var flow := w.normalized()
+	var exclude: Array[RID] = [_walls.get_rid()]
+	var shelter := {}
 	for part in parts:
 		for col in part.solids:
 			var body := col.get_parent() as RigidBody2D
 			if body != null and not body.freeze:
+				if not shelter.has(body):
+					shelter[body] = Wind.exposure(body, flow, _upwind.bind(flow), exclude)
 				var surface := WaterPart._shape_area(WaterPart._outline(col.shape))
-				body.apply_central_force(w * AIR_DENSITY * surface)
+				body.apply_central_force(w * AIR_DENSITY * surface * shelter[body])
+
+
+## Distance d'un point (global) au bord du plateau d'où vient le vent.
+func _upwind(point: Vector2, flow: Vector2) -> float:
+	var area := Rect2(global_position, SIZE)
+	var reach := INF
+	if flow.x != 0.0:
+		reach = minf(reach, ((area.position.x if flow.x > 0.0 else area.end.x) - point.x) / -flow.x)
+	if flow.y != 0.0:
+		reach = minf(reach, ((area.position.y if flow.y > 0.0 else area.end.y) - point.y) / -flow.y)
+	return reach
 
 
 func _process(_delta: float) -> void:
@@ -440,6 +459,7 @@ func _refresh_ropes() -> void:
 
 func _build_walls() -> void:
 	var body := StaticBody2D.new()
+	_walls = body
 	var mat := PhysicsMaterial.new()
 	mat.friction = 1.0
 	body.physics_material_override = mat
