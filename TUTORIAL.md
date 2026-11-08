@@ -71,7 +71,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Accélérer la simulation (×1, ×2, ×4) | V, ou bouton ×1 |
 | Montrer ou masquer la trace du dernier essai | T |
 | Couper le son | M |
-| Options : volumes des effets et de la musique, langue (English) | O, ou bouton Options de l'écran titre |
+| Options : volumes, langue (English), accessibilité | O, ou bouton Options de l'écran titre |
 | Choisir un niveau | Tab, ou le bouton en haut à gauche |
 | Revenir à l'écran titre | Échap, quand rien n'est sélectionné ni en cours |
 | Marquer l'objectif (éditeur) | G |
@@ -163,6 +163,9 @@ présents dans le niveau restent en place.
 
 Une plaque met en marche toutes les pièces qui partagent son numéro de canal, sans aucun câble à
 tirer. Le numéro s'affiche sur la pastille colorée de chaque pièce, et la touche C le change.
+Dans les options, « Couleurs de canaux adaptées au daltonisme » remplace le rouge, le jaune et le
+vert des canaux par de l'orange, du bleu ciel et du violet ; « Réduire les animations » retire le
+balayage entre les niveaux, les particules et les mouvements décoratifs.
 
 - **Plaque, canon et lampe :** canaux 1 à 3.
 - **Portail :** canaux 1 à 3, mais le numéro ne sert qu'à relier deux portails entre eux.

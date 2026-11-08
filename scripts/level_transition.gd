@@ -84,6 +84,14 @@ func play(shot: Texture2D, world: String, level_name: String, color: Color, boar
 	_card.modulate.a = 0.0
 	_band.color = color.lightened(0.25)
 	_tween = create_tween()
+	if Accessibility.reduce_motion:
+		# Animations réduites : pas de balayage, la carte s'affiche puis disparaît sans fondu.
+		_clip.visible = false
+		_band.visible = false
+		_card.modulate.a = 1.0
+		_tween.tween_interval(CARD_HOLD + CARD_IN + CARD_OUT)
+		_tween.tween_callback(_done)
+		return
 	if shot != null:
 		_shot.texture = shot
 		_clip.visible = true

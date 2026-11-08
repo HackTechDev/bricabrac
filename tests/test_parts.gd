@@ -502,11 +502,11 @@ func _test_effects() -> void:
 	board.start()
 	await _steps(70)
 	_check("fumée : le canon fume (%d)" % board.effects.count(), board.effects.count() > 0)
-	Effects.enabled = false
+	Accessibility.apply(false, true)
 	board.start()
 	await _steps(70)
 	_check("animations réduites : pas de particules", board.effects.count() == 0)
-	Effects.enabled = true
+	Accessibility.apply(false, false)
 
 
 ## Sons continus : un par sorte de machine en marche, coupés à l'arrêt et quand le canal est éteint.

@@ -60,7 +60,7 @@ func paint(c: CanvasItem) -> void:
 	c.draw_arc(center, 17.0, 0.0, TAU, 28, INK, 2.0)
 	var left := clampf(1.0 - elapsed / delay(), 0.0, 1.0) if running else 1.0
 	if left > 0.0:
-		c.draw_arc(center, 11.0, -PI / 2.0, -PI / 2.0 + TAU * left, 28, CHANNEL_COLORS[channel], 6.0)
+		c.draw_arc(center, 11.0, -PI / 2.0, -PI / 2.0 + TAU * left, 28, Accessibility.channel_color(channel), 6.0)
 	c.draw_line(center, center + Vector2.UP.rotated(TAU * (1.0 - left)) * 14.0, INK, 2.0)
 	var label := Lang.t("%.1f s") % (maxf(delay() - elapsed, 0.0) if running else delay())
 	c.draw_string(ThemeDB.fallback_font, Vector2(-SIZE.x / 2.0, SIZE.y / 2.0 - 3.0), label,

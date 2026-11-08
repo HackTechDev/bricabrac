@@ -56,7 +56,7 @@ func paint(c: CanvasItem) -> void:
 	var tip := Vector2(0, 2).lerp(Vector2(0, -34).rotated(lean), 1.0)
 	c.draw_line(Vector2(0, 2), tip, INK, 8.0)
 	c.draw_line(Vector2(0, 2), tip, STEEL, 5.0)
-	c.draw_circle(tip, 7.0, CHANNEL_COLORS[channel] if powered else Color("56606f"))
+	c.draw_circle(tip, 7.0, Accessibility.channel_color(channel) if powered else Color("56606f"))
 	c.draw_arc(tip, 7.0, 0.0, TAU, 20, INK, 2.0)
 	box(c, Rect2(-BASE.x / 2.0, 0, BASE.x, BASE.y), STEEL)
 	paint_channel(c, Vector2(BASE.x / 2.0 - 12.0, BASE.y / 2.0))

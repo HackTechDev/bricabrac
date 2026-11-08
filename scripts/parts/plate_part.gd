@@ -36,6 +36,6 @@ func on_powered() -> void:
 
 
 func paint(c: CanvasItem) -> void:
-	var col := CHANNEL_COLORS[channel] if powered else STEEL
+	var col := Accessibility.channel_color(channel) if powered else STEEL
 	box(c, Rect2(-SIZE.x / 2.0, -SIZE.y / 2.0, SIZE.x, SIZE.y), col)
 	paint_channel(c, Vector2(0, 0))

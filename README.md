@@ -41,7 +41,8 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 - `scripts/parts/rope_part.gd` : contrainte de longueur de la corde, enroulée sur les poulies et accrochée aux coins des obstacles (Godot n'a pas de joint poulie en 2D).
 - `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio, dont les sons continus du
   tapis et du ventilateur ; `music.gd` : musique d'atelier, composée par le code elle aussi.
-- `scripts/options_panel.gd` : fenêtre d'options ; `effects.gd` : particules décoratives.
+- `scripts/options_panel.gd` : fenêtre d'options ; `accessibility.gd` : couleurs de canaux
+  adaptées et animations réduites ; `effects.gd` : particules décoratives.
 - `scripts/lang.gd` et `i18n/en.json` : traduction anglaise. Les textes sont écrits en français
   dans le code (`Lang.t("…")`) et dans les niveaux ; le fichier JSON associe à chacun sa
   traduction. `test_lang.gd` signale tout texte nouveau qui n'y figure pas.

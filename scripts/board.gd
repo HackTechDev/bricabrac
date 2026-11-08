@@ -705,7 +705,7 @@ func _draw_wind() -> void:
 	if w == Vector2.ZERO:
 		return
 	var along := w.normalized()
-	var t := Time.get_ticks_msec() / 1000.0
+	var t := 0.0 if Accessibility.reduce_motion else Time.get_ticks_msec() / 1000.0
 	var streak := along * clampf(w.length() * 0.2, 16.0, 48.0)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7

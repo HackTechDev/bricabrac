@@ -162,7 +162,7 @@ func _bubble_position(target: Rect2, zone: Rect2, size: Vector2) -> Vector2:
 func _draw() -> void:
 	if not is_active():
 		return
-	var pulse := 0.55 + 0.45 * sin(_time * 5.0)
+	var pulse := 1.0 if Accessibility.reduce_motion else 0.55 + 0.45 * sin(_time * 5.0)
 	var bubble := bubble_rect()
 	var step: Dictionary = steps[index]
 	var zone: Rect2 = locate.call(step.get("zone", ""))

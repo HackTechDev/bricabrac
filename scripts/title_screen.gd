@@ -114,7 +114,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	if visible:
+	if visible and not Accessibility.reduce_motion:
 		_time += delta
 		queue_redraw()
 

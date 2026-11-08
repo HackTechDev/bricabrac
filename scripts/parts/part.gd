@@ -18,9 +18,6 @@ const IMPACT_DUST_SPEED := 160.0
 ## Écrasement au plus fort d'un choc (part de la taille), et durée du retour à la forme.
 const SQUASH_MAX := 0.3
 const SQUASH_TIME := 0.3
-const CHANNEL_COLORS: Array[Color] = [
-	Color("8a94a6"), Color("ff5d5d"), Color("ffc94d"), Color("5dd39e"),
-]
 
 var kind := ""
 var entry := {}
@@ -318,7 +315,7 @@ func _on_contact(_other: Node) -> void:
 		board.sfx.play(sound, shock / IMPACT_FULL_SPEED)
 	if shock > IMPACT_DUST_SPEED:
 		_dust(shock)
-	if shock > IMPACT_MIN_SPEED and Effects.enabled:
+	if shock > IMPACT_MIN_SPEED and not Accessibility.reduce_motion:
 		_squash = clampf(shock / IMPACT_FULL_SPEED, 0.0, 1.0) * SQUASH_MAX
 		_squash_time = 0.0
 		_squash_normal = (_tracked.linear_velocity - _velocity_before).normalized()
@@ -399,7 +396,7 @@ static func poly(c: CanvasItem, points: PackedVector2Array, fill: Color) -> void
 func paint_channel(c: CanvasItem, at: Vector2) -> void:
 	if not uses_channel():
 		return
-	var col := CHANNEL_COLORS[channel]
+	var col := Accessibility.channel_color(channel)
 	c.draw_circle(at, 9.0, col)
 	c.draw_arc(at, 9.0, 0.0, TAU, 20, INK, 2.0)
 	if channel > 0:

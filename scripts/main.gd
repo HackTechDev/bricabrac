@@ -54,6 +54,9 @@ var sfx_volume := 1.0
 var music_volume := 0.5
 ## Langue de l'interface (voir Lang).
 var language := "fr"
+## Accessibilité (voir Accessibility) : couleurs de canaux adaptées, animations réduites.
+var colorblind := false
+var reduce_motion := false
 var music: Music
 var options: OptionsPanel
 var _mute_check: CheckBox
@@ -133,6 +136,7 @@ var chrono: Chrono
 func _ready() -> void:
 	_load_progress()
 	Lang.use(language)
+	Accessibility.apply(colorblind, reduce_motion)
 	_assemble_levels()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1694,7 +1698,25 @@ func _build_options() -> void:
 		names.append(entry[1])
 	options.add_choice(Lang.t("Langue"), names, Lang.index_of(language), func(i: int) -> void:
 		set_language(Lang.LANGUAGES[i][0]))
+	options.add_check(Lang.t("Couleurs de canaux adaptées au daltonisme"), colorblind, set_colorblind)
+	options.add_check(Lang.t("Réduire les animations"), reduce_motion, set_reduce_motion)
 	options.closed.connect(_save_progress)
+
+
+func set_colorblind(on: bool) -> void:
+	colorblind = on
+	Accessibility.apply(colorblind, reduce_motion)
+	for part in board.parts:
+		part.refresh()
+	for item in _items:
+		item.propagate_call("queue_redraw")
+	_save_progress()
+
+
+func set_reduce_motion(on: bool) -> void:
+	reduce_motion = on
+	Accessibility.apply(colorblind, reduce_motion)
+	_save_progress()
 
 
 ## Change la langue : l'interface se reconstruit dans la nouvelle langue, à l'écran titre.
@@ -1744,6 +1766,8 @@ func _load_progress() -> void:
 		sfx_volume = cfg.get_value("settings", "sfx_volume", 1.0)
 		music_volume = cfg.get_value("settings", "music_volume", 0.5)
 		language = cfg.get_value("settings", "language", "fr")
+		colorblind = cfg.get_value("settings", "colorblind", false)
+		reduce_motion = cfg.get_value("settings", "reduce_motion", false)
 		saved_layouts = cfg.get_value("layouts", "by_level", {})
 		attempts = cfg.get_value("progress", "attempts", {})
 		for id: String in cfg.get_value("progress", "tutorials", []):
@@ -1801,6 +1825,8 @@ func _save_progress() -> void:
 	cfg.set_value("settings", "sfx_volume", sfx_volume)
 	cfg.set_value("settings", "music_volume", music_volume)
 	cfg.set_value("settings", "language", language)
+	cfg.set_value("settings", "colorblind", colorblind)
+	cfg.set_value("settings", "reduce_motion", reduce_motion)
 	cfg.set_value("layouts", "by_level", saved_layouts)
 	if editor != null:
 		var draft := {"id": editor.custom_id, "name": editor.name_edit.text,

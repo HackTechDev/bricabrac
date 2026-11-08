@@ -90,7 +90,7 @@ func _send(body: RigidBody2D, exit: PortalPart) -> void:
 
 
 func paint(c: CanvasItem) -> void:
-	var col := CHANNEL_COLORS[channel]
+	var col := Accessibility.channel_color(channel)
 	var ring := PackedVector2Array()
 	var inner := PackedVector2Array()
 	for i in 32:

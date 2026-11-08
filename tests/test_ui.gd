@@ -100,6 +100,7 @@ func _run() -> void:
 	_test_records()
 	await _test_copy_paste()
 	await _test_options()
+	await _test_accessibility()
 
 	_finish("INTERFACE OK")
 
@@ -1252,3 +1253,31 @@ func _test_options() -> void:
 	sliders[0].value = 1.0
 	sliders[1].value = 0.5
 	main.options.close()
+
+
+## Accessibilité : palette de canaux adaptée, et pas de balayage entre les niveaux.
+func _test_accessibility() -> void:
+	var plate := Part.new()
+	plate.channel = 1
+	var usual := Accessibility.channel_color(1)
+	main.set_colorblind(true)
+	var safe := Accessibility.channel_color(1)
+	_check("daltonisme : autre couleur pour le canal 1", safe != usual and safe == Color("e69f00"))
+	_check("daltonisme : couleurs bien distinctes", Accessibility.CHANNELS_SAFE.slice(1).all(
+			func(c: Color) -> bool: return Accessibility.CHANNELS_SAFE.count(c) == 1))
+	main.set_colorblind(false)
+	plate.free()
+	main.set_reduce_motion(true)
+	_check("animations réduites : plus de particules", not Effects.enabled)
+	main.load_level(1)
+	await _steps(2)
+	main.load_level(2)
+	await _steps(2)
+	_check("animations réduites : pas de balayage", not main.transition._clip.visible
+			and main.transition._card.modulate.a == 1.0)
+	main.set_reduce_motion(false)
+	var cfg := ConfigFile.new()
+	cfg.load(SAVE)
+	_check("accessibilité enregistrée", cfg.get_value("settings", "reduce_motion") == false
+			and cfg.get_value("settings", "colorblind") == false)
+	_check("animations rétablies", Effects.enabled)

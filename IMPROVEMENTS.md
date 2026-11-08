@@ -48,8 +48,7 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 - Faire relire la traduction anglaise par un anglophone, puis ajouter d'autres langues
   (un fichier `i18n/<code>.json` et une ligne dans `Lang.LANGUAGES`).
 - Traduire aussi le tutoriel écrit (`TUTORIAL.md`) et le README.
-- Options d'accessibilité : couleurs de canaux adaptées, réduction des animations (dont le
-  balayage entre les niveaux).
+- D'autres options d'accessibilité : taille du texte, commandes entièrement au clavier.
 
 ## Technique
 

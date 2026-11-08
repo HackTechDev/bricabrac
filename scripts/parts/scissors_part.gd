@@ -73,7 +73,7 @@ func paint(c: CanvasItem) -> void:
 		var handle := pivot + Vector2(0, 16).rotated(-spread * side * 1.4)
 		poly(c, PackedVector2Array([pivot + Vector2(-3, 0), tip, pivot + Vector2(3, 0)]), Color("dfe6ef"))
 		c.draw_line(pivot, handle, INK, 3.0)
-		c.draw_circle(handle, 5.0, CHANNEL_COLORS[channel])
+		c.draw_circle(handle, 5.0, Accessibility.channel_color(channel))
 		c.draw_arc(handle, 5.0, 0.0, TAU, 16, INK, 1.5)
 	c.draw_circle(pivot, 3.0, INK)
 	box(c, Rect2(Vector2(-BASE.x / 2.0, -4.0), BASE), STEEL)
