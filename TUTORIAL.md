@@ -101,6 +101,10 @@ présents dans le niveau restent en place.
   (le cadre clair au-dessus du socle). Avec une minuterie, ils déclenchent un mécanisme à retardement.
 - **Aimant :** attire le boulet et la bille jusqu'à 260 px de ses pôles, mais ni le bois ni le
   caoutchouc. Le cercle clair montre sa portée. Canal 0 : toujours actif.
+- **Moteur et engrenages :** le moteur fait tourner les engrenages qu'il touche, et chaque roue
+  entraîne ses voisines en sens inverse. Deux roues engrènent quand leurs dents se touchent ;
+  l'infobulle indique avec combien de roues une pièce engrène. Le bras de l'engrenage balaie et
+  pousse les objets, et R l'oriente. Le miroir inverse le sens du moteur. Canal 0 : toujours actif.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.
@@ -111,7 +115,7 @@ Une plaque met en marche toutes les pièces qui partagent son numéro de canal, 
 tirer. Le numéro s'affiche sur la pastille colorée de chaque pièce, et la touche C le change.
 
 - **Plaque, canon et lampe :** canaux 1 à 3.
-- **Tapis et ventilateur :** canaux 1 à 3, ou canal 0 pour fonctionner en permanence.
+- **Tapis, ventilateur, aimant et moteur :** canaux 1 à 3, ou canal 0 pour fonctionner en permanence.
 
 Par exemple, pour déclencher un canon, pose une plaque là où un objet va tomber, puis mets la plaque
 et le canon sur le même numéro.

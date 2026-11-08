@@ -25,7 +25,7 @@ func _physics_process(delta: float) -> void:
 	var has_target := false
 	for node in inside.get_overlapping_bodies():
 		var part := Part.from_body(node)
-		if node is RigidBody2D and part != null and _accepts(part):
+		if node is RigidBody2D and part != null and part.gear_radius() == 0.0 and _accepts(part):
 			has_target = true
 			break
 	held = held + delta if has_target else 0.0

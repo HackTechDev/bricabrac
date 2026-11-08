@@ -21,6 +21,8 @@ var sfx := Sfx.new()
 var probe := CircleShape2D.new()
 
 var _next_id := 1
+## Paires de roues qui engrènent, calculées au lancement.
+var _gear_pairs: Array = []
 var _part_layer: Node2D
 var _wall_shapes: Array[CollisionShape2D] = []
 
@@ -181,10 +183,64 @@ func is_valid(part: Part) -> bool:
 		if part.overlaps_shape(wall.shape, wall.global_transform):
 			return false
 	for other in parts:
-		if other != part and part.overlaps_part(other):
+		if other != part and part.interacts_with(other) and part.overlaps_part(other):
 			return false
 	return true
 
+
+## Deux roues engrènent quand leurs cercles primitifs se touchent, à quelques pixels près.
+const GEAR_TOLERANCE := 6.0
+
+
+func gear_neighbors(part: Part) -> Array[Part]:
+	var result: Array[Part] = []
+	if part.gear_radius() <= 0.0:
+		return result
+	for other in parts:
+		if other != part and other.gear_radius() > 0.0:
+			var gap := part.global_position.distance_to(other.global_position)
+			if absf(gap - part.gear_radius() - other.gear_radius()) <= GEAR_TOLERANCE:
+				result.append(other)
+	return result
+
+
+func _find_gear_pairs() -> void:
+	_gear_pairs.clear()
+	for i in parts.size():
+		for other in gear_neighbors(parts[i]):
+			if parts.find(other) > i:
+				_gear_pairs.append([parts[i], other])
+
+
+## Les roues liées gardent des vitesses de bord égales et opposées : w1·r1 + w2·r2 = 0.
+## Un moteur allumé impose sa vitesse (inertie infinie). Quelques passes suffisent pour un train.
+func _solve_gears() -> void:
+	if _gear_pairs.is_empty():
+		return
+	var states := {}
+	for pair: Array in _gear_pairs:
+		for gear: Part in pair:
+			if not states.has(gear):
+				states[gear] = PhysicsServer2D.body_get_direct_state(gear.gear_body().get_rid())
+				var drive: float = gear.drive_speed()
+				if not is_nan(drive):
+					states[gear].angular_velocity = drive
+	for iteration in 8:
+		for pair: Array in _gear_pairs:
+			var a: Part = pair[0]
+			var b: Part = pair[1]
+			var sa: PhysicsDirectBodyState2D = states[a]
+			var sb: PhysicsDirectBodyState2D = states[b]
+			var ia := 0.0 if not is_nan(a.drive_speed()) else sa.inverse_inertia
+			var ib := 0.0 if not is_nan(b.drive_speed()) else sb.inverse_inertia
+			var ra := a.gear_radius()
+			var rb := b.gear_radius()
+			var softness := ia * ra * ra + ib * rb * rb
+			if softness <= 0.0:
+				continue
+			var impulse := -(sa.angular_velocity * ra + sb.angular_velocity * rb) / softness
+			sa.angular_velocity += ia * ra * impulse
+			sb.angular_velocity += ib * rb * impulse
 
 func part_at(point: Vector2) -> Part:
 	# Les objets passent avant les cordes qui les traversent.
@@ -223,7 +279,10 @@ func _spawn_now(entry: Dictionary) -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if not running or has_won:
+	if not running:
+		return
+	_solve_gears()
+	if has_won:
 		return
 	var goals := 0
 	for part in parts:
@@ -253,6 +312,8 @@ func _rebuild(run: bool) -> void:
 		for entry: Dictionary in level.get("fixed", []) + mine:
 			if (entry.kind == "rope") == ropes:
 				_make(entry)
+	if run:
+		_find_gear_pairs()
 
 
 func _make(entry: Dictionary) -> Part:

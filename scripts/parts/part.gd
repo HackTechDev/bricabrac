@@ -8,6 +8,9 @@ const INK := Color("0f1a2e")
 const STEEL := Color("7f8fa6")
 const WOOD := Color("c98f4e")
 const GOLD := Color("ffc94d")
+## Couches physiques : les roues dentées ne se heurtent pas entre elles, mais heurtent le reste.
+const LAYER_WORLD := 1
+const LAYER_GEARS := 2
 const IMPACT_MIN_SPEED := 70.0
 const IMPACT_FULL_SPEED := 700.0
 const CHANNEL_COLORS: Array[Color] = [
@@ -116,6 +119,25 @@ func impact_sound() -> String:
 	return ""
 
 
+## Rayon primitif d'une roue dentée ; 0 si la pièce n'en est pas une.
+func gear_radius() -> float:
+	return 0.0
+
+
+func collision_layer() -> int:
+	return LAYER_WORLD
+
+
+func collision_mask() -> int:
+	return LAYER_WORLD | LAYER_GEARS
+
+
+## Deux pièces peuvent-elles se toucher ? Sinon, elles peuvent aussi se chevaucher à la pose.
+func interacts_with(other: Part) -> bool:
+	return (collision_layer() & other.collision_mask()) != 0 \
+			or (other.collision_layer() & collision_mask()) != 0
+
+
 ## Attiré par les aimants ?
 func is_metal() -> bool:
 	return false
@@ -175,6 +197,7 @@ func make_rigid(mass: float, bounce: float, friction := 0.6, gravity := 1.0) -> 
 	b.freeze_mode = RigidBody2D.FREEZE_MODE_STATIC
 	b.freeze = not running
 	b.continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE
+	b.collision_mask = LAYER_WORLD | LAYER_GEARS
 	b.physics_material_override = _material(bounce, friction)
 	b.set_meta("part", self)
 	add_child(b)
@@ -229,7 +252,7 @@ func add_sensor(size: Vector2, offset: Vector2, on_enter := Callable()) -> Area2
 		return null
 	var area := Area2D.new()
 	area.collision_layer = 0
-	area.collision_mask = 1
+	area.collision_mask = LAYER_WORLD | LAYER_GEARS
 	area.position = offset
 	var col := CollisionShape2D.new()
 	var shape := RectangleShape2D.new()

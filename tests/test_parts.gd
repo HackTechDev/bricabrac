@@ -10,6 +10,7 @@ func _run() -> void:
 	await _test_gates()
 	await _test_scissors()
 	await _test_magnet()
+	await _test_gears()
 	_end("PIÈCES OK")
 
 
@@ -99,6 +100,37 @@ func _test_magnet() -> void:
 	_check("aimant allumé : le boulet vient se coller (%d)" % _pos("boulet").x, _pos("boulet").x < 560.0)
 	_check("aimant : la caisse ne bouge pas", absf(_pos("caisse").x - 320.0) < 2.0)
 	_check("aimant : le caoutchouc n'est pas attiré", absf(_pos("caoutchouc").x - 500.0) < 2.0)
+
+
+func _spin(id: String) -> float:
+	return _rigid(id).angular_velocity
+
+
+## Moteur → roue A → roue B : sens alternés, vitesses dans le rapport des rayons ; une roue trop
+## loin ne tourne pas ; le bras de la dernière roue renverse un domino.
+func _test_gears() -> void:
+	var m := GearPart.MOTOR_SPEED
+	_level([
+		{"kind": "motor", "id": "moteur", "pos": Vector2(300, 300), "channel": 1},
+		{"kind": "gear", "id": "a", "pos": Vector2(370, 300), "rot": 270.0},
+		{"kind": "gear", "id": "b", "pos": Vector2(450, 300), "rot": 270.0},
+		{"kind": "gear", "id": "seule", "pos": Vector2(700, 300)},
+		{"kind": "domino", "id": "d", "pos": Vector2(535, 300)},
+		{"kind": "plank", "pos": Vector2(565, 337), "len": 60.0},
+		{"kind": "timer", "pos": Vector2(900, 600), "channel": 1, "delay": 0.5},
+	])
+	_check("engrenages : le moteur touche une roue", board.gear_neighbors(board.find_part("moteur")).size() == 1)
+	_check("engrenages : la roue isolée ne touche rien", board.gear_neighbors(board.find_part("seule")).is_empty())
+	board.start()
+	await _steps(50)
+	_check("moteur éteint : rien ne tourne", absf(_spin("a")) < 0.01)
+	await _steps(30)
+	_near("moteur allumé : vitesse imposée", _spin("moteur"), m, 0.02)
+	_near("roue A : sens inverse, rapport 30/40", _spin("a"), -m * 30.0 / 40.0, 0.03)
+	_near("roue B : même sens que le moteur", _spin("b"), m * 30.0 / 40.0, 0.03)
+	_check("roue isolée immobile", absf(_spin("seule")) < 0.01)
+	await _steps(240)
+	_check("le bras renverse le domino", absf(_rigid("d").rotation_degrees) > 45.0)
 
 
 func _lamp() -> LampPart:
