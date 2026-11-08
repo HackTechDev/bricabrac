@@ -35,7 +35,33 @@ static func sandbox() -> Dictionary:
 	}
 
 
+## Mondes à thème, dans l'ordre du jeu ; chaque niveau porte l'identifiant du sien.
+const WORLDS: Array[Dictionary] = [
+	{"id": "atelier", "name": "Atelier", "color": Color("1d2b45")},
+	{"id": "cuisine", "name": "Cuisine", "color": Color("3a2a24")},
+	{"id": "usine", "name": "Usine", "color": Color("262d2a")},
+	{"id": "espace", "name": "Espace", "color": Color("120f2a")},
+]
+
+
+static func world(id: String) -> Dictionary:
+	for w in WORLDS:
+		if w.id == id:
+			return w
+	return WORLDS[0]
+
+
 static func all() -> Array:
+	var levels: Array = []
+	for group: Array in [["atelier", workshop()], ["cuisine", kitchen()], ["usine", factory()],
+			["espace", space()]]:
+		for level: Dictionary in group[1]:
+			level["world"] = group[0]
+			levels.append(level)
+	return levels
+
+
+static func workshop() -> Array:
 	return [
 		{
 			"id": "pente",
@@ -302,6 +328,197 @@ static func all() -> Array:
 				{"kind": "plank", "pos": Vector2(140, 300), "rot": 30.0},
 				{"kind": "plate", "pos": Vector2(320, 620), "channel": 1},
 				{"kind": "plate", "pos": Vector2(560, 620), "channel": 2},
+			],
+		},
+	]
+
+
+static func kitchen() -> Array:
+	return [
+		{
+			"id": "minuteur",
+			"par_time": 5.5,
+			"name": "Le minuteur",
+			"goal_text": "Amène la bille dans le panier.",
+			"intro": "Nouvelle pièce : la minuterie. Elle allume son canal après un délai, que R règle.",
+			"hint": "Mets la minuterie sur le canal de la trappe avec C, puis prolonge la rampe avec la planche.",
+			"fixed": [
+				item("ball", 170, 97),
+				item("trapdoor", 110, 120, {"channel": 2}),
+				steel(250, 300, 320, 20.0),
+				item("basket", 760, 598, {"goal": true}),
+			],
+			"inventory": {"timer": 1, "plank": 1},
+			"solution": [
+				{"kind": "timer", "pos": Vector2(300, 600), "channel": 2, "delay": 1.0},
+				{"kind": "plank", "pos": Vector2(480, 380), "rot": 15.0},
+			],
+		},
+		{
+			"id": "bouee",
+			"par_time": 3.0,
+			"name": "La bouée",
+			"goal_text": "Allume la lampe : la caisse doit toucher la plaque.",
+			"intro": "Le bac d'eau fait flotter les objets légers, comme la caisse.",
+			"hint": "Une fois dans l'eau, la caisse flotte : un ventilateur peut la pousser jusqu'à la plaque.",
+			"fixed": [
+				item("crate", 230, 467),
+				item("conveyor", 300, 500, {"channel": 0}),
+				item("water", 520, 570),
+				item("plate", 623, 545, {"rot": 270.0, "channel": 1}),
+				item("lamp", 900, 612, {"channel": 1, "goal": true}),
+			],
+			"inventory": {"fan": 1, "plank": 1},
+			"solution": [
+				{"kind": "fan", "pos": Vector2(360, 560)},
+			],
+		},
+		{
+			"id": "batteur",
+			"par_time": 5.0,
+			"name": "Le batteur",
+			"goal_text": "Allume la lampe.",
+			"intro": "Nouvelles pièces : le moteur et l'engrenage. Le moteur fait tourner la roue qu'il touche.",
+			"hint": "Une roue collée au moteur : son bras peut faire tomber le domino de son perchoir. Essaie aussi le miroir.",
+			"fixed": [
+				steel(590, 336, 24),
+				item("domino", 590, 300),
+				item("plate", 680, 626, {"channel": 1}),
+				item("lamp", 900, 612, {"channel": 1, "goal": true}),
+			],
+			"inventory": {"motor": 1, "gear": 1},
+			"solution": [
+				{"kind": "motor", "pos": Vector2(440, 280)},
+				{"kind": "gear", "pos": Vector2(510, 280), "rot": 270.0},
+			],
+		},
+	]
+
+
+static func factory() -> Array:
+	return [
+		{
+			"id": "engrenages",
+			"par_time": 5.0,
+			"name": "Train d'engrenages",
+			"goal_text": "Allume la lampe.",
+			"intro": "Le moteur est trop loin de la roue à bras : relie-les par d'autres roues.",
+			"hint": "Deux roues engrènent quand leurs dents se touchent : 70 px du moteur à une roue, 80 px entre deux roues.",
+			"fixed": [
+				item("motor", 200, 300),
+				item("gear", 430, 300, {"rot": 270.0}),
+				steel(510, 356, 24),
+				item("domino", 510, 320),
+				item("plate", 600, 626, {"channel": 1}),
+				item("lamp", 900, 612, {"channel": 1, "goal": true}),
+			],
+			"inventory": {"gear": 2},
+			"solution": [
+				{"kind": "gear", "pos": Vector2(270, 300), "rot": 90.0},
+				{"kind": "gear", "pos": Vector2(350, 300), "rot": 90.0},
+			],
+		},
+		{
+			"id": "palan",
+			"par_time": 2.5,
+			"name": "Le palan magnétique",
+			"goal_text": "Allume la lampe : la bille doit toucher la plaque.",
+			"intro": "L'aimant attire la bille d'acier, même à travers une autre pièce.",
+			"hint": "Pose l'aimant au-dessus de la plaque, pôle vers le bas : la bille qui passe dessous sera soulevée.",
+			"fixed": [
+				item("ball", 140, 493),
+				item("conveyor", 200, 520, {"channel": 0}),
+				item("conveyor", 400, 520, {"channel": 0}),
+				item("plate", 400, 440, {"rot": 180.0, "channel": 1}),
+				item("lamp", 900, 612, {"channel": 1, "goal": true}),
+			],
+			"inventory": {"magnet": 1},
+			"solution": [
+				{"kind": "magnet", "pos": Vector2(360, 410), "rot": 180.0},
+			],
+		},
+		{
+			"id": "ventilation",
+			"par_time": 4.0,
+			"wind": Vector2(-120, 0),
+			"name": "Ventilation",
+			"goal_text": "Fais éclater le ballon sur les pointes.",
+			"intro": "Un courant d'air permanent souffle vers la gauche et emporte le ballon.",
+			"hint": "Un ventilateur pour contrer le courant, un autre pour pousser le ballon au-delà de la poutre.",
+			"fixed": [
+				item("balloon", 400, 560, {"goal": true}),
+				item("spikes", 880, 13, {"rot": 180.0}),
+				steel(520, 200, 360),
+			],
+			"inventory": {"fan": 2},
+			"solution": [
+				{"kind": "fan", "pos": Vector2(300, 560)},
+				{"kind": "fan", "pos": Vector2(560, 400)},
+			],
+		},
+	]
+
+
+static func space() -> Array:
+	return [
+		{
+			"id": "lunaire",
+			"par_time": 5.0,
+			"gravity": 0.3,
+			"name": "Bond lunaire",
+			"goal_text": "Amène la bille dans le panier perché.",
+			"intro": "Ici, la gravité est trois fois plus faible : tout tombe lentement et porte loin.",
+			"hint": "Un ressort bien incliné, assez bas pour que la bille prenne de la vitesse.",
+			"fixed": [
+				item("ball", 150, 60),
+				steel(800, 348, 200),
+				item("basket", 800, 300, {"goal": true}),
+			],
+			"inventory": {"spring": 1},
+			"solution": [
+				{"kind": "spring", "pos": Vector2(150, 400), "rot": 45.0},
+			],
+		},
+		{
+			"id": "sas",
+			"par_time": 3.0,
+			"gravity": 0.5,
+			"name": "Le sas",
+			"goal_text": "Fais sortir la bille du sas jusqu'au panier.",
+			"intro": "Nouvelle pièce : le portail. Ce qui entre dans l'un ressort par l'autre portail du même canal.",
+			"hint": "Un portail couché dans le sas, sous la bille ; l'autre au-dessus du panier.",
+			"fixed": [
+				item("ball", 150, 80),
+				steel(84, 250, 400, 90.0),
+				steel(216, 250, 400, 90.0),
+				steel(150, 444, 144),
+				steel(650, 340, 600, 90.0),
+				item("basket", 850, 598, {"goal": true}),
+			],
+			"inventory": {"portal": 2},
+			"solution": [
+				{"kind": "portal", "pos": Vector2(150, 360), "rot": 90.0, "channel": 1},
+				{"kind": "portal", "pos": Vector2(850, 300), "rot": 90.0, "channel": 1},
+			],
+		},
+		{
+			"id": "orbite",
+			"par_time": 2.5,
+			"gravity": 0.3,
+			"name": "Tir en orbite",
+			"goal_text": "Envoie la bille du canon dans le panier.",
+			"intro": "Le mur est infranchissable… sauf pour qui a des portails.",
+			"hint": "Allume le canon avec la minuterie, puis place un portail sur sa trajectoire et l'autre derrière le mur.",
+			"fixed": [
+				item("cannon", 100, 580, {"rot": -30.0, "channel": 1}),
+				steel(560, 280, 560, 90.0),
+				item("basket", 850, 598, {"goal": true}),
+			],
+			"inventory": {"timer": 1, "portal": 2},
+			"solution": [
+				{"kind": "timer", "pos": Vector2(300, 610), "channel": 1, "delay": 0.5},
+				{"kind": "portal", "pos": Vector2(300, 480), "channel": 1},
+				{"kind": "portal", "pos": Vector2(650, 480), "rot": 45.0, "channel": 1},
 			],
 		},
 	]

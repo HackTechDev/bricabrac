@@ -7,7 +7,7 @@ section, les idées les plus utiles ou les moins coûteuses viennent en premier.
 
 Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
-- Faire essayer les 9 niveaux à de vrais joueurs et noter où ils bloquent.
+- Faire essayer les 18 niveaux à de vrais joueurs et noter où ils bloquent.
 - Revoir la difficulté de la Catapulte et du Pendule, dont les zones gagnantes sont étroites.
 - Écouter les sons en situation, surtout le volume des chocs répétés.
 
@@ -25,7 +25,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Contenu et rejouabilité
 
-- Davantage de niveaux, regroupés en mondes à thème : atelier, cuisine, usine, espace.
 - Personnages ou animaux aux réactions simples, pour donner de l'humour aux machines.
 
 ## Éditeur et communauté

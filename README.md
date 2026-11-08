@@ -35,7 +35,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 - `scripts/parts/` : une classe par pièce, dessinée par le code. `catalog.gd` les référence.
 - `scripts/parts/rope_part.gd` : contrainte de longueur de la corde (Godot n'a pas de joint poulie en 2D).
 - `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio.
-- `scripts/level_data.gd` : les niveaux, chacun avec une solution.
+- `scripts/level_data.gd` : les niveaux, regroupés en quatre mondes, chacun avec une solution.
 
 ## Tests
 

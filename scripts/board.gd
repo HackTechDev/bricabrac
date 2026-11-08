@@ -461,7 +461,7 @@ func _build_walls() -> void:
 
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, SIZE), Color("1d2b45"))
+	draw_rect(Rect2(Vector2.ZERO, SIZE), LevelData.world(level.get("world", "")).color)
 	var minor := Color(1, 1, 1, 0.04)
 	var major := Color(1, 1, 1, 0.09)
 	var x := 0.0

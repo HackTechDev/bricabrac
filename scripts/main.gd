@@ -794,7 +794,9 @@ func _refresh_level_picker() -> void:
 	_level_picker.clear()
 	for i in levels.size():
 		var mark := "[OK] " if completed.has(levels[i].id) else ""
-		_level_picker.add_item("%s%d. %s%s" % [mark, i + 1, levels[i].name, _stars(levels[i])])
+		var world: String = LevelData.world(levels[i].get("world", "")).name + " · " \
+				if levels[i].has("world") else ""
+		_level_picker.add_item("%s%s%d. %s%s" % [mark, world, i + 1, levels[i].name, _stars(levels[i])])
 	_level_picker.select(current)
 
 

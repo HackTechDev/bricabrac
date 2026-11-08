@@ -165,8 +165,11 @@ dessus. Retirer une pièce ou une poulie renvoie aussi au bac les cordes qui y s
 
 ## Les niveaux
 
-Tous les niveaux sont accessibles dès le départ depuis la liste en haut à gauche, et ceux que tu as
-terminés portent la mention `[OK]`. Le bouton **Indice** donne un coup de pouce sans tout révéler.
+Les 18 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
+dès le départ depuis la liste en haut à gauche, et ceux que tu as terminés portent la mention `[OK]`.
+Le bouton **Indice** donne un coup de pouce sans tout révéler.
+
+**L'atelier**, pour apprendre les bases :
 
 1. **Première pente :** la planche.
 2. **Par-dessus le mur :** le ressort.
@@ -177,6 +180,24 @@ terminés portent la mention `[OK]`. Le bouton **Indice** donne un coup de pouce
 7. **Contrepoids :** les poulies et la corde.
 8. **Le pendule :** la corde comme balancier.
 9. **Réaction en chaîne :** une machine complète, avec plusieurs mécanismes en cascade.
+
+**La cuisine**, avec ses minuteries et son bac d'eau :
+
+10. **Le minuteur :** la minuterie et la trappe.
+11. **La bouée :** faire flotter une caisse jusqu'à une plaque.
+12. **Le batteur :** le moteur et l'engrenage.
+
+**L'usine**, avec ses machines et sa ventilation :
+
+13. **Train d'engrenages :** relier un moteur lointain par des roues.
+14. **Le palan magnétique :** soulever une bille avec l'aimant.
+15. **Ventilation :** un vent permanent contrarie le ballon.
+
+**L'espace**, où la gravité est faible :
+
+16. **Bond lunaire :** un saut sur ressort qui porte très loin.
+17. **Le sas :** les portails.
+18. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
 
 ## Les objectifs bonus
 
