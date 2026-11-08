@@ -81,6 +81,7 @@ func _run() -> void:
 	await _test_persistence()
 	await _test_undo_cascade()
 	await _test_stale_save()
+	await _test_sandbox()
 
 	_finish("INTERFACE OK")
 
@@ -399,3 +400,32 @@ func _test_sound_toggle() -> void:
 	_check("touche M : son coupé", main.muted != was_muted and AudioServer.is_bus_mute(0) == main.muted)
 	await _click(main._sound_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	_check("bouton Son : rétabli", main.muted == was_muted)
+
+
+## Bac à sable : dernier de la liste, toutes les pièces sans limite, réglages de gravité et de vent,
+## jamais proposé comme « premier niveau à finir ».
+func _test_sandbox() -> void:
+	var board: Board = main.board
+	var index: int = main.levels.size() - 1
+	main.load_level(index)
+	await _steps(2)
+	_check("bac à sable : dernier de la liste", main.is_sandbox())
+	_check("bac à sable : toutes les pièces", main._items.size() == Catalog.INFO.size())
+	_check("bac à sable : quantité illimitée affichée", main._items[0]._count_label.text == "∞")
+	_check("bac à sable : boutons de physique visibles", main._gravity_button.visible and main._wind_button.visible)
+	await _click(main._gravity_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("bac à sable : gravité réduite", board.gravity_factor() < 1.0
+			and main._gravity_button.text == "Gravité : ×0,4")
+	await _click(main._wind_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("bac à sable : vent", board.wind() != Vector2.ZERO and main._wind_button.text == "Vent : →")
+	board.place("ball", Vector2(300, 100))
+	await _key(KEY_SPACE)
+	await _steps(60)
+	_check("bac à sable : la bille dérive au vent", board.to_local(board.parts[0].main_body.global_position).x > 301.0)
+	_check("bac à sable : réglages bloqués pendant la simulation", main._gravity_button.disabled)
+	await _key(KEY_SPACE)
+	main.load_level(0)
+	await _steps(2)
+	_check("hors bac à sable : boutons masqués et gravité normale",
+			not main._gravity_button.visible and board.gravity_factor() == 1.0)
+	_check("le bac à sable n'est pas un niveau à finir", main._first_unsolved() != index)

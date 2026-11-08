@@ -14,6 +14,27 @@ static func item(kind: String, x: float, y: float, extra := {}) -> Dictionary:
 	return e
 
 
+## Nombre de pièces du bac à sable : le bac affiche « ∞ ».
+const UNLIMITED := 99
+
+
+## Bac à sable : toutes les pièces, aucun objectif ; la gravité et le vent se règlent en haut.
+static func sandbox() -> Dictionary:
+	var inventory := {}
+	for kind: String in Catalog.INFO:
+		inventory[kind] = UNLIMITED
+	return {
+		"id": "bac_a_sable",
+		"name": "Bac à sable",
+		"sandbox": true,
+		"goal_text": "Construis librement, sans objectif.",
+		"intro": "Toutes les pièces sont là, en quantité illimitée. Règle la gravité et le vent en haut.",
+		"hint": "Pas d'objectif ici : essaie une pièce, lance, observe. Tes machines sont gardées.",
+		"fixed": [],
+		"inventory": inventory,
+	}
+
+
 static func all() -> Array:
 	return [
 		{

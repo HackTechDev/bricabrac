@@ -20,7 +20,7 @@ func _run() -> void:
 		await process_frame  # Le tutoriel démarre une image après le chargement.
 		if main.tutorial.is_active():
 			await _shot("%s/l%d_tuto.png" % [dir, i + 1])
-		board.apply_layout(main.levels[i].solution)
+		board.apply_layout(main.levels[i].get("solution", []))
 		await _shot("%s/l%d_edit.png" % [dir, i + 1])
 		main.toggle_run()
 		var delay := create_timer(1.6)

@@ -49,12 +49,25 @@ func load_level(p_level: Dictionary) -> void:
 			fixed[i]["id"] = "f%d" % i
 	placed.clear()
 	_next_id = 1
+	_apply_physics()
+	_rebuild(false)
+	inventory_changed.emit()
+
+
+## Change la gravité et le vent du niveau courant (bac à sable), hors simulation.
+func set_physics(gravity: float, p_wind: Vector2) -> void:
+	if running:
+		return
+	level["gravity"] = gravity
+	level["wind"] = p_wind
+	_apply_physics()
+
+
+func _apply_physics() -> void:
 	PhysicsServer2D.area_set_param(get_world_2d().space, PhysicsServer2D.AREA_PARAM_GRAVITY,
 			ProjectSettings.get_setting("physics/2d/default_gravity") * gravity_factor())
 	set_process(wind() != Vector2.ZERO)
 	queue_redraw()
-	_rebuild(false)
-	inventory_changed.emit()
 
 
 ## Physique propre au niveau : gravité relative (1 : normale) et vent permanent.

@@ -190,6 +190,18 @@ Chaque victoire fait le point sur trois défis facultatifs, qui rapportent chacu
 Économe et Complet ne s'obtiennent pas avec la même machine : il faut rejouer le niveau. Les étoiles
 gagnées restent acquises, et la liste des niveaux les affiche à côté de chaque niveau terminé.
 
+## Le bac à sable
+
+Le dernier élément de la liste des niveaux, **Bac à sable**, n'a pas d'objectif. Toutes les pièces y
+sont disponibles en quantité illimitée (« ∞ »), y compris le panier et la lampe. Deux boutons
+apparaissent en haut de l'écran :
+
+- **Gravité :** normale, ×0,4, ×0,1 ou ×1,8.
+- **Vent :** aucun, vers la droite, vers la gauche ou vers le haut.
+
+Ces réglages ne changent qu'à l'atelier, pas pendant la simulation. Comme dans les niveaux, ta
+machine est sauvegardée et Ctrl+Z annule tes actions.
+
 ## Conseils
 
 - **Lance souvent :** une courte tentative renseigne mieux qu'une longue réflexion.

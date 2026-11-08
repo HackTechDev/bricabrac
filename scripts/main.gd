@@ -8,7 +8,11 @@ const BIN_ORDER: Array[String] = [
 	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "switch", "timer", "trapdoor", "door", "scissors", "magnet", "motor", "gear", "portal", "water",
 	"cannon",
 	"pulley", "rope", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes",
+	"lamp", "basket",
 ]
+## Réglages proposés dans le bac à sable.
+const SANDBOX_GRAVITY: Array[float] = [1.0, 0.4, 0.1, 1.8]
+const SANDBOX_WIND: Array[Vector2] = [Vector2.ZERO, Vector2(150, 0), Vector2(-150, 0), Vector2(0, -150)]
 
 var save_path := "user://progress.cfg"
 var board: Board
@@ -46,6 +50,8 @@ var _items: Array[BinItem] = []
 var _ctx_buttons := {}
 var _win_overlay: Control
 var _win_bonus: Label
+var _gravity_button: Button
+var _wind_button: Button
 var _win_next: Button
 var _rope_preview: Line2D
 var _sound_button: Button
@@ -58,6 +64,7 @@ var _hover_time := 0.0
 
 func _ready() -> void:
 	levels = LevelData.all()
+	levels.append(LevelData.sandbox())
 	_load_progress()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -90,6 +97,8 @@ func _ready() -> void:
 
 ## Rappel des conditions inhabituelles du niveau, à la suite de l'objectif.
 static func _physics_note(level: Dictionary) -> String:
+	if level.get("sandbox", false):
+		return ""  # Les boutons du bac à sable affichent déjà ces réglages.
 	var notes: PackedStringArray = []
 	var g: float = level.get("gravity", 1.0)
 	if g < 1.0:
@@ -98,9 +107,12 @@ static func _physics_note(level: Dictionary) -> String:
 		notes.append("gravité forte (×%s)" % String.num(g, 2).replace(".", ","))
 	var w: Vector2 = level.get("wind", Vector2.ZERO)
 	if w != Vector2.ZERO:
-		var arrows := ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"]
-		notes.append("vent %s" % arrows[wrapi(roundi(w.angle() / (PI / 4.0)), 0, 8)])
+		notes.append("vent " + _wind_arrow(w))
 	return "" if notes.is_empty() else "  —  " + ", ".join(notes)
+
+
+static func _wind_arrow(w: Vector2) -> String:
+	return ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"][wrapi(roundi(w.angle() / (PI / 4.0)), 0, 8)]
 
 
 func load_level(index: int) -> void:
@@ -573,6 +585,15 @@ func _build_top_bar() -> void:
 	_goal_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(_goal_label)
 
+	_gravity_button = Button.new()
+	_gravity_button.focus_mode = Control.FOCUS_NONE
+	_gravity_button.pressed.connect(func() -> void: _cycle_sandbox_physics(1, 0))
+	row.add_child(_gravity_button)
+	_wind_button = Button.new()
+	_wind_button.focus_mode = Control.FOCUS_NONE
+	_wind_button.pressed.connect(func() -> void: _cycle_sandbox_physics(0, 1))
+	row.add_child(_wind_button)
+
 	_sound_button = Button.new()
 	_sound_button.focus_mode = Control.FOCUS_NONE
 	_sound_button.pressed.connect(_toggle_sound)
@@ -740,9 +761,31 @@ func _refresh_context() -> void:
 	_ctx_buttons.redo.disabled = board.running or history == null or not history.can_redo()
 
 
+## Fait défiler la gravité (dg) ou le vent (dw) parmi les réglages du bac à sable.
+func _cycle_sandbox_physics(dg: int, dw: int) -> void:
+	if board.running or not is_sandbox():
+		return
+	var g := SANDBOX_GRAVITY[(SANDBOX_GRAVITY.find(board.gravity_factor()) + dg) % SANDBOX_GRAVITY.size()]
+	var w := SANDBOX_WIND[(SANDBOX_WIND.find(board.wind()) + dw) % SANDBOX_WIND.size()]
+	board.set_physics(g, w)
+	_refresh_controls()
+
+
+func is_sandbox() -> bool:
+	return levels[current].get("sandbox", false)
+
+
 func _refresh_controls() -> void:
 	_run_button.text = "Arrêter" if board.running else "Lancer"
 	_clear_button.disabled = board.running
+	_gravity_button.visible = is_sandbox()
+	_wind_button.visible = is_sandbox()
+	_gravity_button.disabled = board.running
+	_wind_button.disabled = board.running
+	var g := board.gravity_factor()
+	_gravity_button.text = "Gravité : " + ("normale" if g == 1.0 else "×" + String.num(g, 1).replace(".", ","))
+	var w := board.wind()
+	_wind_button.text = "Vent : " + ("aucun" if w == Vector2.ZERO else _wind_arrow(w))
 	_sound_button.text = "Son : non" if muted else "Son : oui"
 	AudioServer.set_bus_mute(0, muted)
 
@@ -786,8 +829,9 @@ func _on_won() -> void:
 	_save_progress()
 	_refresh_level_picker()
 	board.sfx.play("win")
-	var last := current == levels.size() - 1
-	_win_next.text = "Rejouer le premier niveau" if last else "Niveau suivant"
+	var next: Dictionary = levels[(current + 1) % levels.size()]
+	_win_next.text = "Ouvrir le bac à sable" if next.get("sandbox", false) \
+			else "Rejouer le premier niveau" if current == levels.size() - 1 else "Niveau suivant"
 	_win_overlay.show()
 
 
@@ -882,7 +926,7 @@ func _toggle_sound() -> void:
 
 func _first_unsolved() -> int:
 	for i in levels.size():
-		if not completed.has(levels[i].id):
+		if not completed.has(levels[i].id) and not levels[i].get("sandbox", false):
 			return i
 	return 0
 
