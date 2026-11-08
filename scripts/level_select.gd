@@ -5,6 +5,7 @@ extends ColorRect
 
 signal chosen(index: int)
 signal import_requested
+signal title_requested
 
 const THUMB := Vector2(192, 118)
 const COLUMNS := 5
@@ -46,6 +47,11 @@ func setup(levels: Array) -> void:
 		hide()
 		import_requested.emit())
 	head.add_child(importer)
+	var to_title := Button.new()
+	to_title.text = "Écran titre"
+	to_title.focus_mode = Control.FOCUS_NONE
+	to_title.pressed.connect(func() -> void: title_requested.emit())
+	head.add_child(to_title)
 	var close := Button.new()
 	close.text = "Fermer (Échap)"
 	close.focus_mode = Control.FOCUS_NONE

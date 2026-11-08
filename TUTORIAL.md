@@ -17,6 +17,15 @@ avec `GODOT` pointant vers l'exécutable de Godot :
 
     $GODOT --path .
 
+Le jeu s'ouvre sur l'**écran titre**. **Jouer** (ou **Continuer** si tu as déjà commencé) t'emmène
+au premier niveau que tu n'as pas encore résolu ; Entrée ou Espace font de même. Tu peux aussi
+choisir un niveau, ouvrir le bac à sable ou l'éditeur de niveaux. Le bas de l'écran rappelle ta
+progression et tes étoiles. Pour y revenir en cours de partie, appuie sur Échap quand rien n'est
+sélectionné, ou utilise le bouton « Écran titre » de l'écran de sélection.
+
+À chaque changement de niveau, l'écran précédent s'efface en balayage et une carte annonce le
+monde et le nom du niveau. Tu peux commencer à construire sans attendre la fin de l'animation.
+
 ## L'écran
 
 - **En haut :** le bouton du niveau en cours, qui ouvre l'écran de sélection, l'objectif, puis les boutons Son, Indice, Tout retirer, le chronomètre et Lancer.
@@ -58,6 +67,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Lancer ou arrêter | Espace |
 | Couper le son | M |
 | Choisir un niveau | Tab, ou le bouton en haut à gauche |
+| Revenir à l'écran titre | Échap, quand rien n'est sélectionné ni en cours |
 | Marquer l'objectif (éditeur) | G |
 
 Les boutons du panneau de droite font la même chose que R, F et C. Ils restent grisés quand la pièce

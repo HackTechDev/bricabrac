@@ -25,11 +25,13 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 | Annuler / rétablir | Ctrl+Z / Ctrl+Y ou Ctrl+Maj+Z |
 | Lancer / arrêter | Espace |
 | Couper le son | M |
+| Écran titre | Échap, quand rien n'est sélectionné |
 
 ## Organisation
 
 - `scripts/board.gd` : mécanique de jeu (disposition, simulation, victoire), sans interface.
-- `scripts/main.gd`, `bin_item.gd`, `part_icon.gd` : interface.
+- `scripts/main.gd`, `bin_item.gd`, `part_icon.gd` : interface ; `title_screen.gd` : écran titre ;
+  `level_transition.gd` : passage d'un niveau à l'autre ; `chrono.gd` : chronomètre.
 - `scripts/history.gd` : historique d'annulation, par niveau.
 - `scripts/tutorial.gd` : bulles du tutoriel intégré ; les étapes sont dans les fichiers de niveau.
 - `scripts/parts/` : une classe par pièce, dessinée par le code. `catalog.gd` les référence.

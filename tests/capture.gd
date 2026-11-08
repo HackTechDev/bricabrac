@@ -12,6 +12,7 @@ func _run() -> void:
 	var main: Control = (load("res://scenes/main.tscn") as PackedScene).instantiate()
 	main.save_path = "user://capture_progress.cfg"
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(main.save_path))
+	main.show_title = false
 	root.add_child(main)
 	await process_frame
 	for i in main.levels.size():

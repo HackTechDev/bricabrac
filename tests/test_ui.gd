@@ -88,6 +88,7 @@ func _run() -> void:
 	await _test_share()
 	await _test_replay()
 	await _test_chrono()
+	await _test_title_and_transitions()
 
 	_finish("INTERFACE OK")
 
@@ -709,3 +710,50 @@ func _test_chrono() -> void:
 	main.load_level(main.levels.find_custom(func(l: Dictionary) -> bool: return l.id == "bac_a_sable"))
 	await process_frame
 	_check("chrono : pas de temps à battre au bac à sable", chrono.par == 0.0 and chrono.seconds == 0.0)
+
+
+## Écran titre : progression, Entrée pour jouer, Échap pour y revenir, accès au bac à sable.
+## Changer de niveau joue une transition qui annonce le nouveau niveau sans bloquer la souris.
+func _test_title_and_transitions() -> void:
+	var title: TitleScreen = main.title_screen
+	main.load_level(0)
+	await _steps(2)
+	main.open_title()
+	await process_frame
+	_check("titre : ouvert", title.is_open() and title.progress_text.contains("niveaux terminés"))
+	_check("titre : Continuer après une partie", title.play_button().text == "Continuer")
+	await _key(KEY_SPACE)
+	_check("titre : Espace n'a pas lancé la machine", not main.board.running)
+	_check("titre : se referme pour jouer", not title.is_open() and main.current == main._first_unsolved())
+	_check("titre : carte du niveau", main.transition.is_playing()
+			and main.transition._name.text == main.levels[main.current].name)
+	await _steps(60)
+	_check("titre : fondu terminé", not title.visible)
+	await _key(KEY_ESCAPE)
+	_check("titre : Échap y revient", title.is_open())
+	var sandbox_button: Button = title._buttons.get_child(2)
+	await _click(sandbox_button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("titre : bac à sable", main.levels[main.current].id == "bac_a_sable" and not title.is_open())
+	await _steps(60)
+	main.open_level_select()
+	await process_frame
+	var to_title: Button = main._level_select.find_children("*", "Button", true, false).filter(
+			func(b: Button) -> bool: return b.text == "Écran titre")[0]
+	await _click(to_title.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("sélection : bouton Écran titre", title.is_open() and not main._level_select.visible)
+	title.close()
+	await _steps(60)
+
+	main.load_level(2)
+	await process_frame
+	_check("transition : jouée au changement de niveau", main.transition.is_playing()
+			and main.transition._name.text == main.levels[2].name
+			and main.transition._world.text.contains("niveau 3"))
+	_check("transition : la souris passe au travers",
+			main.transition.mouse_filter == Control.MOUSE_FILTER_IGNORE)
+	await create_timer(LevelTransition.WIPE + LevelTransition.CARD_IN + LevelTransition.CARD_HOLD
+			+ LevelTransition.CARD_OUT + 0.2).timeout
+	_check("transition : terminée", not main.transition.is_playing())
+	main.load_level(2)
+	await process_frame
+	_check("transition : pas pour recharger le même niveau", not main.transition.is_playing())

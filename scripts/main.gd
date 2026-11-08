@@ -40,6 +40,11 @@ var saved_layouts := {}
 ## Tutoriels terminés ou passés : ils ne se relancent plus d'eux-mêmes (le bouton Indice, si).
 var tutorials_done := {}
 var show_tutorials := true
+## Écran titre au démarrage ; les tests le passent.
+var show_title := true
+var title_screen: TitleScreen
+var transition: LevelTransition
+var _started := false
 var tutorial: Tutorial
 ## Niveaux créés dans l'éditeur, enregistrés avec la progression.
 var custom_levels: Array = []
@@ -122,8 +127,66 @@ func _ready() -> void:
 	recorder = Recorder.new()
 	add_child(recorder)
 	_build_level_select()
+	transition = LevelTransition.new()
+	add_child(transition)
+	title_screen = TitleScreen.new()
+	add_child(title_screen)
+	title_screen.play.connect(func() -> void: _enter(_first_unsolved()))
+	title_screen.choose.connect(open_level_select)
+	title_screen.sandbox.connect(func() -> void: _enter(_index_of("bac_a_sable")))
+	title_screen.editor.connect(func() -> void: _enter(editor_index()))
+	title_screen.hide()
 	editor.load_from(_editor_draft)
 	load_level(_first_unsolved())
+	if show_title:
+		open_title()
+	_started = true
+
+
+## Ouvre l'écran titre, avec la progression du joueur.
+func open_title() -> void:
+	_stop_drag()
+	_cancel_rope()
+	_hide_tooltip()
+	_level_select.hide()
+	var total := 0
+	var done := 0
+	var stars := 0
+	for level: Dictionary in levels:
+		if level.get("sandbox", false) or level.get("custom", false) or level.get("hidden", false):
+			continue
+		total += 1
+		if completed.has(level.id):
+			done += 1
+			stars += bonuses.get(level.id, []).size()
+	var progress := "%d / %d niveaux terminés" % [done, total]
+	if stars > 0:
+		progress += "  ·  %d ★" % stars
+	title_screen.open(progress, not completed.is_empty() or not saved_layouts.is_empty())
+
+
+## Entrée dans un niveau depuis l'écran titre : il se referme en fondu, la carte du niveau suit.
+func _enter(index: int) -> void:
+	if index < 0:
+		return
+	load_level(index)
+	_announce(null)
+
+
+func _index_of(id: String) -> int:
+	return levels.find_custom(func(level: Dictionary) -> bool: return level.id == id)
+
+
+## Carte du niveau courant, après le balayage de l'écran précédent s'il y en a une photo.
+func _announce(shot: Texture2D) -> void:
+	var level: Dictionary = levels[current]
+	var world := LevelData.world(level.get("world", "atelier"))
+	var line := ""
+	if level.get("sandbox", false):
+		line = "Construis librement"
+	elif level.has("world"):
+		line = "%s  ·  niveau %d" % [world.name, current + 1]
+	transition.play(shot, line, level.name, world.color, Rect2(Vector2(0, TOP_H), Board.SIZE))
 
 
 ## Ordre des niveaux : ceux du jeu, le bac à sable, les niveaux personnels, puis l'éditeur et
@@ -147,6 +210,7 @@ func _build_level_select() -> void:
 	_level_select.setup(levels)
 	_level_select.chosen.connect(load_level)
 	_level_select.import_requested.connect(func() -> void: share_dialog.show_import())
+	_level_select.title_requested.connect(func() -> void: open_title())
 
 
 func editor_index() -> int:
@@ -186,6 +250,9 @@ static func _wind_arrow(w: Vector2) -> String:
 
 
 func load_level(index: int) -> void:
+	# Changement de niveau en jeu : photo de l'écran actuel pour le balayage de transition.
+	var animate := _started and index != current and not title_screen.visible
+	var shot := transition.snapshot() if animate else null
 	_stop_drag()
 	_hide_tooltip()
 	_cancel_rope()
@@ -214,6 +281,8 @@ func load_level(index: int) -> void:
 	if show_tutorials and levels[index].has("tutorial") and not completed.has(level_id) \
 			and not tutorials_done.has(level_id):
 		_start_tutorial.call_deferred()
+	if animate:
+		_announce(shot)
 
 
 func toggle_run() -> void:
@@ -258,6 +327,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _handle_key(event: InputEventKey) -> void:
+	if title_screen.is_open():
+		return
 	if _level_select.visible:
 		if event.keycode in [KEY_ESCAPE, KEY_TAB]:
 			_level_select.hide()
@@ -282,6 +353,10 @@ func _handle_key(event: InputEventKey) -> void:
 			if rope_tool:
 				_cancel_rope()
 				_status.text = "Corde annulée."
+			elif selected != null:
+				_select(null)
+			else:
+				open_title()
 		KEY_R:
 			_rotate_selected(-1.0 if event.shift_pressed else 1.0)
 		KEY_F:
@@ -347,7 +422,8 @@ func _process(delta: float) -> void:
 
 ## Un clic ou un glisser ferme l'infobulle ; survoler une autre pièce relance le délai.
 func _track_hover(event: InputEventMouse) -> void:
-	if event is InputEventMouseButton or drag_part != null or _level_select.visible:
+	if event is InputEventMouseButton or drag_part != null or _level_select.visible \
+			or title_screen.visible:
 		_hide_tooltip()
 		return
 	var inside := Rect2(Vector2.ZERO, Board.SIZE).has_point(_mouse)
