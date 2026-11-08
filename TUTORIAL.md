@@ -112,6 +112,9 @@ présents dans le niveau restent en place.
   un portail, et il fonctionne sans être allumé.
 - **Bac d'eau :** la caisse, le domino et la balle rebond y flottent ; la bille et le boulet coulent
   lentement jusqu'au fond. L'eau freine tout ce qui la traverse, ce qui amortit une chute.
+- **Ventouse :** retient le premier objet qui touche sa coupelle rouge, qu'il peut pivoter autour du
+  point de contact. Sur le canal 0, elle ne le lâche jamais ; sur les canaux 1 à 3, elle le lâche
+  quand son canal s'allume, par exemple avec une minuterie.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.

@@ -14,6 +14,7 @@ func _run() -> void:
 	await _test_portals()
 	await _test_water()
 	await _test_level_physics()
+	await _test_suction()
 	_end("PIÈCES OK")
 
 
@@ -219,6 +220,25 @@ func _test_level_physics() -> void:
 	await _steps(60)
 	_near("niveau suivant : gravité normale", _pos("b").y - 100.0, drop[1.0], 0.01)
 	_near("niveau suivant : pas de vent", _pos("b").x, 200.0, 0.001)
+
+
+## Lancée vers le haut, la bille frappe une ventouse retournée : elle est retenue, puis lâchée quand
+## la minuterie allume le canal. Une ventouse sur le canal 0 garde sa prise.
+func _test_suction() -> void:
+	_level([
+		{"kind": "ball", "id": "b", "pos": Vector2(300, 500), "vel": Vector2(0, -700)},
+		{"kind": "suction", "id": "v", "pos": Vector2(300, 300), "rot": 180.0, "channel": 1},
+		{"kind": "ball", "id": "b2", "pos": Vector2(600, 500), "vel": Vector2(0, -700)},
+		{"kind": "suction", "pos": Vector2(600, 300), "rot": 180.0},
+		{"kind": "timer", "pos": Vector2(900, 600), "channel": 1, "delay": 2.0},
+	])
+	board.start()
+	await _steps(180)
+	_check("ventouse : la bille est retenue", _pos("b").y > 310.0 and _pos("b").y < 360.0 and _rigid("b").linear_velocity.length() < 20.0)
+	_check("ventouse : prise signalée", (board.find_part("v") as SuctionPart).held != null)
+	await _steps(120)
+	_check("ventouse : lâchée par son canal", _pos("b").y > 450.0)
+	_check("ventouse canal 0 : garde sa prise", _pos("b2").y < 360.0)
 
 
 func _lamp() -> LampPart:
