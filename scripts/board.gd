@@ -15,6 +15,8 @@ var placed: Array[Dictionary] = []
 var parts: Array[Part] = []
 var running := false
 var has_won := false
+## État des canaux 1 à 3 pendant la simulation (le canal 0 est toujours en marche).
+var channel_on: Array[bool] = [true, false, false, false]
 var sfx := Sfx.new()
 var probe := CircleShape2D.new()
 
@@ -194,9 +196,20 @@ func part_at(point: Vector2) -> Part:
 
 
 func activate_channel(channel: int) -> void:
+	set_channel(channel, true)
+
+
+func toggle_channel(channel: int) -> void:
+	set_channel(channel, not channel_on[channel])
+
+
+func set_channel(channel: int, on: bool) -> void:
+	if channel <= 0 or channel >= channel_on.size() or channel_on[channel] == on or not running:
+		return
+	channel_on[channel] = on
 	for part in parts.duplicate():
-		if part.channel == channel:
-			part.set_powered(true)
+		if part.uses_channel() and part.channel == channel:
+			part.set_powered(on)
 
 
 ## Objet créé pendant la simulation, hors disposition.
@@ -226,6 +239,7 @@ func _physics_process(_delta: float) -> void:
 func _rebuild(run: bool) -> void:
 	running = run
 	has_won = false
+	channel_on = [true, false, false, false]
 	for part in parts:
 		_part_layer.remove_child(part)
 		part.queue_free()

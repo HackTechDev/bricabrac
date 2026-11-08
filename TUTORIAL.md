@@ -87,8 +87,9 @@ présents dans le niveau restent en place.
 
 **Les mécanismes**
 
-- **Plaque :** le premier objet qui la touche alimente son canal, et elle reste active jusqu'à la fin
-  de l'essai.
+- **Plaque :** un objet qui la touche allume son canal. Elle ne l'éteint jamais.
+- **Interrupteur :** chaque objet qui heurte son levier allume ou éteint son canal. Un objet qui
+  rebondit sur le levier ne compte qu'une fois.
 - **Ventilateur :** pousse fort ce qui est léger et presque pas ce qui est lourd. Son vent traverse
   les obstacles.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.

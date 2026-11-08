@@ -10,7 +10,8 @@ const INFO := {
 	"domino": {"label": "Domino", "desc": "Se renverse et transmet le choc."},
 	"seesaw": {"label": "Bascule", "desc": "Le côté haut chargé catapulte le côté bas."},
 	"spring": {"label": "Ressort", "desc": "Renvoie tout à la même vitesse."},
-	"plate": {"label": "Plaque", "desc": "Alimente son canal au premier contact."},
+	"plate": {"label": "Plaque", "desc": "Allume son canal au premier contact."},
+	"switch": {"label": "Interrupteur", "desc": "Chaque choc sur le levier allume ou éteint son canal."},
 	"conveyor": {"label": "Tapis", "desc": "Canal 0 : toujours en marche."},
 	"fan": {"label": "Ventilateur", "desc": "Souffle le léger. Canal 0 : toujours en marche."},
 	"balloon": {"label": "Ballon", "desc": "Monte, éclate sur les pointes."},
@@ -33,6 +34,7 @@ static func create(kind: String) -> Part:
 		"seesaw": part = SeesawPart.new()
 		"spring": part = SpringPart.new()
 		"plate": part = PlatePart.new()
+		"switch": part = SwitchPart.new()
 		"conveyor": part = ConveyorPart.new()
 		"fan": part = FanPart.new()
 		"balloon": part = BalloonPart.new()

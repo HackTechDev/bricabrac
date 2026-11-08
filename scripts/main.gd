@@ -5,7 +5,7 @@ extends Control
 const TOP_H := 56.0
 const PANEL_X := 1040.0
 const BIN_ORDER: Array[String] = [
-	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "cannon",
+	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "switch", "cannon",
 	"pulley", "rope", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes",
 ]
 

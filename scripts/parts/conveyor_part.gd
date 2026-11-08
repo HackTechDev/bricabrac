@@ -16,8 +16,9 @@ func _build() -> void:
 
 
 func on_powered() -> void:
-	if running and powered:
-		body.constant_linear_velocity = Vector2.RIGHT.rotated(global_rotation) * SPEED * dir
+	if running:
+		var speed := SPEED * dir if powered else 0.0
+		body.constant_linear_velocity = Vector2.RIGHT.rotated(global_rotation) * speed
 
 
 func rotate_step() -> float:

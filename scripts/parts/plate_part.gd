@@ -1,6 +1,7 @@
 class_name PlatePart
 extends Part
-## Plaque de pression : le premier objet qui la touche alimente tout son canal, définitivement.
+## Plaque de pression : un objet qui la touche allume tout son canal. Elle n'éteint jamais :
+## seul un interrupteur le peut.
 
 const SIZE := Vector2(90, 14)
 
@@ -30,7 +31,8 @@ func _on_enter(node: Node2D) -> void:
 
 
 func on_powered() -> void:
-	board.sfx.play("plate")
+	if powered:
+		board.sfx.play("plate")
 
 
 func paint(c: CanvasItem) -> void:

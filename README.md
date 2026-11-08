@@ -43,6 +43,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_levels.gd   # chaque niveau est faisable
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_ui.gd       # souris et clavier
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_rope.gd     # physique de la corde, sons
+    $GODOT --headless --path . --fixed-fps 120 -s tests/test_parts.gd    # pièces mécaniques
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_tutorial.gd # tutoriel intégré
     SWEEP=spec.json $GODOT --headless --path . --fixed-fps 120 -s tests/sweep.gd   # aide à la conception
     CAPTURE_DIR=dossier $GODOT --path . -s tests/capture.gd              # captures (affichage requis)
