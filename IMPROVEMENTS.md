@@ -7,7 +7,7 @@ section, les idées les plus utiles ou les moins coûteuses viennent en premier.
 
 Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
-- Faire essayer les 25 niveaux à de vrais joueurs et noter où ils bloquent.
+- Faire essayer les 26 niveaux à de vrais joueurs et noter où ils bloquent.
 - Revoir la difficulté de la Catapulte et du Pendule, dont les zones gagnantes sont étroites.
 - Régler en jouant le chat, l'élastique et la corde qui s'accroche aux obstacles, jusqu'ici
   réglés seulement par des tests.
@@ -16,8 +16,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Nouveaux niveaux
 
-- **À l'abri du vent** (espace) : un vent fort ; il faut poser des planches pour protéger un
-  ballon et le laisser monter droit.
 - **Un monde « Jardin »** : eau, vent, animaux et contrepoids, avec cinq niveaux plus longs
   combinant les pièces des mondes précédents.
 - **Niveaux « défi »** après chaque monde : peu de pièces, gros décor, une seule solution

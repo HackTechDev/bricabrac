@@ -202,7 +202,7 @@ au-delà de son point d'attache, de quoi fabriquer une fronde. Il s'amincit à m
 
 ## Les niveaux
 
-Les 25 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
+Les 26 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
 dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
 Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles.
 Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran. L'écran s'ouvre sur la vignette du niveau
@@ -245,6 +245,7 @@ Le bouton **Indice** donne un coup de pouce sans tout révéler.
 23. **Bond lunaire :** un saut sur ressort qui porte très loin.
 24. **Le sas :** les portails.
 25. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
+26. **À l'abri du vent :** un vent solaire, et des planches pour s'en protéger.
 
 ## Les objectifs bonus
 
