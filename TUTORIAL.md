@@ -78,7 +78,7 @@ présents dans le niveau restent en place.
 
 **Les objets mobiles**
 
-- **Bille :** polyvalente.
+- **Bille :** polyvalente, en acier.
 - **Balle rebond :** légère et très élastique, donc parfois imprévisible.
 - **Boulet :** très lourd, il ne rebondit presque pas.
 - **Caisse :** elle glisse plus qu'elle ne roule.
@@ -99,6 +99,8 @@ présents dans le niveau restent en place.
   la gauche après un miroir.
 - **Ciseaux :** quand leur canal s'allume, ils coupent toute corde qui passe entre leurs lames
   (le cadre clair au-dessus du socle). Avec une minuterie, ils déclenchent un mécanisme à retardement.
+- **Aimant :** attire le boulet et la bille jusqu'à 260 px de ses pôles, mais ni le bois ni le
+  caoutchouc. Le cercle clair montre sa portée. Canal 0 : toujours actif.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.

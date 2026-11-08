@@ -20,6 +20,10 @@ func _build() -> void:
 		body.linear_velocity = entry.vel
 
 
+func is_metal() -> bool:
+	return kind != "ball_bouncy"
+
+
 func impact_sound() -> String:
 	return "thud" if kind == "ball_heavy" else "knock"
 

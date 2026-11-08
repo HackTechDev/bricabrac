@@ -9,6 +9,7 @@ func _run() -> void:
 	await _test_timer()
 	await _test_gates()
 	await _test_scissors()
+	await _test_magnet()
 	_end("PIÈCES OK")
 
 
@@ -79,6 +80,25 @@ func _test_scissors() -> void:
 		if part is RopePart and (part as RopePart).is_cut():
 			cut += 1
 	_check("ciseaux : une seule corde coupée", cut == 1)
+
+
+## Boulet et caisse posés à même distance d'un aimant : seul le boulet est attiré, et seulement
+## une fois l'aimant allumé.
+func _test_magnet() -> void:
+	_level([
+		{"kind": "magnet", "pos": Vector2(500, 618), "rot": 90.0, "channel": 1},
+		{"kind": "ball_heavy", "id": "boulet", "pos": Vector2(680, 618)},
+		{"kind": "crate", "id": "caisse", "pos": Vector2(320, 618)},
+		{"kind": "ball_bouncy", "id": "caoutchouc", "pos": Vector2(500, 400)},
+		{"kind": "timer", "pos": Vector2(900, 400), "channel": 1, "delay": 1.0},
+	])
+	board.start()
+	await _steps(110)
+	_check("aimant éteint : le boulet ne bouge pas", absf(_pos("boulet").x - 680.0) < 2.0)
+	await _steps(240)
+	_check("aimant allumé : le boulet vient se coller (%d)" % _pos("boulet").x, _pos("boulet").x < 560.0)
+	_check("aimant : la caisse ne bouge pas", absf(_pos("caisse").x - 320.0) < 2.0)
+	_check("aimant : le caoutchouc n'est pas attiré", absf(_pos("caoutchouc").x - 500.0) < 2.0)
 
 
 func _lamp() -> LampPart:

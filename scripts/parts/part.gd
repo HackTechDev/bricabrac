@@ -116,6 +116,11 @@ func impact_sound() -> String:
 	return ""
 
 
+## Attiré par les aimants ?
+func is_metal() -> bool:
+	return false
+
+
 ## Peut-on y attacher une corde ?
 func can_tie() -> bool:
 	return true
