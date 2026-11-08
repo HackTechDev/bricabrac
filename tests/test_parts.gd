@@ -19,6 +19,10 @@ func _run() -> void:
 	await _test_cart()
 	await _test_mouse_wheel()
 	await _test_cat()
+	await _test_funnel()
+	await _test_pipe()
+	await _test_repel()
+	await _test_candle()
 	_end("PIÈCES OK")
 
 
@@ -384,3 +388,75 @@ func _test_switch() -> void:
 	_check("plaque après interrupteur : lampe rallumée", _lamp().powered)
 	board.stop()
 	_check("arrêt : canaux remis à zéro", not board.channel_on[1])
+
+
+## Une bille lâchée sur le bord de l'entonnoir ressort par son ouverture, au centre.
+func _test_funnel() -> void:
+	_level([
+		{"kind": "funnel", "pos": Vector2(500, 300)},
+		{"kind": "ball", "id": "b", "pos": Vector2(550, 200)},
+		{"kind": "ball_heavy", "id": "h", "pos": Vector2(455, 160)},
+	])
+	board.start()
+	var crossed := {}
+	for i in 240:
+		await _steps(1)
+		for id: String in ["b", "h"]:
+			if not crossed.has(id) and _pos(id).y > 340.0:
+				crossed[id] = _pos(id).x
+	for id: String in ["b", "h"]:
+		_check("entonnoir : %s passe par l'ouverture (%s)" % [id, crossed.get(id)],
+				crossed.has(id) and absf(crossed[id] - 500.0) < 28.0)
+
+
+## Une bille qui tombe dans le coude ressort à l'horizontale, du côté choisi.
+func _test_pipe() -> void:
+	for facing: int in [1, -1]:
+		_level([
+			{"kind": "pipe", "pos": Vector2(500, 400), "dir": facing},
+			{"kind": "ball", "id": "b", "pos": Vector2(500 - 11 * facing, 250)},
+		])
+		board.start()
+		var exit := Vector2.ZERO
+		for i in 300:
+			await _steps(1)
+			if absf(_pos("b").x - 500.0) > 60.0 and exit == Vector2.ZERO:
+				exit = _rigid("b").linear_velocity
+		_check("tuyau (%d) : sortie à l'horizontale, du bon côté (%s)" % [facing, exit],
+				exit.x * facing > 150.0 and absf(exit.y) < absf(exit.x))
+
+
+## L'aimant répulsif chasse le boulet au lieu de l'attirer.
+func _test_repel() -> void:
+	_level([
+		{"kind": "magnet_repel", "pos": Vector2(500, 618), "rot": 90.0},
+		{"kind": "ball_heavy", "id": "boulet", "pos": Vector2(620, 618)},
+		{"kind": "crate", "id": "caisse", "pos": Vector2(380, 618)},
+	])
+	board.start()
+	await _steps(240)
+	_check("aimant répulsif : le boulet est chassé (%d)" % _pos("boulet").x, _pos("boulet").x > 700.0)
+	_check("aimant répulsif : la caisse ne bouge pas", absf(_pos("caisse").x - 380.0) < 2.0)
+
+
+## La flamme fait éclater le ballon qui monte au-dessus d'elle, sauf derrière un abri ; une bougie
+## sur un canal attend qu'il s'allume.
+func _test_candle() -> void:
+	_level([
+		{"kind": "candle", "pos": Vector2(200, 600)},
+		{"kind": "balloon", "id": "libre", "pos": Vector2(205, 500)},
+		{"kind": "candle", "pos": Vector2(500, 600)},
+		{"kind": "plank", "pos": Vector2(500, 540), "len": 80.0},
+		{"kind": "balloon", "id": "abrite", "pos": Vector2(500, 480)},
+		{"kind": "candle", "pos": Vector2(800, 600), "channel": 1},
+		{"kind": "balloon", "id": "attend", "pos": Vector2(800, 520)},
+		{"kind": "plank", "pos": Vector2(800, 470), "len": 80.0},
+		{"kind": "timer", "pos": Vector2(950, 300), "channel": 1, "delay": 1.0},
+	])
+	board.start()
+	await _steps(60)
+	_check("bougie : le ballon au-dessus éclate", (board.find_part("libre") as BalloonPart).popped)
+	_check("bougie : une planche protège le ballon", not (board.find_part("abrite") as BalloonPart).popped)
+	_check("bougie sur canal : éteinte avant le signal", not (board.find_part("attend") as BalloonPart).popped)
+	await _steps(90)
+	_check("bougie sur canal : allumée au signal", (board.find_part("attend") as BalloonPart).popped)

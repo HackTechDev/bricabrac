@@ -5,9 +5,9 @@ extends Control
 const TOP_H := 56.0
 const PANEL_X := 1040.0
 const BIN_ORDER: Array[String] = [
-	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "switch", "timer", "trapdoor", "door", "scissors", "magnet", "motor", "gear", "portal", "water", "suction", "cart", "mousewheel", "cat",
+	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "switch", "timer", "trapdoor", "door", "scissors", "magnet", "magnet_repel", "motor", "gear", "portal", "water", "suction", "cart", "mousewheel", "cat",
 	"cannon",
-	"pulley", "rope", "elastic", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes",
+	"pulley", "rope", "elastic", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes", "candle", "funnel", "pipe",
 	"lamp", "basket",
 ]
 ## Réglages proposés dans le bac à sable.

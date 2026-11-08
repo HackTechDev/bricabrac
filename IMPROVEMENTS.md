@@ -16,6 +16,8 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Nouveaux niveaux
 
+- Des niveaux qui mettent en scène l'entonnoir, le tuyau coudé, l'aimant répulsif et la bougie,
+  pour l'instant disponibles dans le bac à sable et l'éditeur.
 - Un sixième monde, par exemple un grenier sombre où une lampe de poche éclaire le décor.
 - Remplacer les niveaux « La fronde » et « Le hamster » de la galerie, qui ont maintenant leur
   version officielle, par d'autres niveaux d'exemple.
@@ -36,8 +38,7 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
   s'envole au bruit.
 - Défis quotidiens : un niveau du jeu avec une contrainte en plus (sans tel type de pièce, en
   moins de x secondes).
-- Pièces à venir : entonnoir, tuyau qui guide les billes, aimant qui repousse, bougie qui fait
-  éclater un ballon à distance.
+- Pièces à venir : un tuyau droit de longueur réglable, une bougie que le vent souffle.
 
 ## Présentation
 

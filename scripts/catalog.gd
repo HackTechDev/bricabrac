@@ -15,6 +15,7 @@ const INFO := {
 	"door": {"label": "Porte", "desc": "S'ouvre quand son canal s'allume, se referme quand il s'éteint."},
 	"scissors": {"label": "Ciseaux", "desc": "Coupent les cordes entre leurs lames quand leur canal s'allume."},
 	"magnet": {"label": "Aimant", "desc": "Attire le boulet et la bille. Canal 0 : toujours actif."},
+	"magnet_repel": {"label": "Aimant répulsif", "desc": "Repousse le boulet et la bille. Canal 0 : toujours actif."},
 	"gear": {"label": "Engrenage", "desc": "Roue à bras, entraînée par les roues qui la touchent. R : bras."},
 	"motor": {"label": "Moteur", "desc": "Fait tourner les engrenages qui le touchent. Miroir : sens."},
 	"portal": {"label": "Portail", "desc": "Renvoie les objets par l'autre portail du même canal, à la même vitesse."},
@@ -30,6 +31,9 @@ const INFO := {
 	"balloon": {"label": "Ballon", "desc": "Monte, éclate sur les pointes."},
 	"spikes": {"label": "Pointes", "desc": "Font éclater les ballons."},
 	"cannon": {"label": "Canon", "desc": "Tire une bille quand son canal s'allume."},
+	"candle": {"label": "Bougie", "desc": "Sa chaleur fait éclater les ballons au-dessus de la flamme."},
+	"funnel": {"label": "Entonnoir", "desc": "Rassemble ce qui tombe vers son ouverture."},
+	"pipe": {"label": "Tuyau coudé", "desc": "Guide les billes et les renvoie à angle droit. F : côté de sortie."},
 	"pulley": {"label": "Poulie", "desc": "Point de passage pour une corde."},
 	"rope": {"label": "Corde", "desc": "Clique un objet, d'éventuelles poulies, puis un autre objet. R : mou."},
 	"elastic": {"label": "Élastique", "desc": "Se pose comme une corde, mais s'étire et tire comme un ressort. R : tension."},
@@ -62,7 +66,10 @@ static func create(kind: String) -> Part:
 		"mousewheel": part = MouseWheelPart.new()
 		"cat": part = CatPart.new()
 		"water": part = WaterPart.new()
-		"magnet": part = MagnetPart.new()
+		"magnet", "magnet_repel": part = MagnetPart.new()
+		"candle": part = CandlePart.new()
+		"funnel": part = FunnelPart.new()
+		"pipe": part = PipePart.new()
 		"scissors": part = ScissorsPart.new()
 		"trapdoor", "door": part = GatePart.new()
 		"conveyor": part = ConveyorPart.new()

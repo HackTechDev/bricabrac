@@ -2,7 +2,8 @@ class_name MagnetPart
 extends Part
 ## Aimant : attire les objets métalliques (boulet, bille) à portée de ses pôles.
 ## L'attraction est une accélération qui faiblit avec la distance : un boulet est aussi bien attiré
-## qu'une bille. Canal 0 : toujours actif.
+## qu'une bille. Canal 0 : toujours actif. L'aimant répulsif (« magnet_repel ») repousse au lieu
+## d'attirer, avec la même force.
 
 const SIZE := Vector2(56, 44)
 const RANGE := 260.0
@@ -32,7 +33,12 @@ func _physics_process(delta: float) -> void:
 		var distance := offset.length()
 		if distance < RANGE and distance > 1.0:
 			var pull := STRENGTH * pow(1.0 - distance / RANGE, 2.0)
-			body.apply_central_force(offset / distance * pull * body.mass)
+			body.apply_central_force(offset / distance * pull * body.mass * _sign())
+
+
+## 1 : attire ; -1 : repousse.
+func _sign() -> float:
+	return -1.0 if kind == "magnet_repel" else 1.0
 
 
 func channel_range() -> Vector2i:
@@ -53,7 +59,7 @@ func icon_scale() -> float:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("Attire le boulet et la bille jusqu'à %d px." % RANGE)
+	lines.append("%s le boulet et la bille jusqu'à %d px." % ["Repousse" if _sign() < 0.0 else "Attire", RANGE])
 	return lines
 
 
@@ -63,11 +69,16 @@ func paint(c: CanvasItem) -> void:
 	elif powered:
 		for i in 3:
 			var r := fposmod(anim * 120.0 + i * RANGE / 3.0, RANGE)
-			c.draw_arc(POLE, RANGE - r, PI + 0.4, TAU - 0.4, 32, Color(1, 0.4, 0.4, 0.25 * r / RANGE), 2.0)
+			var radius := r if _sign() < 0.0 else RANGE - r
+			c.draw_arc(POLE, radius, PI + 0.4, TAU - 0.4, 32, _color().lightened(0.3) * Color(1, 1, 1, 0.25 * (1.0 - radius / RANGE)), 2.0)
 	var half := SIZE / 2.0
 	# Fer à cheval, pôles vers le haut.
-	box(c, Rect2(-half.x, -half.y + 14.0, SIZE.x, SIZE.y - 14.0), Color("c94b4b"))
+	box(c, Rect2(-half.x, -half.y + 14.0, SIZE.x, SIZE.y - 14.0), _color())
 	box(c, Rect2(-half.x, -half.y, 18.0, 16.0), Color("dfe6ef"))
 	box(c, Rect2(half.x - 18.0, -half.y, 18.0, 16.0), Color("dfe6ef"))
 	c.draw_rect(Rect2(-half.x + 18.0, -half.y, SIZE.x - 36.0, 18.0), Color("1d2b45"))
 	paint_channel(c, Vector2(0, 8))
+
+
+func _color() -> Color:
+	return Color("4b7bc9") if _sign() < 0.0 else Color("c94b4b")

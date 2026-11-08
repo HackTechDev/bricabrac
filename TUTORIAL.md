@@ -96,6 +96,10 @@ présents dans le niveau restent en place.
 - **Tapis :** entraîne ce qui se pose dessus. Le miroir inverse son sens.
 - **Bascule :** démarre penchée d'un côté. Une charge qui tombe sur le côté haut catapulte ce qui
   repose sur le côté bas. Le miroir change le côté bas.
+- **Entonnoir :** rassemble ce qui tombe entre ses parois vers son ouverture, assez large pour le
+  boulet. Il pivote par pas de 15°.
+- **Tuyau coudé :** ce qui entre par le haut glisse le long du coude et ressort à l'horizontale,
+  à droite, ou à gauche après un miroir. R le tourne d'un quart de tour.
 
 **Les objets mobiles**
 
@@ -123,6 +127,8 @@ présents dans le niveau restent en place.
   (le cadre clair au-dessus du socle). Avec une minuterie, ils déclenchent un mécanisme à retardement.
 - **Aimant :** attire le boulet et la bille jusqu'à 260 px de ses pôles, mais ni le bois ni le
   caoutchouc. Le cercle clair montre sa portée. Canal 0 : toujours actif.
+- **Aimant répulsif :** l'aimant bleu repousse le boulet et la bille avec la même force, ce qui
+  freine une chute ou écarte une bille de sa route.
 - **Moteur et engrenages :** le moteur fait tourner les engrenages qu'il touche, et chaque roue
   entraîne ses voisines en sens inverse. Deux roues engrènent quand leurs dents se touchent ;
   l'infobulle indique avec combien de roues une pièce engrène. Le bras de l'engrenage balaie et
@@ -147,6 +153,9 @@ présents dans le niveau restent en place.
   position. Le miroir le fait regarder de l'autre côté.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
+- **Bougie :** sa chaleur monte et fait éclater un ballon qui reste un court instant au-dessus de
+  la flamme, jusqu'à 240 px de haut, à moins qu'un obstacle ne l'abrite. La bande orangée montre
+  sa portée. Canal 0 : allumée dès le départ ; canaux 1 à 3 : s'allume avec son canal.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.
 
 ## Les canaux
@@ -156,7 +165,7 @@ tirer. Le numéro s'affiche sur la pastille colorée de chaque pièce, et la tou
 
 - **Plaque, canon et lampe :** canaux 1 à 3.
 - **Portail :** canaux 1 à 3, mais le numéro ne sert qu'à relier deux portails entre eux.
-- **Tapis, ventilateur, aimant et moteur :** canaux 1 à 3, ou canal 0 pour fonctionner en permanence.
+- **Tapis, ventilateur, aimants, bougie et moteur :** canaux 1 à 3, ou canal 0 pour fonctionner en permanence.
 
 Par exemple, pour déclencher un canon, pose une plaque là où un objet va tomber, puis mets la plaque
 et le canon sur le même numéro.
