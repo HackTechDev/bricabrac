@@ -96,6 +96,7 @@ func _run() -> void:
 	await _test_challenges()
 	await _test_speed()
 	await _test_ghost()
+	await _test_hints()
 
 	_finish("INTERFACE OK")
 
@@ -1094,3 +1095,67 @@ func _test_ghost() -> void:
 	main.load_level(0)
 	await _steps(2)
 	board.clear_placed()
+
+
+## Indices progressifs : le texte est gratuit ; la pièce clé coûte une étoile, la solution toutes
+## les nouvelles étoiles ; les étoiles déjà gagnées restent, et les paliers sont sauvegardés.
+func _test_hints() -> void:
+	var board: Board = main.board
+	var index := 1  # Par-dessus le mur : ressort.
+	var level: Dictionary = main.levels[index]
+	main.hint_levels.erase(level.id)
+	main.bonuses.erase(level.id)
+	main.completed.erase(level.id)
+	main.load_level(index)
+	await _steps(2)
+	board.clear_placed()
+	main.ask_hint()
+	_check("indice 1 : texte gratuit, sans pièce montrée", main._hint_level() == 1
+			and board.hint_entries.is_empty() and main._status.text == level.hint)
+	main.ask_hint()
+	_check("indice 2 : confirmation demandée", main._hint_confirm.visible
+			and main._hint_confirm.dialog_text.contains("2 étoile(s) sur 3"))
+	main._hint_confirm.hide()
+	main.reveal_hint(2)
+	_check("indice 2 : une pièce clé montrée", board.hint_entries.size() == 1
+			and board.hint_entries[0].kind == "spring" and main._hint_button.text == "Solution")
+	board.apply_layout(level.solution)
+	main.toggle_run()
+	for i in 1200:
+		await physics_frame
+		if board.has_won:
+			break
+	_check("indice 2 : le plafond est annoncé (%s)" % str(main.bonuses.get(level.id, [])),
+			main._star_cap(level) == 2 and main._win_bonus.text.contains("au plus 2"))
+	main._win_overlay.hide()
+	main.toggle_run()
+	main.reveal_hint(3)
+	_check("indice 3 : toute la solution", board.hint_entries.size() == level.solution.size())
+	var earned: Array = main.bonuses[level.id]
+	main.bonuses[level.id] = []
+	main.toggle_run()
+	for i in 1200:
+		await physics_frame
+		if board.has_won:
+			break
+	_check("indice 3 : plus aucune nouvelle étoile", main.bonuses[level.id].is_empty()
+			and main._win_bonus.text.contains("au plus 0"))
+	main._win_overlay.hide()
+	main.toggle_run()
+	main.bonuses[level.id] = earned
+	main.load_level(0)
+	await _steps(2)
+	_check("indices : rien sur un autre niveau", board.hint_entries.is_empty())
+	main._save_progress()
+	main.hint_levels = {}
+	main._load_progress()
+	main.load_level(index)
+	await _steps(2)
+	_check("indices : sauvegardés et remontrés", main._hint_level() == 3 and not board.hint_entries.is_empty())
+	_check("indices : les étoiles gagnées restent", main.bonuses.get(level.id, []).size() == 2)
+	main.hint_levels.erase(level.id)
+	main.bonuses.erase(level.id)
+	main.completed.erase(level.id)
+	main._save_progress()
+	main.load_level(0)
+	await _steps(2)

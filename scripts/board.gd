@@ -39,6 +39,8 @@ var show_ghost := true:
 		show_ghost = value
 		queue_redraw()
 var _trails := {}
+## Pièces de la solution révélées par les indices, dessinées en pointillés dorés.
+var hint_entries: Array = []
 var _ghost_tick := 0
 
 var _next_id := 1
@@ -69,6 +71,7 @@ func load_level(p_level: Dictionary) -> void:
 	_apply_physics()
 	running = false  # Pas de trace venue d'un autre niveau.
 	ghost.clear()
+	hint_entries = []
 	queue_redraw()
 	_rebuild(false)
 	inventory_changed.emit()
@@ -522,6 +525,7 @@ func _draw() -> void:
 		y += 40.0
 	if show_ghost:
 		_draw_ghost()
+	_draw_hints()
 	_draw_wind()
 
 
@@ -571,6 +575,61 @@ func _draw_ghost() -> void:
 				gap = 0.0
 				draw_circle(points[i], 2.5, col)
 		draw_arc(points[points.size() - 1], 9.0, 0.0, TAU, 20, col, 2.0)
+
+
+## Pièces révélées : un anneau pointillé à leur place, un trait qui donne leur angle, leur nom et
+## leurs réglages ; les cordes, en pointillés d'une attache à l'autre.
+func show_hints(entries: Array) -> void:
+	hint_entries = entries.duplicate(true)
+	queue_redraw()
+
+
+func _draw_hints() -> void:
+	var col := Color(Part.GOLD, 0.9)
+	var font := ThemeDB.fallback_font
+	# Attaches d'une corde révélée : pièce déjà sur le plateau, sinon pièce révélée elle aussi.
+	var spots := {}
+	for entry: Dictionary in hint_entries:
+		if entry.has("id") and entry.has("pos"):
+			spots[entry.id] = entry.pos
+	for entry: Dictionary in hint_entries:
+		if Catalog.is_link(entry.kind):
+			var stops: Array = [entry.get("from", "")] + entry.get("via", []) + [entry.get("to", "")]
+			var points := PackedVector2Array()
+			for id: String in stops:
+				var part := find_part(id)
+				if part != null:
+					points.append(to_local(part.main_body.global_position if part.main_body else part.global_position))
+				elif spots.has(id):
+					points.append(spots[id])
+			for i in range(1, points.size()):
+				draw_dashed_line(points[i - 1], points[i], col, 2.0, 8.0)
+			if points.size() > 0:
+				draw_string(font, points[0] + Vector2(8, -8), _hint_label(entry), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, col)
+			continue
+		var pos: Vector2 = entry.pos
+		var steps := 24
+		for i in steps:
+			if i % 2 == 0:
+				draw_arc(pos, 30.0, TAU * i / steps, TAU * (i + 1) / steps, 4, col, 2.5)
+		var angle := deg_to_rad(entry.get("rot", 0.0))
+		draw_line(pos - Vector2.from_angle(angle) * 22.0, pos + Vector2.from_angle(angle) * 22.0, col, 2.5)
+		draw_string(font, pos + Vector2(-60, 48), _hint_label(entry), HORIZONTAL_ALIGNMENT_CENTER, 120, 14, col)
+
+
+static func _hint_label(entry: Dictionary) -> String:
+	var parts := PackedStringArray([Catalog.INFO[entry.kind].label])
+	if entry.get("rot", 0.0) != 0.0:
+		parts.append("%d°" % roundi(entry.rot))
+	if entry.get("dir", 1) == -1:
+		parts.append("miroir")
+	if entry.get("channel", 0) != 0:
+		parts.append("canal %d" % entry.channel)
+	if entry.has("delay"):
+		parts.append("%s s" % String.num(entry.delay, 1).replace(".", ","))
+	if entry.has("tension"):
+		parts.append("tendu à %d %%" % roundi(entry.tension))
+	return ", ".join(parts)
 
 
 func _draw_wind() -> void:

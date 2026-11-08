@@ -214,7 +214,11 @@ dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à g
 Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles.
 Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran. L'écran s'ouvre sur la vignette du niveau
 en cours.
-Le bouton **Indice** donne un coup de pouce sans tout révéler.
+Le bouton **Indice** donne un coup de pouce en trois paliers. Le premier, un texte, est gratuit. Le
+deuxième dessine en pointillés dorés l'emplacement d'une pièce clé, avec son angle et ses réglages :
+le niveau ne rapporte alors plus qu'une étoile de moins. Le troisième montre toute la solution, et le
+niveau ne rapporte plus de nouvelle étoile. Les étoiles déjà gagnées restent acquises, et le jeu
+demande confirmation avant chaque palier payant.
 
 Chaque monde se termine par un **niveau défi** : peu de pièces, beaucoup de décor et presque aucune
 marge. Sa vignette reste fermée (🔒) tant que les autres niveaux du monde n'ont pas toutes leurs

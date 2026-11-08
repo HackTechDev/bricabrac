@@ -23,6 +23,11 @@ var current := 0
 var completed := {}
 ## Objectifs bonus obtenus, par niveau : identifiant → liste de types (voir Bonus).
 var bonuses := {}
+## Palier d'indice atteint par niveau : 1 texte (gratuit), 2 pièce clé (une étoile de moins),
+## 3 solution complète (plus d'étoile à gagner).
+var hint_levels := {}
+var _hint_button: Button
+var _hint_confirm: ConfirmationDialog
 
 var selected: Part
 var drag_part: Part
@@ -306,6 +311,7 @@ func load_level(index: int) -> void:
 	_select(null)
 	_win_overlay.hide()
 	board.load_level(levels[index])
+	_show_hint_pieces()
 	var level_id: String = levels[index].id
 	var dropped := board.restore_layout(saved_layouts.get(level_id, []))
 	if not histories.has(level_id):
@@ -897,14 +903,17 @@ func _build_top_bar() -> void:
 	_sound_button.pressed.connect(_toggle_sound)
 	row.add_child(_sound_button)
 
-	var hint := Button.new()
-	hint.text = "Indice"
-	hint.focus_mode = Control.FOCUS_NONE
-	hint.pressed.connect(func() -> void:
-		_status.text = levels[current].get("hint", "")
-		if levels[current].has("tutorial") and not board.running:
-			_start_tutorial())
-	row.add_child(hint)
+	_hint_button = Button.new()
+	_hint_button.text = "Indice"
+	_hint_button.focus_mode = Control.FOCUS_NONE
+	_hint_button.pressed.connect(ask_hint)
+	row.add_child(_hint_button)
+	_hint_confirm = ConfirmationDialog.new()
+	_hint_confirm.title = "Indice"
+	_hint_confirm.ok_button_text = "Montrer"
+	_hint_confirm.cancel_button_text = "Annuler"
+	_hint_confirm.confirmed.connect(func() -> void: reveal_hint(_hint_level() + 1))
+	add_child(_hint_confirm)
 
 	_clear_button = Button.new()
 	_clear_button.text = "Tout retirer"
@@ -1218,6 +1227,73 @@ func _stars(level: Dictionary) -> String:
 	return text
 
 
+# --- Indices progressifs -------------------------------------------------------------
+
+func _hint_level() -> int:
+	return hint_levels.get(levels[current].id, 0)
+
+
+## Bouton Indice : le texte d'abord, gratuitement ; ensuite, après confirmation, une pièce clé
+## puis la solution complète, contre les étoiles du niveau.
+func ask_hint() -> void:
+	var level: Dictionary = levels[current]
+	var step := _hint_level()
+	if step == 0 or level.get("solution", []).is_empty() or level.get("custom", false) or step >= 3:
+		reveal_hint(maxi(step, 1))
+		return
+	var stars := Bonus.offered(level).size()
+	_hint_confirm.dialog_text = ("Montrer où va une pièce clé ?\nCe niveau ne pourra plus rapporter que %d étoile(s) sur %d." % [maxi(stars - 1, 0), stars]) \
+			if step == 1 else "Montrer toute la solution ?\nCe niveau ne rapportera plus de nouvelle étoile."
+	_hint_confirm.popup_centered()
+
+
+func reveal_hint(step: int) -> void:
+	var level: Dictionary = levels[current]
+	var solution: Array = level.get("solution", [])
+	if level.get("custom", false):
+		solution = []  # Les niveaux personnels ne montrent pas la solution de leur auteur.
+	step = clampi(step, 1, 3 if not solution.is_empty() else 1)
+	if not level.get("sandbox", false):
+		hint_levels[level.id] = maxi(_hint_level(), step)
+		_save_progress()
+	_status.text = level.get("hint", "")
+	if step == 1 and level.has("tutorial") and not board.running:
+		_start_tutorial()
+	_show_hint_pieces()
+
+
+## Pièces révélées selon le palier atteint, et libellé du bouton pour le palier suivant.
+func _show_hint_pieces() -> void:
+	var level: Dictionary = levels[current]
+	var solution: Array = [] if level.get("custom", false) else level.get("solution", [])
+	var step := _hint_level()
+	board.show_hints(solution if step >= 3 else [_key_piece(solution)] if step == 2 and not solution.is_empty() else [])
+	if step >= 2 and not solution.is_empty():
+		_status.text = "Indice : les pointillés dorés montrent %s." % ("toute la solution" if step >= 3 else "où poser une pièce clé")
+	_hint_button.text = "Indice" if step == 0 or solution.is_empty() else \
+			"Indice +" if step == 1 else "Solution" if step == 2 else "Indice ✓"
+	_hint_button.tooltip_text = "Un coup de pouce : le texte d'abord, puis une pièce clé, puis la solution (contre des étoiles)."
+
+
+## La pièce la plus parlante de la solution : la première qui n'est ni planche ni corde.
+static func _key_piece(solution: Array) -> Dictionary:
+	for entry: Dictionary in solution:
+		if entry.kind != "plank" and not Catalog.is_link(entry.kind):
+			return entry
+	return solution[0]
+
+
+## Étoiles que le niveau peut encore rapporter, selon les indices pris.
+func _star_cap(level: Dictionary) -> int:
+	var total := Bonus.offered(level).size()
+	match hint_levels.get(level.id, 0):
+		2:
+			return maxi(total - 1, 0)
+		3:
+			return 0
+	return total
+
+
 func _on_won() -> void:
 	if replay_mode != "":
 		# La relecture continue une seconde après la victoire, pour voir le dénouement.
@@ -1233,13 +1309,16 @@ func _on_won() -> void:
 	var got: Array = bonuses.get(level.id, [])
 	var now := Bonus.earned(level, board.placed.size(), board.elapsed)
 	var lines: PackedStringArray = []
+	var cap := _star_cap(level)
 	for kind in Bonus.offered(level):
 		var mark := "★ " if now.has(kind) else "☆ "
-		var fresh := now.has(kind) and not got.has(kind)
+		var fresh := now.has(kind) and not got.has(kind) and got.size() < cap
 		lines.append(mark + Bonus.describe(kind, level) + ("  (nouveau !)" if fresh else ""))
-		if now.has(kind) and not got.has(kind):
+		if fresh:
 			got.append(kind)
 	bonuses[level.id] = got
+	if cap < Bonus.offered(level).size():
+		lines.append("Indices pris : ce niveau rapporte au plus %d étoile(s)." % cap)
 	lines.append("Temps : %s s, pièces posées : %d" % [String.num(board.elapsed, 1).replace(".", ","),
 			board.placed.size()])
 	_win_bonus.text = "\n".join(lines)
@@ -1392,6 +1471,7 @@ func _load_progress() -> void:
 		for id: String in cfg.get_value("progress", "tutorials", []):
 			tutorials_done[id] = true
 		bonuses = cfg.get_value("progress", "bonuses", {})
+		hint_levels = cfg.get_value("progress", "hints", {})
 		_editor_draft = cfg.get_value("custom", "draft", {})
 		# Anciennes sauvegardes : les niveaux personnels y étaient rangés ; ils passent en fichiers.
 		for level: Dictionary in cfg.get_value("custom", "levels", []):
@@ -1436,6 +1516,7 @@ func _save_progress() -> void:
 	cfg.set_value("progress", "tutorials", tutorials_done.keys())
 	cfg.set_value("progress", "bonuses", bonuses)
 	cfg.set_value("progress", "attempts", attempts)
+	cfg.set_value("progress", "hints", hint_levels)
 	cfg.set_value("settings", "muted", muted)
 	cfg.set_value("layouts", "by_level", saved_layouts)
 	if editor != null:
