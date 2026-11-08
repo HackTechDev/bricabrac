@@ -1086,11 +1086,14 @@ func _test_ghost() -> void:
 	await _steps(2)
 	board.clear_placed()
 	_check("trace : rien avant le premier essai", board.ghost.is_empty())
+	var before: int = main.launches.get(main.levels[0].id, 0)
+	_check("essais : affichés sous le chrono", main.chrono.tries != "")
 	_check("trace : masquée par défaut", not board.show_ghost)
 	main.toggle_run()
 	await _steps(120)
 	main.toggle_run()
 	var start: Vector2 = main.levels[0].fixed[0].pos
+	_check("essais : un lancement de plus (%s)" % main.chrono.tries, main.chrono.tries == "%d essai%s" % [before + 1, "s" if before + 1 > 1 else ""])
 	_check("trace : la chute de la bille est gardée", board.ghost.size() == 1
 			and board.ghost[0].points[0].distance_to(start) < 20.0
 			and board.ghost[0].points[board.ghost[0].points.size() - 1].y > start.y + 300.0)

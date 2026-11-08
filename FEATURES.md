@@ -82,7 +82,8 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
 
 - Lancer et arrêter (Espace) ; à l'arrêt, tout reprend sa place de départ.
 - Pause (P) et vitesse ×1, ×2 ou ×4 (V), sans changer le résultat.
-- Chronomètre à cadran, avec le temps à battre en doré.
+- Chronomètre à cadran, avec le temps à battre en doré, et sous le temps le nombre d'essais
+  du niveau (lancements de la machine, gardés d'une partie à l'autre).
 - Trace du dernier essai en pointillés (dorée pour l'objectif), masquée par défaut et affichée
   avec T.
 - Obscurité du grenier : un voile que percent les faisceaux des lampes de poche, les lampes

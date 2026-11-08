@@ -98,6 +98,8 @@ var gallery_url := Gallery.ONLINE_URL
 var _gallery_http: HTTPRequest
 ## Lancements de chaque niveau avant sa première victoire : la difficulté vécue par le joueur.
 var attempts := {}
+## Lancements de la machine par niveau, victoires comprises : le compteur à côté du chrono.
+var launches := {}
 var transition: LevelTransition
 var _started := false
 var tutorial: Tutorial
@@ -369,6 +371,7 @@ func load_level(index: int) -> void:
 		histories[level_id] = History.new(board.layout())
 	_goal_label.text = Lang.t(levels[index].goal_text) + _physics_note(levels[index])
 	chrono.reset(levels[index].get("par_time", 0.0))
+	_refresh_tries()
 	_status.text = Lang.t(levels[index].get("intro", ""))
 	if not board.placed.is_empty():
 		_status.text = Lang.t("Ta machine a été remise en place. Ctrl+Z annule ta dernière action.")
@@ -1953,6 +1956,7 @@ func _load_progress() -> void:
 		reduce_motion = cfg.get_value("settings", "reduce_motion", false)
 		saved_layouts = cfg.get_value("layouts", "by_level", {})
 		attempts = cfg.get_value("progress", "attempts", {})
+		launches = cfg.get_value("progress", "launches", {})
 		for id: String in cfg.get_value("progress", "tutorials", []):
 			tutorials_done[id] = true
 		bonuses = cfg.get_value("progress", "bonuses", {})
@@ -2002,6 +2006,7 @@ func _save_progress() -> void:
 	cfg.set_value("progress", "tutorials", tutorials_done.keys())
 	cfg.set_value("progress", "bonuses", bonuses)
 	cfg.set_value("progress", "attempts", attempts)
+	cfg.set_value("progress", "launches", launches)
 	cfg.set_value("progress", "hints", hint_levels)
 	cfg.set_value("progress", "records", records)
 	cfg.set_value("settings", "muted", muted)
@@ -2421,9 +2426,20 @@ func gallery_proposal() -> String:
 	return Gallery.propose_url(level.name, Share.encode(Share.level_payload(level)))
 
 
+## Compteur d'essais, sous le temps du chrono ; absent du bac à sable, qui n'a pas d'objectif.
+func _refresh_tries() -> void:
+	var level: Dictionary = levels[current]
+	var count: int = launches.get(level.id, 0)
+	chrono.set_tries("" if level.get("sandbox", false)
+			else Lang.t("%d essai") % count if count <= 1 else Lang.t("%d essais") % count)
+
+
 ## Un lancement de plus avant la première victoire (hors bac à sable, éditeur et essai).
 func _count_attempt() -> void:
 	var level: Dictionary = levels[current]
+	if not level.get("sandbox", false) and replay_mode == "":
+		launches[level.id] = launches.get(level.id, 0) + 1
+		_refresh_tries()
 	if level.get("sandbox", false) or level.get("hidden", false) or completed.has(level.id) or replay_mode != "":
 		return
 	attempts[level.id] = attempts.get(level.id, 0) + 1

@@ -606,5 +606,8 @@
  "Pas de place ici.": "No room here.",
  "Quitter le jeu": "Quit game",
  "Veux-tu vraiment quitter le jeu ?\nTa progression et tes machines sont gardées.": "Do you really want to quit the game?\nYour progress and your machines are kept.",
- "Rester": "Stay"
+ "Rester": "Stay",
+ "%d essai": "%d try",
+ "%d essais": "%d tries",
+ "\nEn dessous : nombre de lancements de la machine dans ce niveau.": "\nBelow: number of times the machine was run in this level."
 }

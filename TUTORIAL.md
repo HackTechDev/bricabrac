@@ -322,7 +322,8 @@ Chaque victoire fait le point sur trois défis facultatifs, qui rapportent chacu
 - **Rapide :** gagner avant un temps donné, compté depuis le lancement. Le **chronomètre**, à
   côté de Lancer, mesure ce temps : son cadran fait un tour en 10 secondes, l'arc doré marque le
   temps à battre, et le temps reste doré tant que tu es dans les clous. Il passe au vert à la
-  victoire et garde le dernier temps quand tu arrêtes la machine.
+  victoire et garde le dernier temps quand tu arrêtes la machine. Sous le temps, le compteur
+  d'essais indique combien de fois tu as lancé la machine dans ce niveau, victoires comprises.
 - **Complet :** gagner en posant toutes les pièces du bac. Ce défi n'existe que si le bac contient
   plus de pièces qu'il n'en faut.
 
