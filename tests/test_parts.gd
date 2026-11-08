@@ -243,6 +243,9 @@ func _test_wind_shelter() -> void:
 		elif wall == "bas":
 			fixed.append({"kind": "plank", "pos": Vector2(500, 680), "len": 120.0, "rot": 90.0, "locked": true})
 		_level(fixed, {}, {"wind": Vector2(300, 0)})
+		if wall == "entier":
+			_check("ombre du vent : visible avant le lancement, derrière le mur",
+					board.in_wind_shadow(Vector2(600, 600)) and not board.in_wind_shadow(Vector2(400, 600)))
 		board.start()
 		await _steps(60)
 		drift[wall] = _pos("b").x - 600.0

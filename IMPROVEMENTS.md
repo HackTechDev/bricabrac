@@ -44,7 +44,7 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 - D'autres particules : gouttes du bac d'eau, étincelles des engrenages.
 - Une musique par monde, sur la même trame que celle de l'atelier.
-- Montrer l'ombre du vent derrière les obstacles, pour que l'abri se voie avant de lancer.
+- Montrer aussi l'ombre du souffle des ventilateurs.
 - Interface traduite, en commençant par l'anglais.
 - Options d'accessibilité : couleurs de canaux adaptées, réduction des animations (dont le
   balayage entre les niveaux).

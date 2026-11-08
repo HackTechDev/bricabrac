@@ -182,7 +182,8 @@ l'écran :
   proportion de leur taille rapportée à leur poids : il emporte un ballon, dévie une balle rebond et
   touche à peine le boulet. Un objet posé sur un support résiste grâce au frottement. Il entre par
   le bord du plateau et s'arrête aux obstacles : derrière un mur, on est à l'abri, et un objet à
-  moitié caché ne reçoit qu'une partie de la poussée.
+  moitié caché ne reçoit qu'une partie de la poussée. Les zones abritées sont assombries derrière
+  chaque obstacle dès l'atelier : on voit l'abri avant de lancer.
 
 ## Les cordes et les poulies
 

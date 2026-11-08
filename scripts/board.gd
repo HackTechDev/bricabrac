@@ -139,6 +139,11 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 
 
+## Teinte des zones abritées du vent.
+const WIND_SHADOW := Color(0, 0, 0, 0.42)
+const WIND_SHADOW_EDGE := Color(1, 1, 1, 0.14)
+
+
 func start() -> void:
 	_rebuild(true)
 
@@ -543,6 +548,7 @@ func _draw() -> void:
 	while y <= SIZE.y:
 		draw_line(Vector2(0, y), Vector2(SIZE.x, y), major if int(y) % 200 == 0 else minor)
 		y += 40.0
+	_draw_wind_shadows()
 	if show_ghost:
 		_draw_ghost()
 	_draw_hints()
@@ -650,6 +656,48 @@ static func _hint_label(entry: Dictionary) -> String:
 	if entry.has("tension"):
 		parts.append("tendu à %d %%" % roundi(entry.tension))
 	return ", ".join(parts)
+
+
+## Ombre du vent : derrière chaque obstacle, la bande qu'il abrite jusqu'au bord du plateau,
+## comme les rayons de Wind la voient. Elle se voit dès l'atelier, pour placer un objet à l'abri.
+func wind_shadows() -> Array[PackedVector2Array]:
+	var result: Array[PackedVector2Array] = []
+	var w := wind()
+	if w == Vector2.ZERO:
+		return result
+	var sweep := w.normalized() * SIZE.length()
+	var board_rect := PackedVector2Array([Vector2.ZERO, Vector2(SIZE.x, 0), SIZE, Vector2(0, SIZE.y)])
+	var to_board := get_global_transform().affine_inverse()
+	for part in parts:
+		if part.collision_layer() & Part.LAYER_WORLD == 0:
+			continue
+		for col in part.solids:
+			if not is_instance_valid(col) or not col.is_inside_tree():
+				continue
+			var xf := to_board * col.global_transform
+			var swept := PackedVector2Array()
+			for point in WaterPart._outline(col.shape):
+				var at := xf * point
+				swept.append(at)
+				swept.append(at + sweep)
+			if swept.size() >= 3:
+				result.append_array(Geometry2D.intersect_polygons(Geometry2D.convex_hull(swept), board_rect))
+	return result
+
+
+func in_wind_shadow(point: Vector2) -> bool:
+	for shadow in wind_shadows():
+		if Geometry2D.is_point_in_polygon(point, shadow):
+			return true
+	return false
+
+
+func _draw_wind_shadows() -> void:
+	for piece in wind_shadows():
+		draw_colored_polygon(piece, WIND_SHADOW)
+		var edge := piece.duplicate()
+		edge.append(piece[0])
+		draw_polyline(edge, WIND_SHADOW_EDGE, 1.0)
 
 
 func _draw_wind() -> void:
