@@ -28,6 +28,10 @@ var muted := false
 
 var histories := {}
 var saved_layouts := {}
+## Tutoriels terminés ou passés : ils ne se relancent plus d'eux-mêmes (le bouton Indice, si).
+var tutorials_done := {}
+var show_tutorials := true
+var tutorial: Tutorial
 
 var _level_picker: OptionButton
 var _run_button: Button
@@ -65,6 +69,12 @@ func _ready() -> void:
 	_build_top_bar()
 	_build_side_panel()
 	_build_status_bar()
+	tutorial = Tutorial.new()
+	tutorial.condition = _tutorial_condition
+	tutorial.locate = _tutorial_target
+	tutorial.obstacles = _tutorial_obstacles
+	tutorial.finished.connect(_on_tutorial_finished)
+	add_child(tutorial)
 	_build_win_overlay()
 	load_level(_first_unsolved())
 
@@ -89,6 +99,10 @@ func load_level(index: int) -> void:
 	_rebuild_bin()
 	_refresh_level_picker()
 	_refresh_controls()
+	tutorial.stop()
+	if show_tutorials and levels[index].has("tutorial") and not completed.has(level_id) \
+			and not tutorials_done.has(level_id):
+		_start_tutorial.call_deferred()
 
 
 func toggle_run() -> void:
@@ -147,7 +161,7 @@ func _handle_key(event: InputEventKey) -> void:
 				_cancel_rope()
 				_status.text = "Corde annulée."
 		KEY_R:
-			_rotate_selected(1.0)
+			_rotate_selected(-1.0 if event.shift_pressed else 1.0)
 		KEY_F:
 			_flip_selected()
 		KEY_C:
@@ -459,7 +473,10 @@ func _build_top_bar() -> void:
 	var hint := Button.new()
 	hint.text = "Indice"
 	hint.focus_mode = Control.FOCUS_NONE
-	hint.pressed.connect(func() -> void: _status.text = levels[current].get("hint", ""))
+	hint.pressed.connect(func() -> void:
+		_status.text = levels[current].get("hint", "")
+		if levels[current].has("tutorial") and not board.running:
+			_start_tutorial())
 	row.add_child(hint)
 
 	_clear_button = Button.new()
@@ -635,6 +652,87 @@ func _on_won() -> void:
 	_win_overlay.show()
 
 
+# --- Tutoriel intégré -----------------------------------------------------------
+
+func _start_tutorial() -> void:
+	if levels[current].has("tutorial"):
+		tutorial.start(levels[current].tutorial)
+
+
+func _on_tutorial_finished(_skipped: bool) -> void:
+	tutorials_done[levels[current].id] = true
+	_save_progress()
+
+
+## Conditions d'avancement : "running", "stopped", "won", "placed:pièce[:nombre]",
+## "rot:pièce:min:max" (degrés), "rope_tool", "rope_from".
+func _tutorial_condition(name: String) -> bool:
+	var args := name.split(":")
+	match args[0]:
+		"running":
+			return board.running
+		"stopped":
+			return not board.running
+		"won":
+			return board.has_won or _win_overlay.visible
+		"placed":
+			return _count_placed(args[1]) >= (args[2].to_int() if args.size() > 2 else 1)
+		"rot":
+			for entry: Dictionary in board.placed:
+				var rot: float = entry.get("rot", 0.0)
+				if entry.kind == args[1] and rot >= args[2].to_float() and rot <= args[3].to_float():
+					return true
+			return false
+		"rope_tool":
+			return rope_tool or _count_placed("rope") > 0
+		"rope_from":
+			return rope_from != null or _count_placed("rope") > 0
+	push_error("Condition de tutoriel inconnue : %s" % name)
+	return false
+
+
+func _count_placed(kind: String) -> int:
+	var count := 0
+	for entry: Dictionary in board.placed:
+		if entry.kind == kind:
+			count += 1
+	return count
+
+
+## Cibles : "run", "bin:pièce", "ctx:action", "part:identifiant", "zone:x,y,l,h" (plateau).
+func _tutorial_target(name: String) -> Rect2:
+	var args := name.split(":")
+	match args[0]:
+		"run":
+			return _run_button.get_global_rect()
+		"bin":
+			for item in _items:
+				if item.kind == args[1]:
+					return item.get_global_rect()
+		"ctx":
+			return (_ctx_buttons[args[1]] as Control).get_global_rect()
+		"part":
+			var part := board.find_part(args[1])
+			if part != null and is_instance_valid(part.main_body):
+				return Rect2(part.main_body.global_position - Vector2(28, 28), Vector2(56, 56))
+		"zone":
+			var v := args[1].split_floats(",")
+			return Rect2(board.to_global(Vector2(v[0], v[1])), Vector2(v[2], v[3]))
+	return Rect2()
+
+
+func _tutorial_obstacles() -> Array:
+	var rects: Array = []
+	for part in board.parts:
+		for solid in part.solids:
+			rects.append(solid.global_transform * solid.shape.get_rect())
+	for item in _items:
+		rects.append(item.get_global_rect())
+	for button: Control in _ctx_buttons.values():
+		rects.append(button.get_global_rect())
+	return rects
+
+
 # --- Progression ----------------------------------------------------------------
 
 func _toggle_sound() -> void:
@@ -657,11 +755,14 @@ func _load_progress() -> void:
 			completed[id] = true
 		muted = cfg.get_value("settings", "muted", false)
 		saved_layouts = cfg.get_value("layouts", "by_level", {})
+		for id: String in cfg.get_value("progress", "tutorials", []):
+			tutorials_done[id] = true
 
 
 func _save_progress() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("progress", "completed", completed.keys())
+	cfg.set_value("progress", "tutorials", tutorials_done.keys())
 	cfg.set_value("settings", "muted", muted)
 	cfg.set_value("layouts", "by_level", saved_layouts)
 	cfg.save(save_path)

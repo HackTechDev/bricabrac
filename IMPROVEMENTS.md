@@ -14,7 +14,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 ## Confort de jeu
 
 - Bouton d'accélération de la simulation (x2, x4) et mode pause.
-- Tutoriel intégré aux premiers niveaux, plutôt qu'une simple ligne de texte.
 - Écran de sélection des niveaux avec vignettes, à la place de la liste déroulante.
 - Infobulles sur les pièces du plateau, pas seulement dans le bac.
 - Trajectoire fantôme du dernier essai, pour ajuster une pose sans tout revoir.

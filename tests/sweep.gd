@@ -15,6 +15,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	board = Board.new()
+	board.position = Vector2(0, 56)  # Même décalage que dans le jeu, sous la barre du haut.
 	root.add_child(board)
 	await process_frame
 	var spec: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SWEEP")))

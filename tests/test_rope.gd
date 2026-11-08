@@ -14,6 +14,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	board = Board.new()
+	board.position = Vector2(0, 56)  # Même décalage que dans le jeu, sous la barre du haut.
 	root.add_child(board)
 	await process_frame
 	await _test_atwood()
@@ -44,6 +45,11 @@ func _rigid(id: String) -> RigidBody2D:
 	return board.find_part(id).main_body as RigidBody2D
 
 
+## Position sur le plateau, comparable aux valeurs de la disposition.
+func _pos(id: String) -> Vector2:
+	return board.to_local(_rigid(id).global_position)
+
+
 func _rope() -> RopePart:
 	for part in board.parts:
 		if part is RopePart:
@@ -64,12 +70,12 @@ func _test_atwood() -> void:
 		{"kind": "rope", "from": "lourd", "via": ["w2", "w1"], "to": "leger"},
 	])
 	board.start()
-	var y0 := _rigid("lourd").global_position.y
-	var yb0 := _rigid("leger").global_position.y
+	var y0 := _pos("lourd").y
+	var yb0 := _pos("leger").y
 	var t := 0.5
 	await _steps(int(t * 120))
-	var fall := _rigid("lourd").global_position.y - y0
-	var rise := yb0 - _rigid("leger").global_position.y
+	var fall := _pos("lourd").y - y0
+	var rise := yb0 - _pos("leger").y
 	var expected := 0.5 * G * (6.0 - 1.5) / 7.5 * t * t
 	_near("Atwood : chute du lourd", fall, expected, 0.06)
 	_near("Atwood : la montée égale la chute", rise, fall, 0.02)
@@ -84,7 +90,7 @@ func _test_equal_masses() -> void:
 	])
 	board.start()
 	await _steps(120)
-	_near("masses égales : équilibre", _rigid("a").global_position.y, 300.0, 0.01)
+	_near("masses égales : équilibre", _pos("a").y, 300.0, 0.01)
 
 
 func _test_pendulum() -> void:
@@ -100,9 +106,9 @@ func _test_pendulum() -> void:
 	var farthest := 0.0
 	for i in 480:
 		await physics_frame
-		var pos := _rigid("m").global_position
+		var pos := _pos("m")
 		lowest = maxf(lowest, pos.y)
-		farthest = maxf(farthest, pos.distance_to(board.to_global(Vector2(500, 60))))
+		farthest = maxf(farthest, pos.distance_to(Vector2(500, 60)))
 	_near("pendule : rayon conservé", farthest, radius, 0.01)
 	_near("pendule : passe au point bas", lowest, 60.0 + radius, 0.04)
 
@@ -117,7 +123,7 @@ func _test_only_pulls() -> void:
 	board.start()
 	await _steps(30)
 	# Vol libre sur 0,25 s : 400 - 500 x 0,25 + 490 x 0,25² = 305.
-	_near("corde détendue : la bille monte en vol libre", _rigid("m").global_position.y, 305.0, 0.02)
+	_near("corde détendue : la bille monte en vol libre", _pos("m").y, 305.0, 0.02)
 
 
 func _test_balloon_cut() -> void:

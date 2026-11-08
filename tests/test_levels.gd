@@ -20,6 +20,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	board = Board.new()
+	board.position = Vector2(0, 56)  # Même décalage que dans le jeu, sous la barre du haut.
 	root.add_child(board)
 	await process_frame
 	var only := OS.get_environment("ONLY")

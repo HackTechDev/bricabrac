@@ -26,6 +26,30 @@ static func all() -> Array:
 				item("basket", 480, 598, {"goal": true}),
 			],
 			"inventory": {"plank": 2},
+			"tutorial": [
+				{
+					"text": "Bienvenue dans l'atelier ! Commence par lancer la machine pour voir ce qui se passe.",
+					"target": "run", "until": "running",
+				},
+				{
+					"text": "La bille tombe tout droit, loin du panier doré. Reviens à l'atelier avec Arrêter.",
+					"target": "run", "until": "stopped",
+				},
+				{
+					"text": "Glisse une planche depuis le bac et lâche-la dans la zone, sous la bille.",
+					"target": "bin:plank", "zone": "zone:110,170,200,140", "until": "placed:plank",
+				},
+				{
+					"text": "Incline-la vers le panier : appuie deux fois sur R, ou tourne la molette. Si elle n'est plus entourée, clique d'abord dessus.",
+					"target": "ctx:rotate", "until": "rot:plank:30:75",
+				},
+				{
+					"text": "Parfait. Lance la machine !",
+					"running_text": "Regarde bien la bille…",
+					"retry": "Presque ! Déplace un peu la planche ou change son angle, puis relance. Ctrl+Z annule ta dernière action.",
+					"target": "run", "until": "won",
+				},
+			],
 			"solution": [
 				{"kind": "plank", "pos": Vector2(190, 240), "rot": 30.0},
 			],
@@ -42,6 +66,22 @@ static func all() -> Array:
 				item("basket", 760, 598, {"goal": true}),
 			],
 			"inventory": {"spring": 1, "plank": 1},
+			"tutorial": [
+				{
+					"text": "Nouvelle pièce : le ressort. Il renvoie tout ce qui le touche dans l'axe de sa face verte. Pose-le sous la bille.",
+					"target": "bin:spring", "until": "placed:spring",
+				},
+				{
+					"text": "Penche-le d'un cran vers le mur avec R, pour envoyer la bille vers la droite.",
+					"target": "ctx:rotate", "until": "rot:spring:15:60",
+				},
+				{
+					"text": "Lance la machine !",
+					"running_text": "Elle passera le mur ?",
+					"retry": "Essaie une autre hauteur ou un autre angle. Maj+R pivote dans l'autre sens.",
+					"target": "run", "until": "won",
+				},
+			],
 			"solution": [
 				{"kind": "spring", "pos": Vector2(200, 500), "rot": 15.0},
 			],
@@ -118,6 +158,30 @@ static func all() -> Array:
 				item("basket", 800, 470, {"goal": true, "accepts": ["ball"]}),
 			],
 			"inventory": {"plate": 1, "cannon": 1},
+			"tutorial": [
+				{
+					"text": "Une plaque met en marche les pièces de son canal. Pose-la là où la caisse va tomber.",
+					"target": "bin:plate", "zone": "zone:60,570,120,70", "until": "placed:plate",
+				},
+				{
+					"text": "Pose maintenant le canon, à droite de la plaque.",
+					"target": "bin:cannon", "until": "placed:cannon",
+				},
+				{
+					"text": "Regarde les pastilles numérotées : la plaque et le canon sont sur le canal 1, ils sont donc reliés. La touche C change le canal de la pièce sélectionnée.",
+					"until": "ack",
+				},
+				{
+					"text": "Vise vers le haut et la droite : sélectionne le canon, puis Maj+R ou molette vers le haut.",
+					"target": "ctx:rotate", "until": "rot:cannon:270:345",
+				},
+				{
+					"text": "Feu !",
+					"running_text": "La caisse tombe…",
+					"retry": "Ajuste la visée d'un cran, ou vérifie que la plaque et le canon partagent le même canal.",
+					"target": "run", "until": "won",
+				},
+			],
 			"solution": [
 				{"kind": "plate", "pos": Vector2(120, 620), "channel": 1},
 				{"kind": "cannon", "pos": Vector2(360, 520), "rot": 315.0, "channel": 1},
@@ -136,6 +200,30 @@ static func all() -> Array:
 				item("lamp", 950, 610, {"channel": 1, "goal": true}),
 			],
 			"inventory": {"pulley": 2, "rope": 1},
+			"tutorial": [
+				{
+					"text": "Pose deux poulies en hauteur : une au-dessus de la bille, l'autre au-dessus du boulet.",
+					"target": "bin:pulley", "until": "placed:pulley:2",
+				},
+				{
+					"text": "Clique sur Corde dans le bac pour commencer une corde.",
+					"target": "bin:rope", "until": "rope_tool",
+				},
+				{
+					"text": "Clique sur le boulet : c'est le premier bout de la corde.",
+					"target": "part:boulet", "until": "rope_from",
+				},
+				{
+					"text": "Clique sur la poulie du boulet, puis sur celle de la bille, et enfin sur la bille. Échap annule.",
+					"target": "part:bille", "until": "placed:rope",
+				},
+				{
+					"text": "Lance : le boulet, plus lourd, va faire monter la bille.",
+					"running_text": "Le contrepoids fait son travail…",
+					"retry": "La corde garde la longueur qu'elle a à la pose. Vérifie qu'elle passe par les deux poulies.",
+					"target": "run", "until": "won",
+				},
+			],
 			"solution": [
 				{"kind": "pulley", "id": "w1", "pos": Vector2(300, 40)},
 				{"kind": "pulley", "id": "w2", "pos": Vector2(700, 40)},

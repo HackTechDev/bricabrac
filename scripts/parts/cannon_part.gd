@@ -19,7 +19,8 @@ func on_powered() -> void:
 	board.sfx.play("cannon")
 	board.spawn({
 		"kind": "ball",
-		"pos": global_position + axis * (SIZE.x / 2.0 + 20.0),
+		# Les positions de la disposition sont relatives au plateau, pas à l'écran.
+		"pos": board.to_local(global_position + axis * (SIZE.x / 2.0 + 20.0)),
 		"vel": axis * SPEED,
 	})
 

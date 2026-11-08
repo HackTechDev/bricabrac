@@ -4,8 +4,11 @@ Bienvenue dans Bric-à-Brac ! Chaque niveau pose un objectif : déposer une bill
 allumer une lampe, faire éclater un ballon. Pour y arriver, tu disposes quelques pièces dans
 l'atelier, puis tu lances la machine et tu regardes ce qui se passe.
 
-Ce tutoriel t'accompagne pas à pas sur le premier niveau, puis présente tout ce qu'il faut savoir
-pour les suivants.
+Le jeu contient aussi un tutoriel intégré : des bulles te guident pas à pas dans les niveaux 1, 2,
+6 et 7, qui présentent chacun une nouvelle notion. Il s'affiche de lui-même tant que le niveau n'est
+pas terminé, et « Passer le tutoriel » le ferme. Le bouton **Indice** le relance à tout moment.
+
+Ce document reprend les mêmes explications, pour les lire à tête reposée.
 
 ## Lancer le jeu
 
@@ -44,7 +47,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | --- | --- |
 | Placer une pièce | La glisser depuis le bac |
 | Sélectionner ou déplacer une pièce posée | Clic gauche, en maintenant pour déplacer |
-| Pivoter | R ou molette |
+| Pivoter | R ou molette ; Maj+R dans l'autre sens |
 | Retourner (miroir) | F |
 | Changer de canal | C |
 | Retirer une pièce | Clic droit, ou sélection puis Suppr |
