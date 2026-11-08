@@ -78,6 +78,7 @@ var colorblind := false
 var reduce_motion := false
 var music: Music
 var options: OptionsPanel
+var help_panel: HelpPanel
 var _mute_check: CheckBox
 
 var histories := {}
@@ -224,12 +225,15 @@ func _ready() -> void:
 	title_screen.editor.connect(func() -> void: _enter(editor_index()))
 	title_screen.gallery.connect(open_gallery)
 	title_screen.options.connect(open_options)
+	title_screen.help.connect(open_help)
 	title_screen.quit_requested.connect(ask_quit)
 	_build_quit_dialog()
 	title_screen.hide()
 	music = Music.new()
 	add_child(music)
 	_build_options()
+	help_panel = HelpPanel.new()
+	add_child(help_panel)
 	_apply_volumes()
 	editor.load_from(_editor_draft)
 	load_level(_first_unsolved())
@@ -523,7 +527,10 @@ func _notification(what: int) -> void:
 
 
 func _handle_key(event: InputEventKey) -> void:
-	if title_screen.is_open() or options.visible:
+	if event.keycode == KEY_F1 and not help_panel.visible:
+		open_help()
+		return
+	if title_screen.is_open() or options.visible or help_panel.visible:
 		return
 	if gallery_screen.visible:
 		if event.keycode == KEY_ESCAPE:
@@ -1942,6 +1949,12 @@ func set_language(code: String) -> void:
 	Lang.use(code)
 	if get_tree().current_scene == self:
 		get_tree().reload_current_scene.call_deferred()
+
+
+func open_help() -> void:
+	_stop_drag()
+	_hide_tooltip()
+	help_panel.open()
 
 
 func open_options() -> void:

@@ -10,6 +10,7 @@ signal sandbox
 signal editor
 signal gallery
 signal options
+signal help
 ## Le joueur veut quitter : le jeu demande confirmation.
 signal quit_requested
 
@@ -32,9 +33,9 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 60  # Au-dessus des marques d'objectif et de l'aperçu de corde du plateau.
 	_buttons = VBoxContainer.new()
-	_buttons.add_theme_constant_override("separation", 8)
+	_buttons.add_theme_constant_override("separation", 6)
 	_buttons.custom_minimum_size.x = 300
-	_buttons.position = Vector2(490, 292)
+	_buttons.position = Vector2(490, 284)
 	_buttons.size = Vector2(300, 0)
 	add_child(_buttons)
 	_play_button = _add_button(Lang.t("Jouer"), play)
@@ -43,11 +44,12 @@ func _init() -> void:
 	_add_button(Lang.t("Galerie des joueurs"), gallery)
 	_add_button(Lang.t("Éditeur de niveaux"), editor)
 	_add_button(Lang.t("Options"), options, false)
+	_add_button(Lang.t("Aide"), help, false)
 	if not OS.has_feature("web"):
 		var quit := Button.new()
 		quit.text = Lang.t("Quitter")
 		quit.focus_mode = Control.FOCUS_NONE
-		quit.custom_minimum_size.y = 40
+		quit.custom_minimum_size.y = 38
 		quit.pressed.connect(func() -> void: quit_requested.emit())
 		_buttons.add_child(quit)
 	_progress = Label.new()
@@ -63,7 +65,7 @@ func _add_button(text: String, sig: Signal, closing := true) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.focus_mode = Control.FOCUS_NONE
-	button.custom_minimum_size.y = 40
+	button.custom_minimum_size.y = 38
 	button.pressed.connect(func() -> void:
 		if closing:
 			close()

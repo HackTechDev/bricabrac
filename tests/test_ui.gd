@@ -102,6 +102,7 @@ func _run() -> void:
 	await _test_marquee()
 	await _test_context_menu()
 	await _test_quit()
+	await _test_help()
 	await _test_options()
 	await _test_accessibility()
 
@@ -1189,6 +1190,30 @@ func _test_records() -> void:
 
 
 ## Maj+clic, glisser d'un groupe, Ctrl+C / Ctrl+V avec la corde qui relie les deux caisses.
+## Aide : le bouton de l'écran titre ouvre la page, qui nomme Claude, le développeur et le dépôt ;
+## Échap la ferme ; F1 l'ouvre en jeu.
+func _test_help() -> void:
+	var help: HelpPanel = main.help_panel
+	main.open_title()
+	await process_frame
+	var button: Button = main.title_screen._buttons.get_children().filter(
+			func(b: Button) -> bool: return b.text == "Aide")[0]
+	await _click(button.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("aide : ouverte depuis l'écran titre", help.visible and main.title_screen.visible)
+	var texts := " ".join(help.find_children("*", "Label", true, false).map(func(l: Label) -> String: return l.text))
+	_check("aide : vibe-codé par Claude", texts.contains("vibe-codé") and texts.contains("Claude"))
+	_check("aide : nom du développeur", texts.contains(HelpPanel.DEVELOPER))
+	_check("aide : lien GitHub", help.link.uri == "https://github.com/HackTechDev/bricabrac")
+	await _key(KEY_ESCAPE)
+	_check("aide : Échap la ferme, l'écran titre reste", not help.visible and main.title_screen.is_open())
+	await _click(main.title_screen.play_button().get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	await _steps(30)
+	await _key(KEY_F1)
+	_check("aide : F1 l'ouvre en jeu", help.visible)
+	await _key(KEY_F1)
+	_check("aide : F1 la referme", not help.visible)
+
+
 ## Quitter : le bouton de l'écran titre, celui de l'écran de choix, Ctrl+Q et la croix de la
 ## fenêtre ouvrent tous une confirmation ; « Rester » ne quitte pas.
 func _test_quit() -> void:

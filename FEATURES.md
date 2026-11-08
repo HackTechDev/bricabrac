@@ -138,7 +138,9 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
 ## Présentation
 
 - Écran titre animé : engrenages, tapis, bille, lampe. Il affiche la progression et ouvre Jouer
-  (ou Continuer), Choisir un niveau, Bac à sable, Galerie, Éditeur, Options et Quitter.
+  (ou Continuer), Choisir un niveau, Bac à sable, Galerie, Éditeur, Options, Aide et Quitter.
+- Page d'aide (bouton Aide ou F1) : l'essentiel des commandes, et un « À propos » qui indique
+  que le jeu a été vibe-codé avec Claude, nomme le développeur et donne le lien GitHub du projet.
 - Transition entre les niveaux : balayage et carte qui annonce le monde et le nom du niveau.
 - Particules décoratives :
   - éclats des ballons ;

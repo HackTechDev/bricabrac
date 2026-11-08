@@ -78,6 +78,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Choisir un niveau | Tab, ou le bouton en haut à gauche |
 | Revenir à l'écran titre | Échap, quand rien n'est sélectionné ni en cours |
 | Quitter le jeu | Ctrl+Q, ou « Quitter » sur l'écran titre ou l'écran de sélection ; une fenêtre demande confirmation, comme la croix de la fenêtre |
+| Aide (commandes, à propos) | F1, ou bouton Aide de l'écran titre |
 | Marquer l'objectif (éditeur) | G |
 
 L'accélération ne change rien au résultat : la machine fait exactement la même chose, seulement plus

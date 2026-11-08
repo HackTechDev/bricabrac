@@ -32,6 +32,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 | Lancer / arrêter | Espace |
 | Couper le son | M |
 | Options (volumes, langue) | O |
+| Aide | F1, ou « Aide » sur l'écran titre |
 | Écran titre | Échap, quand rien n'est sélectionné |
 
 ### Version web (HTML)
