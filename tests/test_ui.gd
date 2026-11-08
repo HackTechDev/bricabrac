@@ -99,6 +99,7 @@ func _run() -> void:
 	await _test_hints()
 	_test_records()
 	await _test_copy_paste()
+	await _test_marquee()
 	await _test_options()
 	await _test_accessibility()
 
@@ -1181,6 +1182,34 @@ func _test_records() -> void:
 
 
 ## Maj+clic, glisser d'un groupe, Ctrl+C / Ctrl+V avec la corde qui relie les deux caisses.
+## Cadre de sélection : glisser sur une zone vide choisit les pièces qu'il entoure et la corde
+## qui les relie ; Maj ajoute ; un simple clic ne choisit rien.
+func _test_marquee() -> void:
+	var board: Board = main.board
+	board.set_layout([])
+	var a := board.place("crate", Vector2(300, 300))
+	var b := board.place("crate", Vector2(400, 300))
+	board.place("crate", Vector2(800, 300))
+	board.add_rope(a, Vector2.ZERO, [], b, Vector2.ZERO)
+	main._commit()
+	await _steps(2)
+	await _drag(board.to_global(Vector2(200, 200)), board.to_global(Vector2(500, 420)))
+	_check("cadre : deux caisses et leur corde (%d)" % main._selection().size(), main._selection().size() == 3)
+	_check("cadre : effacé au lâcher", main.marquee_rect() == Rect2())
+	var from := board.to_global(Vector2(700, 200))
+	var to := board.to_global(Vector2(900, 400))
+	await _move(from)
+	await _button(from, MOUSE_BUTTON_LEFT, true, true)
+	await _move(to)
+	_check("cadre : dessiné pendant le glisser", main.marquee_rect().size == Vector2(200, 200))
+	await _button(to, MOUSE_BUTTON_LEFT, false, true)
+	_check("cadre avec Maj : ajouté à la sélection", main._selection().size() == 4)
+	await _click(board.to_global(Vector2(600, 500)), MOUSE_BUTTON_LEFT)
+	_check("clic dans le vide : plus rien de choisi", main._selection().is_empty())
+	board.set_layout([])
+	main._commit()
+
+
 func _test_copy_paste() -> void:
 	var board: Board = main.board
 	for i in main.levels.size():

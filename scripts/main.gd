@@ -10,6 +10,8 @@ const BIN_ORDER: Array[String] = [
 	"pulley", "rope", "elastic", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes", "candle", "flashlight", "funnel", "pipe",
 	"lamp", "basket",
 ]
+## Taille en dessous de laquelle un cadre n'est qu'un clic.
+const MARQUEE_MIN := 8.0
 ## Flèches du clavier : direction d'un cran de grille ; Maj déplace de NUDGE_FAST crans.
 const ARROWS := {KEY_LEFT: Vector2i.LEFT, KEY_RIGHT: Vector2i.RIGHT, KEY_UP: Vector2i.UP, KEY_DOWN: Vector2i.DOWN}
 const NUDGE_FAST := 5
@@ -44,6 +46,10 @@ var group: Array[Part] = []
 var _group_origins: Dictionary = {}
 ## Entrées copiées par Ctrl+C, cordes comprises quand leurs deux bouts sont copiés.
 var clipboard: Array = []
+## Sélection au cadre : point de départ sur le plateau (INF hors cadre), Maj enfoncée au départ.
+var _marquee_from := Vector2.INF
+var _marquee_adds := false
+var _marquee: Node2D
 
 var rope_tool := false
 ## Lien en cours de pose avec l'outil corde : "rope" ou "elastic".
@@ -156,6 +162,10 @@ func _ready() -> void:
 	_rope_preview.default_color = Color(RopePart.COLOR, 0.8)
 	_rope_preview.z_index = 10
 	board.add_child(_rope_preview)
+	_marquee = Node2D.new()
+	_marquee.z_index = 10
+	_marquee.draw.connect(_draw_marquee)
+	board.add_child(_marquee)
 
 	_build_top_bar()
 	_build_side_panel()
@@ -439,6 +449,12 @@ func _input(event: InputEvent) -> void:
 		_mouse = _to_board(event.position)
 		_update_rope_preview()
 		_track_hover(event)
+	if _marquee_from != Vector2.INF and event is InputEventMouse:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+			_finish_marquee()
+		_marquee.queue_redraw()
+		get_viewport().set_input_as_handled()
+		return
 	if drag_part == null:
 		return
 	if event is InputEventMouseMotion:
@@ -541,6 +557,10 @@ func _handle_click(button: MouseButton, shift := false) -> void:
 			if not _is_player_part(target):
 				if not shift:
 					_select(null)
+				# Glisser depuis un endroit vide (ou le décor) trace un cadre de sélection.
+				if Rect2(Vector2.ZERO, Board.SIZE).has_point(_mouse):
+					_marquee_from = _mouse
+					_marquee_adds = shift
 			elif shift:
 				_toggle_in_group(target)
 			elif group.size() > 1 and group.has(target):
@@ -1000,6 +1020,47 @@ func _toggle_in_group(part: Part) -> void:
 	else:
 		parts.append(part)
 	_set_group(parts)
+
+
+## Rectangle du cadre en cours, sur le plateau.
+func marquee_rect() -> Rect2:
+	if _marquee_from == Vector2.INF:
+		return Rect2()
+	return Rect2(_marquee_from, Vector2.ZERO).expand(_mouse.clamp(Vector2.ZERO, Board.SIZE))
+
+
+## Fin du cadre : il choisit les pièces du joueur dont le centre est dedans, et les cordes qui
+## relient deux d'entre elles. Avec Maj, elles s'ajoutent à la sélection.
+func _finish_marquee() -> void:
+	var rect := marquee_rect()
+	_marquee_from = Vector2.INF
+	if rect.size.length() < MARQUEE_MIN or board.running:
+		return
+	var parts: Array[Part] = []
+	if _marquee_adds:
+		parts = _selection()
+	var ids := {}
+	for p in board.parts:
+		if _is_player_part(p) and not p is RopePart and rect.has_point(p.position) and not parts.has(p):
+			parts.append(p)
+	for p in parts:
+		ids[p.entry.id] = true
+	for p in board.parts:
+		if p is RopePart and _is_player_part(p) and not parts.has(p) \
+				and ids.has(p.entry.get("from")) and ids.has(p.entry.get("to")):
+			parts.append(p)
+	_set_group(parts)
+
+
+func _draw_marquee() -> void:
+	var rect := marquee_rect()
+	if rect.size.length() < MARQUEE_MIN:
+		return
+	_marquee.draw_rect(rect, Color(Part.GOLD, 0.08))
+	var corners := [rect.position, Vector2(rect.end.x, rect.position.y), rect.end,
+			Vector2(rect.position.x, rect.end.y)]
+	for i in 4:
+		_marquee.draw_dashed_line(corners[i], corners[(i + 1) % 4], Color(Part.GOLD, 0.8), 1.5, 6.0)
 
 
 func select_all() -> void:

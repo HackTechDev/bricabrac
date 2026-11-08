@@ -61,7 +61,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Pivoter, ou régler le délai d'une minuterie | R ou molette ; Maj+R dans l'autre sens |
 | Retourner (miroir) | F |
 | Changer de canal | C |
-| Choisir plusieurs pièces | Maj+clic sur chacune, ou Ctrl+A pour toutes ; les glisser les déplace ensemble |
+| Choisir plusieurs pièces | Maj+clic sur chacune, un cadre tracé en glissant depuis une zone vide (Maj : en ajoute), ou Ctrl+A pour toutes ; les glisser les déplace ensemble |
 | Ajuster d'un cran | Flèches : la pièce ou le groupe choisi se décale de 10 px ; Maj+flèche, de 50 px |
 | Retirer une pièce | Clic droit, ou sélection puis Suppr (tout le groupe choisi) |
 | Copier, coller | Ctrl+C, puis Ctrl+V : la copie se pose sous la souris, avec ses cordes |

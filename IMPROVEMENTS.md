@@ -31,7 +31,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 - Avancer pas à pas pendant la pause (une touche = un pas de simulation), pour comprendre un
   choc trop rapide, et un ralenti ×0,5 à côté de ×2 et ×4.
-- Sélection d'un groupe au cadre, en glissant sur une zone vide.
 - Comparer deux essais : garder la trace de l'avant-dernier en plus de la dernière, d'une autre
   couleur.
 - Un menu au clic droit sur une pièce (pivoter, miroir, canal, copier, retirer), plus facile à
