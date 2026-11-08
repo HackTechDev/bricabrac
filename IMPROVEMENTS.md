@@ -53,7 +53,8 @@ pour les pièces de base.
 
 ## Éditeur et communauté
 
-- Galerie de niveaux partagés, triée par difficulté mesurée (nombre d'essais avant victoire).
+- Mesurer la difficulté de la galerie à partir des essais de tous les joueurs, ce qui demande
+  un serveur ; elle est aujourd'hui donnée par l'auteur ou déduite de sa solution.
 
 ## Contenu et rejouabilité
 

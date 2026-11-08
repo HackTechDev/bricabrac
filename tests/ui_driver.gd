@@ -26,6 +26,8 @@ func _launch(show_tutorials: bool, fresh := true) -> void:
 	main = (load("res://scenes/main.tscn") as PackedScene).instantiate()
 	main.save_path = SAVE
 	main.custom_dir = CUSTOM_DIR
+	main.gallery_online_path = "user://test_ui_galerie.cfg"
+	main.gallery_url = ""
 	main.show_tutorials = show_tutorials
 	main.show_title = false
 	root.add_child(main)

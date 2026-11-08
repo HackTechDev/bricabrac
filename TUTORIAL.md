@@ -321,6 +321,23 @@ par `BAB1:`) ou d'un **fichier `.bab`** contenant ce code.
   auteur, et refuse le niveau si elle ne gagne pas, si elle dépasse l'inventaire ou si le code est
   abîmé. Une solution importée se charge dans son niveau ; il ne reste qu'à lancer la machine.
 
+## La galerie des joueurs
+
+La **galerie** rassemble des niveaux créés par d'autres joueurs. On l'ouvre depuis l'écran titre
+(« Galerie des joueurs ») ou depuis l'écran de sélection (« Galerie… »).
+
+- Chaque niveau y montre son auteur, sa difficulté (★☆☆ facile à ★★★ difficile) et ton état :
+  « À découvrir », « Dans Mes niveaux » avec tes essais, ou « Résolu en 3 essais ». Un essai est
+  un lancement de la machine avant ta première victoire.
+- **Jouer** rejoue d'abord en coulisse la solution de l'auteur, puis ajoute le niveau à « Mes
+  niveaux » et l'ouvre. Rejouer un niveau déjà ajouté l'ouvre simplement.
+- Le menu en haut trie la liste par difficulté ou par date.
+- **Actualiser en ligne** télécharge la dernière version de la galerie depuis le dépôt du jeu.
+  Sans connexion, la galerie livrée avec le jeu reste disponible.
+- **Proposer mon niveau…** prend le niveau de ton éditeur, qui doit être résolu, et ouvre dans ton
+  navigateur une demande d'ajout préremplie avec son code. Une fois acceptée, elle rejoint la
+  galerie de tous les joueurs.
+
 ## Revoir et filmer une solution
 
 À la victoire, trois boutons rejouent ta machine depuis le début :

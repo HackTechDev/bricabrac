@@ -24,6 +24,7 @@ func _run() -> void:
 	root.add_child(board)
 	await process_frame
 	_check_files()
+	await _check_gallery()
 	var only := OS.get_environment("ONLY")
 	for level: Dictionary in LevelData.all():
 		if only != "" and level.id != only:
@@ -52,6 +53,27 @@ func _check_files() -> void:
 	_report("fichiers", "texte sans niveau refusé", LevelFile.from_text("[niveau]\nname=\"sans id\"").is_empty()
 			and LevelFile.from_text("[autre]\nid=\"x\"").is_empty()
 			and LevelFile.from_text("n'importe quoi").is_empty(), "accepté")
+
+
+## Les niveaux de la galerie livrée : codes lisibles, solution gagnante, et pas de victoire seule.
+func _check_gallery() -> void:
+	var entries := Gallery.load_file(Gallery.BUNDLED)
+	var keys := Array(Gallery.parse(FileAccess.get_file_as_string(Gallery.BUNDLED)).map(
+			func(e: Dictionary) -> String: return e.key))
+	var sections := ConfigFile.new()
+	sections.load(Gallery.BUNDLED)
+	_report("galerie", "tous les codes sont lisibles", keys.size() == sections.get_sections().size(),
+			"%d sur %d" % [keys.size(), sections.get_sections().size()])
+	for entry: Dictionary in entries:
+		board.load_level(entry.level.duplicate(true))
+		board.start()
+		var idle := await _simulate(IDLE_SECONDS, "")
+		_report("galerie " + entry.key, "ne se gagne pas seul", idle < 0.0, "gagné à %.2fs" % idle)
+		board.load_level(entry.level.duplicate(true))
+		board.apply_layout(entry.level.solution)
+		board.start()
+		var won := await _simulate(SOLVE_SECONDS, "")
+		_report("galerie " + entry.key, "la solution de l'auteur gagne (%.2fs)" % won, won >= 0.0, "pas de victoire")
 
 
 func _check(level: Dictionary) -> void:

@@ -92,6 +92,7 @@ func _run() -> void:
 	await _test_official_levels()
 	await _test_custom_migration()
 	await _test_editor_physics()
+	await _test_gallery()
 
 	_finish("INTERFACE OK")
 
@@ -896,3 +897,80 @@ func _test_editor_physics() -> void:
 	main._editor_reset()
 	_check("physique : « Nouveau » la remet à zéro", main.board.gravity_factor() == 1.0
 			and main.board.wind() == Vector2.ZERO)
+
+
+## Galerie : ouverte depuis l'écran titre, triée par difficulté ; « Jouer » vérifie le niveau, l'ajoute
+## à « Mes niveaux » et l'ouvre ; ses essais s'affichent ; la copie en ligne complète la galerie.
+func _test_gallery() -> void:
+	main.open_title()
+	await process_frame
+	var to_gallery: Button = main.title_screen._buttons.get_children().filter(
+			func(b: Button) -> bool: return b.text == "Galerie des joueurs")[0]
+	await _click(to_gallery.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	await _steps(2)
+	var gallery: GalleryScreen = main.gallery_screen
+	_check("galerie : ouverte depuis l'écran titre", gallery.visible and main.gallery_entries.size() == 3)
+	var order := Array(Gallery.sorted(main.gallery_entries, false).map(func(e: Dictionary) -> String: return e.key))
+	_check("galerie : du plus facile au plus difficile", order == ["fronde", "hamster", "vent_arriere"])
+	_check("galerie : état « À découvrir »", main.gallery_status(main.gallery_entries[0]) == "À découvrir")
+	var customs: int = main.custom_levels.size()
+	await _click(gallery.play_button("fronde").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	for i in 3000:
+		await physics_frame
+		if not gallery.visible:
+			break
+	_check("galerie : niveau vérifié, ajouté et ouvert", not gallery.visible
+			and main.custom_levels.size() == customs + 1 and main.levels[main.current].name == "La fronde")
+	var entry: Dictionary = main.gallery_entries[0]
+	main.board.clear_placed()
+	main.board.apply_layout(entry.level.solution)
+	main.toggle_run()
+	main.toggle_run()
+	main.toggle_run()
+	for i in 600:
+		await physics_frame
+		if main._win_overlay.visible:
+			break
+	_check("galerie : niveau gagné", main._win_overlay.visible)
+	main.toggle_run()
+	_check("galerie : résolu en 2 essais", main.gallery_status(entry) == "Résolu en 2 essais")
+	main.open_gallery()
+	await _steps(2)
+	await _click(gallery.play_button("fronde").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	await _steps(2)
+	_check("galerie : rejouer ne le duplique pas", main.custom_levels.size() == customs + 1 and not gallery.visible)
+
+	# Copie en ligne : une entrée remplacée et une nouvelle ; un code abîmé est ignoré.
+	var online := "[fronde]\nname=\"La fronde, version 2\"\ncode=%s\n\n[nouveau]\nname=\"Nouveau\"\nadded=\"2026-12-01\"\ncode=%s\n\n[abime]\ncode=\"BAB1:xyz\"\n" % [
+			var_to_str(entry.code), var_to_str(main.gallery_entries[1].code)]
+	var file := FileAccess.open(main.gallery_online_path, FileAccess.WRITE)
+	file.store_string(online)
+	file.close()
+	main.open_gallery()
+	await _steps(2)
+	var names := Array(main.gallery_entries.map(func(e: Dictionary) -> String: return e.name))
+	_check("galerie en ligne : fusionnée, codes abîmés écartés", main.gallery_entries.size() == 4
+			and names.has("La fronde, version 2") and names.has("Nouveau") and not names.has("La fronde"))
+	gallery.newest_first = true
+	gallery._rebuild()
+	_check("galerie : tri par date", Gallery.sorted(main.gallery_entries, true)[0].key == "nouveau")
+	DirAccess.remove_absolute(main.gallery_online_path)
+	await _key(KEY_ESCAPE)
+	_check("galerie : Échap ferme", not gallery.visible)
+
+	# Proposer : il faut un niveau résolu dans l'éditeur ; l'adresse contient alors son code.
+	main.load_level(main.editor_index())
+	await _steps(2)
+	main._editor_reset()
+	_check("galerie : proposition refusée sans niveau", not main.gallery_proposal().begins_with("https://"))
+	main.board.place("ball", Vector2(150, 60))
+	main.board.place("basket", Vector2(480, 590))
+	main.board.placed[1].goal = true
+	main._commit()
+	main.editor.inventory = {"plank": 1}
+	main.editor.name_edit.text = "Ma proposition"
+	main.editor.proof = {"signature": LevelData.signature(main._editor_level("x")), "solution": []}
+	var url: String = main.gallery_proposal()
+	_check("galerie : adresse de proposition avec le code", url.begins_with(Gallery.ISSUE_URL)
+			and url.contains("Ma%20proposition") and url.contains("BAB1%3A"))
+	main._editor_reset()

@@ -49,6 +49,14 @@ var title_screen: TitleScreen
 ## exporté, où `levels/` est en lecture seule).
 var official_dir := LevelFile.DIR if OS.has_feature("editor") else ""
 var official_dialog: OfficialDialog
+var gallery_screen: GalleryScreen
+var gallery_entries: Array = []
+## Copie de la galerie téléchargée par « Actualiser en ligne ».
+var gallery_online_path := "user://galerie_en_ligne.cfg"
+var gallery_url := Gallery.ONLINE_URL
+var _gallery_http: HTTPRequest
+## Lancements de chaque niveau avant sa première victoire : la difficulté vécue par le joueur.
+var attempts := {}
 var transition: LevelTransition
 var _started := false
 var tutorial: Tutorial
@@ -133,6 +141,21 @@ func _ready() -> void:
 	recorder = Recorder.new()
 	add_child(recorder)
 	_build_level_select()
+	gallery_screen = GalleryScreen.new()
+	add_child(gallery_screen)
+	gallery_screen.play_requested.connect(_play_gallery)
+	gallery_screen.refresh_requested.connect(_refresh_gallery)
+	gallery_screen.propose_requested.connect(func() -> void:
+		var proposal := gallery_proposal()
+		if proposal.begins_with("https://"):
+			OS.shell_open(proposal)
+			gallery_screen.message.text = "La page de proposition s'ouvre dans ton navigateur : complète-la et envoie-la."
+		else:
+			gallery_screen.message.text = proposal)
+	_gallery_http = HTTPRequest.new()
+	_gallery_http.timeout = 15.0
+	add_child(_gallery_http)
+	_gallery_http.request_completed.connect(_on_gallery_downloaded)
 	transition = LevelTransition.new()
 	add_child(transition)
 	title_screen = TitleScreen.new()
@@ -141,6 +164,7 @@ func _ready() -> void:
 	title_screen.choose.connect(open_level_select)
 	title_screen.sandbox.connect(func() -> void: _enter(_index_of("bac_a_sable")))
 	title_screen.editor.connect(func() -> void: _enter(editor_index()))
+	title_screen.gallery.connect(open_gallery)
 	title_screen.hide()
 	editor.load_from(_editor_draft)
 	load_level(_first_unsolved())
@@ -220,6 +244,7 @@ func _build_level_select() -> void:
 	_level_select.chosen.connect(load_level)
 	_level_select.import_requested.connect(func() -> void: share_dialog.show_import())
 	_level_select.title_requested.connect(func() -> void: open_title())
+	_level_select.gallery_requested.connect(func() -> void: open_gallery())
 
 
 ## Gravité et vent du plan de travail : ceux de la partie en cours, sinon ceux du brouillon.
@@ -312,6 +337,7 @@ func toggle_run() -> void:
 	if board.running:
 		board.stop()
 	else:
+		_count_attempt()
 		board.start()
 	_refresh_bin()
 	_refresh_controls()
@@ -344,6 +370,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _handle_key(event: InputEventKey) -> void:
 	if title_screen.is_open():
+		return
+	if gallery_screen.visible:
+		if event.keycode == KEY_ESCAPE:
+			gallery_screen.hide()
 		return
 	if _level_select.visible:
 		if event.keycode in [KEY_ESCAPE, KEY_TAB]:
@@ -439,7 +469,7 @@ func _process(delta: float) -> void:
 ## Un clic ou un glisser ferme l'infobulle ; survoler une autre pièce relance le délai.
 func _track_hover(event: InputEventMouse) -> void:
 	if event is InputEventMouseButton or drag_part != null or _level_select.visible \
-			or title_screen.visible:
+			or title_screen.visible or gallery_screen.visible:
 		_hide_tooltip()
 		return
 	var inside := Rect2(Vector2.ZERO, Board.SIZE).has_point(_mouse)
@@ -1259,6 +1289,7 @@ func _load_progress() -> void:
 			completed[id] = true
 		muted = cfg.get_value("settings", "muted", false)
 		saved_layouts = cfg.get_value("layouts", "by_level", {})
+		attempts = cfg.get_value("progress", "attempts", {})
 		for id: String in cfg.get_value("progress", "tutorials", []):
 			tutorials_done[id] = true
 		bonuses = cfg.get_value("progress", "bonuses", {})
@@ -1305,6 +1336,7 @@ func _save_progress() -> void:
 	cfg.set_value("progress", "completed", completed.keys())
 	cfg.set_value("progress", "tutorials", tutorials_done.keys())
 	cfg.set_value("progress", "bonuses", bonuses)
+	cfg.set_value("progress", "attempts", attempts)
 	cfg.set_value("settings", "muted", muted)
 	cfg.set_value("layouts", "by_level", saved_layouts)
 	if editor != null:
@@ -1589,34 +1621,140 @@ func import_code(code: String) -> void:
 
 
 func _import_level(raw: Variant) -> void:
-	var level: Variant = Share.clean_level(raw)
-	if level is String:
-		share_dialog.message.text = level
-		return
-	for other: Dictionary in custom_levels:
-		if LevelData.signature(other) == LevelData.signature(level):
-			share_dialog.message.text = "Ce niveau est déjà dans « Mes niveaux »."
-			return
 	share_dialog.message.text = "Vérification : la solution de l'auteur est rejouée…"
-	var reason: String = await verifier.verify(level)
+	var reason: String = await _add_shared_level(raw, "Niveau importé.")
 	if reason != "":
 		share_dialog.message.text = reason
 		return
+	share_dialog.hide()
+	_status.text = "« %s » est importé dans « Mes niveaux ». À toi de le résoudre !" % levels[current].name
+
+
+## Ajoute à « Mes niveaux » un niveau partagé (code importé ou galerie), une fois la solution de
+## son auteur rejouée, puis l'ouvre. Renvoie la raison d'un refus, ou "" s'il est ajouté.
+func _add_shared_level(raw: Variant, hint: String) -> String:
+	var level: Variant = Share.clean_level(raw)
+	if level is String:
+		return level
+	if _custom_index(level) >= 0:
+		return "Ce niveau est déjà dans « Mes niveaux »."
+	var reason: String = await verifier.verify(level)
+	if reason != "":
+		return reason
 	var taken := {}
 	for other: Dictionary in levels:
 		taken[other.id] = true
 	if taken.has(level.id) or not level.id.begins_with("perso"):
 		level.id = "perso_%d" % absi(LevelData.signature(level))
 	level.merge({"world": "perso", "custom": true, "verified": true, "intro": level.goal_text,
-			"hint": "Niveau importé."}, true)
+			"hint": hint}, true)
 	custom_levels.append(level)
 	_write_custom(level)
 	_reload_level_list(func() -> int: return current)
-	share_dialog.hide()
+	load_level(_index_of(level.id))
+	return ""
+
+
+## Place dans la liste des niveaux d'un niveau personnel identique (même décor, même inventaire,
+## même physique), ou -1.
+func _custom_index(level: Dictionary) -> int:
+	var signature := LevelData.signature(level)
 	for i in levels.size():
-		if levels[i].id == level.id:
-			load_level(i)
-	_status.text = "« %s » est importé dans « Mes niveaux ». À toi de le résoudre !" % level.name
+		if levels[i].get("custom", false) and LevelData.signature(levels[i]) == signature:
+			return i
+	return -1
+
+
+# --- Galerie --------------------------------------------------------------------
+
+## Galerie livrée avec le jeu, complétée par la dernière version téléchargée.
+func open_gallery() -> void:
+	_level_select.hide()
+	gallery_entries = Gallery.merge(Gallery.load_file(Gallery.BUNDLED), Gallery.load_file(gallery_online_path))
+	gallery_screen.message.text = "%d niveau(x) proposé(s) par les joueurs. « Jouer » les ajoute à « Mes niveaux »." \
+			% gallery_entries.size()
+	gallery_screen.open(gallery_entries, gallery_status)
+
+
+## État d'un niveau de la galerie chez le joueur, avec ses essais.
+func gallery_status(entry: Dictionary) -> String:
+	var index := _custom_index(entry.level)
+	if index < 0:
+		return "À découvrir"
+	var id: String = levels[index].id
+	var tries: int = attempts.get(id, 0)
+	if completed.has(id):
+		return "Résolu en %d essai%s" % [tries, "s" if tries > 1 else ""] if tries > 0 else "Résolu"
+	return "Dans Mes niveaux" + ("  ·  %d essai%s" % [tries, "s" if tries > 1 else ""] if tries > 0 else "")
+
+
+func _play_gallery(entry: Dictionary) -> void:
+	if verifier.busy:
+		return
+	var index := _custom_index(entry.level)
+	if index >= 0:
+		gallery_screen.hide()
+		load_level(index)
+		return
+	gallery_screen.message.text = "Vérification de « %s » : la solution de l'auteur est rejouée…" % entry.name
+	var level: Dictionary = entry.level.duplicate(true)
+	level.name = entry.name
+	var reason: String = await _add_shared_level(level, "Niveau de la galerie, proposé par %s." % entry.author)
+	if reason != "":
+		gallery_screen.message.text = reason
+		return
+	gallery_screen.hide()
+	_status.text = "« %s » est ajouté à « Mes niveaux ». Bonne chance !" % entry.name
+
+
+func _refresh_gallery() -> void:
+	gallery_screen.set_busy(true)
+	gallery_screen.message.text = "Téléchargement de la galerie…"
+	if _gallery_http.request(gallery_url) != OK:
+		_gallery_failed("la requête n'a pas pu partir")
+
+
+func _on_gallery_downloaded(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	if result != HTTPRequest.RESULT_SUCCESS or code != 200:
+		_gallery_failed("réponse %d" % code if result == HTTPRequest.RESULT_SUCCESS else "pas de connexion")
+		return
+	var text := body.get_string_from_utf8()
+	if Gallery.parse(text).is_empty():
+		_gallery_failed("contenu illisible")
+		return
+	var file := FileAccess.open(gallery_online_path, FileAccess.WRITE)
+	if file != null:
+		file.store_string(text)
+		file.close()
+	gallery_screen.set_busy(false)
+	open_gallery()
+	gallery_screen.message.text = "Galerie à jour : %d niveau(x)." % gallery_entries.size()
+
+
+func _gallery_failed(why: String) -> void:
+	gallery_screen.set_busy(false)
+	gallery_screen.message.text = "Galerie en ligne injoignable (%s) : voici celle livrée avec le jeu." % why
+
+
+## Adresse de proposition du niveau de l'éditeur, ou explication de ce qui manque.
+func gallery_proposal() -> String:
+	var level: Variant = _editor_level("proposition")
+	if level is String:
+		return "Pour proposer un niveau, ouvre-le dans l'éditeur. " + level
+	if editor.name_edit.text.strip_edges() == "":
+		return "Donne d'abord un nom à ton niveau dans l'éditeur."
+	if not editor.is_proven(level):
+		return "Gagne d'abord ton niveau avec « Essayer » : la galerie n'accepte que des niveaux résolus."
+	level.solution = editor.proof.solution
+	return Gallery.propose_url(level.name, Share.encode(Share.level_payload(level)))
+
+
+## Un lancement de plus avant la première victoire (hors bac à sable, éditeur et essai).
+func _count_attempt() -> void:
+	var level: Dictionary = levels[current]
+	if level.get("sandbox", false) or level.get("hidden", false) or completed.has(level.id) or replay_mode != "":
+		return
+	attempts[level.id] = attempts.get(level.id, 0) + 1
 
 
 func _import_solution(payload: Dictionary) -> void:

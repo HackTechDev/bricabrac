@@ -8,6 +8,7 @@ signal play
 signal choose
 signal sandbox
 signal editor
+signal gallery
 
 const BG := Color("14203a")
 const FADE := 0.3
@@ -30,12 +31,13 @@ func _init() -> void:
 	_buttons = VBoxContainer.new()
 	_buttons.add_theme_constant_override("separation", 10)
 	_buttons.custom_minimum_size.x = 300
-	_buttons.position = Vector2(490, 330)
+	_buttons.position = Vector2(490, 310)
 	_buttons.size = Vector2(300, 0)
 	add_child(_buttons)
 	_play_button = _add_button("Jouer", play)
 	_add_button("Choisir un niveau", choose)
 	_add_button("Bac à sable", sandbox)
+	_add_button("Galerie des joueurs", gallery)
 	_add_button("Éditeur de niveaux", editor)
 	if not OS.has_feature("web"):
 		var quit := Button.new()
@@ -46,7 +48,7 @@ func _init() -> void:
 		_buttons.add_child(quit)
 	_progress = Label.new()
 	_progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_progress.position = Vector2(340, 600)
+	_progress.position = Vector2(340, 640)
 	_progress.size = Vector2(600, 24)
 	_progress.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
 	add_child(_progress)
