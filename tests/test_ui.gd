@@ -97,6 +97,7 @@ func _run() -> void:
 	await _test_speed()
 	await _test_ghost()
 	await _test_hints()
+	_test_records()
 
 	_finish("INTERFACE OK")
 
@@ -463,7 +464,9 @@ func _test_level_select() -> void:
 	_check("sélection : une vignette par niveau", select._cards.size() == main.levels.size() - 1)
 	_check("sélection : vignettes rendues", select._thumb_rects[9].texture != null)
 	_check("sélection : niveau terminé et étoiles", select.status_text(0).begins_with("Terminé")
-			and select.status_text(0).ends_with("★★☆"))
+			and select.status_text(0).get_slice("\n", 0).ends_with("★★☆"))
+	_check("sélection : record sur la vignette (%s)" % select.status_text(0).get_slice("\n", 1),
+			select.status_text(0).get_slice("\n", 1).begins_with("Record : "))
 	_check("sélection : niveau à faire", select.status_text(12) == "À faire")
 	await _key(KEY_SPACE)
 	_check("sélection : les touches du jeu sont ignorées", not main.board.running)
@@ -1159,3 +1162,16 @@ func _test_hints() -> void:
 	main._save_progress()
 	main.load_level(0)
 	await _steps(2)
+
+
+## Records : le premier essai gagnant fait le record ; ensuite seul un meilleur temps ou moins de
+## pièces le remplace, et chacun est annoncé.
+func _test_records() -> void:
+	main.records.erase("essai_record")
+	_check("record : le premier n'est pas annoncé", main._update_record("essai_record", 4.0, 3).is_empty())
+	_check("record : rien de battu", main._update_record("essai_record", 5.0, 4).is_empty())
+	_check("record : temps battu", main._update_record("essai_record", 3.0, 4) == PackedStringArray(["temps"]))
+	_check("record : pièces battues", main._update_record("essai_record", 3.5, 2) == PackedStringArray(["pièces"]))
+	_check("record : texte de la vignette (%s)" % main.record_text("essai_record"),
+			main.record_text("essai_record") == "Record : 3,0 s · 2 pièces")
+	main.records.erase("essai_record")

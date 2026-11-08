@@ -26,6 +26,8 @@ var bonuses := {}
 ## Palier d'indice atteint par niveau : 1 texte (gratuit), 2 pièce clé (une étoile de moins),
 ## 3 solution complète (plus d'étoile à gagner).
 var hint_levels := {}
+## Records personnels par niveau : {"time": meilleur temps, "parts": moins de pièces posées}.
+var records := {}
 var _hint_button: Button
 var _hint_confirm: ConfirmationDialog
 
@@ -1180,7 +1182,8 @@ func _level_status(level: Dictionary) -> String:
 		return "🔒 Toutes les étoiles du monde"
 	if not completed.has(level.id):
 		return "À faire"
-	return "Terminé" + _stars(level)
+	var record := record_text(level.id)
+	return "Terminé" + _stars(level) + ("\n" + record if record != "" else "")
 
 
 ## Un niveau « défi » s'ouvre quand tous les autres niveaux de son monde sont terminés avec
@@ -1225,6 +1228,33 @@ func _stars(level: Dictionary) -> String:
 	for kind in offered:
 		text += "★" if got.has(kind) else "☆"
 	return text
+
+
+# --- Records personnels -------------------------------------------------------------
+
+## Garde le meilleur temps et le plus petit nombre de pièces ; rend ce qui vient d'être battu.
+func _update_record(id: String, seconds: float, count: int) -> PackedStringArray:
+	var record: Dictionary = records.get(id, {})
+	var news := PackedStringArray()
+	var first := record.is_empty()
+	if first or seconds < record.time:
+		record.time = snappedf(seconds, 0.01)
+		if not first:
+			news.append("temps")
+	if first or count < record.parts:
+		record.parts = count
+		if not first:
+			news.append("pièces")
+	records[id] = record
+	return news
+
+
+func record_text(id: String) -> String:
+	if not records.has(id):
+		return ""
+	var record: Dictionary = records[id]
+	return "Record : %s s · %d pièce%s" % [String.num(record.time, 1).replace(".", ","), record.parts,
+			"s" if record.parts > 1 else ""]
 
 
 # --- Indices progressifs -------------------------------------------------------------
@@ -1321,6 +1351,9 @@ func _on_won() -> void:
 		lines.append("Indices pris : ce niveau rapporte au plus %d étoile(s)." % cap)
 	lines.append("Temps : %s s, pièces posées : %d" % [String.num(board.elapsed, 1).replace(".", ","),
 			board.placed.size()])
+	var news := _update_record(level.id, board.elapsed, board.placed.size())
+	if not news.is_empty():
+		lines.append("Nouveau record : " + " et ".join(news) + " !")
 	_win_bonus.text = "\n".join(lines)
 	_save_progress()
 	_refresh_level_picker()
@@ -1472,6 +1505,7 @@ func _load_progress() -> void:
 			tutorials_done[id] = true
 		bonuses = cfg.get_value("progress", "bonuses", {})
 		hint_levels = cfg.get_value("progress", "hints", {})
+		records = cfg.get_value("progress", "records", {})
 		_editor_draft = cfg.get_value("custom", "draft", {})
 		# Anciennes sauvegardes : les niveaux personnels y étaient rangés ; ils passent en fichiers.
 		for level: Dictionary in cfg.get_value("custom", "levels", []):
@@ -1517,6 +1551,7 @@ func _save_progress() -> void:
 	cfg.set_value("progress", "bonuses", bonuses)
 	cfg.set_value("progress", "attempts", attempts)
 	cfg.set_value("progress", "hints", hint_levels)
+	cfg.set_value("progress", "records", records)
 	cfg.set_value("settings", "muted", muted)
 	cfg.set_value("layouts", "by_level", saved_layouts)
 	if editor != null:

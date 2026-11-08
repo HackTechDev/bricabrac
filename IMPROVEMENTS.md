@@ -22,7 +22,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Confort de jeu
 
-- Record personnel par niveau (temps et pièces), affiché sur sa vignette.
 - Copier-coller d'une pièce posée (Ctrl+C, Ctrl+V) et sélection multiple.
 - Prise en charge du tactile, pour une future version mobile.
 

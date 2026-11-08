@@ -211,7 +211,9 @@ au-delà de son point d'attache, de quoi fabriquer une fronde. Il s'amincit à m
 
 Les 36 niveaux sont regroupés en cinq mondes, chacun avec sa couleur de fond. Tous sont accessibles
 dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
-Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles.
+Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles et
+de ton record (meilleur temps et plus petit nombre de pièces). Un record battu est annoncé à la
+victoire.
 Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran. L'écran s'ouvre sur la vignette du niveau
 en cours.
 Le bouton **Indice** donne un coup de pouce en trois paliers. Le premier, un texte, est gratuit. Le

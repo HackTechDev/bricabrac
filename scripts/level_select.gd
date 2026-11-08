@@ -26,6 +26,7 @@ func setup(levels: Array) -> void:
 	position = Vector2.ZERO
 	size = Vector2(1280, 720)  # Taille fixe de la fenêtre du jeu.
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	z_index = 40  # Au-dessus de l'étoile d'objectif du plateau.
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
@@ -102,7 +103,7 @@ func setup(levels: Array) -> void:
 func _make_card(index: int) -> Button:
 	var card := Button.new()
 	card.focus_mode = Control.FOCUS_NONE
-	card.custom_minimum_size = THUMB + Vector2(16, 64)
+	card.custom_minimum_size = THUMB + Vector2(16, 82)  # Nom, état et record.
 	card.pressed.connect(func() -> void:
 		hide()
 		chosen.emit(index))
