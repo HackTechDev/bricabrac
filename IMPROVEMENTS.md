@@ -7,7 +7,7 @@ section, les idées les plus utiles ou les moins coûteuses viennent en premier.
 
 Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
-- Faire essayer les 36 niveaux à de vrais joueurs et noter où ils bloquent.
+- Faire essayer les 39 niveaux à de vrais joueurs et noter où ils bloquent.
 - Revoir la difficulté de la Catapulte et du Pendule, dont les zones gagnantes sont étroites.
 - Régler en jouant le chat, l'élastique et la corde qui s'accroche aux obstacles, jusqu'ici
   réglés seulement par des tests.
@@ -22,12 +22,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Nouveaux niveaux
 
-- Des niveaux qui mettent en scène les nouvelles pièces, par exemple :
-  - Cuisine, « Le gâteau d'anniversaire » : des bougies à allumer avec une minuterie pour faire
-    éclater des ballons, l'un d'eux abrité derrière une planche qu'il faut écarter.
-  - Usine, « Le tri » : un entonnoir et des coudes qui envoient la bille dans un panier et le
-    boulet dans un autre.
-  - Espace, « Le frein » : un aimant répulsif qui ralentit un boulet trop rapide avant le panier.
 - Un sixième monde, par exemple un grenier sombre où une lampe de poche éclaire le décor.
 - Remplacer les niveaux « La fronde » et « Le hamster » de la galerie, qui ont maintenant leur
   version officielle, par d'autres niveaux d'exemple.
