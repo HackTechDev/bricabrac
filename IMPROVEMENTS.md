@@ -52,7 +52,9 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Technique
 
-- Réduire la variation de durée observée sur le niveau Dominos.
+- Chercher dans les autres niveaux des surfaces fixes qui se chevauchent à la même hauteur : un
+  objet posé sur la jointure touche deux formes, dans un ordre qui change d'un essai à l'autre
+  (c'était la cause de la variation de durée du niveau Dominos).
 - Lancer les tests automatiquement sur GitHub Actions à chaque envoi.
 - Mesurer les performances avec beaucoup d'objets : les corps physiques ne s'endorment jamais,
   et le vent comme la corde lancent maintenant des rayons à chaque pas de simulation.
