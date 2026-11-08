@@ -20,7 +20,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Nouvelles pièces
 
-- Portails qui téléportent un objet en conservant sa vitesse.
 - Liquide ou bain d'eau pour faire flotter les objets légers.
 
 ## Contenu et rejouabilité

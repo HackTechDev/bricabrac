@@ -11,6 +11,7 @@ func _run() -> void:
 	await _test_scissors()
 	await _test_magnet()
 	await _test_gears()
+	await _test_portals()
 	_end("PIÈCES OK")
 
 
@@ -131,6 +132,40 @@ func _test_gears() -> void:
 	_check("roue isolée immobile", absf(_spin("seule")) < 0.01)
 	await _steps(240)
 	_check("le bras renverse le domino", absf(_rigid("d").rotation_degrees) > 45.0)
+
+
+## La bille tombe dans un portail couché et ressort de l'autre, à la même vitesse : couché, elle
+## continue de tomber ; debout, sa chute devient horizontale. Sans partenaire, rien ne se passe.
+func _test_portals() -> void:
+	for exit_rot: float in [90.0, 0.0]:
+		_level([
+			{"kind": "ball", "id": "b", "pos": Vector2(200, 250)},
+			{"kind": "portal", "pos": Vector2(200, 500), "rot": 90.0, "channel": 1},
+			{"kind": "portal", "pos": Vector2(700, 200), "rot": exit_rot, "channel": 1},
+		])
+		board.start()
+		var before := Vector2.ZERO
+		for i in 360:
+			if _pos("b").x > 400.0:
+				break
+			before = _rigid("b").linear_velocity
+			await _steps(1)
+		var after := _rigid("b").linear_velocity
+		var label := "portail %d°" % exit_rot
+		_near(label + " : la bille ressort de l'autre", _pos("b").x, 700.0, 5.0)
+		_near(label + " : même vitesse", after.length(), before.length(), 15.0)
+		var expected := Vector2.DOWN if exit_rot == 90.0 else Vector2.RIGHT
+		_check(label + " : direction tournée", after.normalized().dot(expected) > 0.95)
+		await _steps(60)
+		_check(label + " : pas de va-et-vient", _pos("b").x > 600.0)
+	_level([
+		{"kind": "ball", "id": "b", "pos": Vector2(200, 250)},
+		{"kind": "portal", "pos": Vector2(200, 500), "rot": 90.0, "channel": 1},
+		{"kind": "portal", "pos": Vector2(700, 200), "rot": 90.0, "channel": 2},
+	])
+	board.start()
+	await _steps(120)
+	_near("portail seul : la bille le traverse", _pos("b").x, 200.0, 5.0)
 
 
 func _lamp() -> LampPart:
