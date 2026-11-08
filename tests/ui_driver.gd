@@ -73,10 +73,10 @@ func _drag(from: Vector2, to: Vector2) -> void:
 	await _button(to, MOUSE_BUTTON_LEFT, false)
 
 
-func _click(at: Vector2, button: MouseButton) -> void:
+func _click(at: Vector2, button: MouseButton, shift := false) -> void:
 	await _move(at)
-	await _button(at, button, true)
-	await _button(at, button, false)
+	await _button(at, button, true, shift)
+	await _button(at, button, false, shift)
 
 
 func _move(at: Vector2) -> void:
@@ -87,8 +87,9 @@ func _move(at: Vector2) -> void:
 	await process_frame
 
 
-func _button(at: Vector2, button: MouseButton, pressed: bool) -> void:
+func _button(at: Vector2, button: MouseButton, pressed: bool, shift := false) -> void:
 	var ev := InputEventMouseButton.new()
+	ev.shift_pressed = shift
 	ev.position = at
 	ev.global_position = at
 	ev.button_index = button

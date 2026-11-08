@@ -98,6 +98,7 @@ func _run() -> void:
 	await _test_ghost()
 	await _test_hints()
 	_test_records()
+	await _test_copy_paste()
 
 	_finish("INTERFACE OK")
 
@@ -1175,3 +1176,54 @@ func _test_records() -> void:
 	_check("record : texte de la vignette (%s)" % main.record_text("essai_record"),
 			main.record_text("essai_record") == "Record : 3,0 s · 2 pièces")
 	main.records.erase("essai_record")
+
+
+## Maj+clic, glisser d'un groupe, Ctrl+C / Ctrl+V avec la corde qui relie les deux caisses.
+func _test_copy_paste() -> void:
+	var board: Board = main.board
+	for i in main.levels.size():
+		if main.levels[i].id == "bac_a_sable":
+			main.load_level(i)
+	await _steps(2)
+	board.set_layout([])
+	var a := board.place("crate", Vector2(300, 300))
+	var b := board.place("crate", Vector2(400, 300))
+	board.add_rope(a, Vector2.ZERO, [], b, Vector2.ZERO)
+	main._commit()
+	await _steps(2)
+	await _click(board.to_global(Vector2(300, 300)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(400, 300)), MOUSE_BUTTON_LEFT, true)
+	_check("Maj+clic : deux pièces choisies", main._selection().size() == 2)
+	await _drag(board.to_global(Vector2(300, 300)), board.to_global(Vector2(300, 400)))
+	var crates: Array = board.placed.filter(func(e: Dictionary) -> bool: return e.kind == "crate")
+	_check("groupe déplacé ensemble", crates[0].pos == Vector2(300, 400) and crates[1].pos == Vector2(400, 400))
+	_check("groupe encore choisi après le glisser", main._selection().size() == 2)
+
+	await _drag(board.to_global(Vector2(300, 400)), board.to_global(Vector2(300, 700)))
+	crates = board.placed.filter(func(e: Dictionary) -> bool: return e.kind == "crate")
+	_check("groupe hors du plateau : retour en place", crates[0].pos == Vector2(300, 400)
+			and crates[1].pos == Vector2(400, 400))
+
+	await _key(KEY_C, true)
+	_check("Ctrl+C : caisses et corde copiées", main.clipboard.size() == 3)
+	await _move(board.to_global(Vector2(700, 200)))
+	await _key(KEY_V, true)
+	_check("Ctrl+V : trois pièces de plus", board.placed.size() == 6)
+	var new_rope: Dictionary = board.placed[-1]
+	_check("corde collée reliée aux nouvelles caisses", new_rope.kind == "rope"
+			and new_rope.from != board.placed[0].id and board.find_part(new_rope.from).position == Vector2(650, 200)
+			and board.find_part(new_rope.to).position == Vector2(750, 200))
+	_check("copie choisie après le collage", main._selection().size() == 3)
+	await _key(KEY_V, true)
+	_check("Ctrl+V sur la copie : rien ne se pose", board.placed.size() == 6)
+
+	await _key(KEY_A, true)
+	_check("Ctrl+A : tout choisir", main._selection().size() == 6)
+	await _key(KEY_DELETE)
+	_check("Suppr : tout le groupe retiré", board.placed.is_empty())
+	await _key(KEY_Z, true)
+	_check("Ctrl+Z : le groupe revient en une fois", board.placed.size() == 6)
+	await _click(board.to_global(Vector2(900, 500)), MOUSE_BUTTON_LEFT)
+	_check("clic dans le vide : sélection vidée", main._selection().is_empty())
+	board.set_layout([])
+	main._commit()

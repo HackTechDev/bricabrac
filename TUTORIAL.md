@@ -61,7 +61,9 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Pivoter, ou régler le délai d'une minuterie | R ou molette ; Maj+R dans l'autre sens |
 | Retourner (miroir) | F |
 | Changer de canal | C |
-| Retirer une pièce | Clic droit, ou sélection puis Suppr |
+| Choisir plusieurs pièces | Maj+clic sur chacune, ou Ctrl+A pour toutes ; les glisser les déplace ensemble |
+| Retirer une pièce | Clic droit, ou sélection puis Suppr (tout le groupe choisi) |
+| Copier, coller | Ctrl+C, puis Ctrl+V : la copie se pose sous la souris, avec ses cordes |
 | Annuler | Ctrl+Z, ou bouton Annuler |
 | Rétablir | Ctrl+Y ou Ctrl+Maj+Z, ou bouton Rétablir |
 | Lancer ou arrêter | Espace |

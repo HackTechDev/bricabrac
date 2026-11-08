@@ -22,7 +22,7 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Confort de jeu
 
-- Copier-coller d'une pièce posée (Ctrl+C, Ctrl+V) et sélection multiple.
+- Sélection d'un groupe au cadre, en glissant sur une zone vide.
 - Prise en charge du tactile, pour une future version mobile.
 
 ## Éditeur et communauté

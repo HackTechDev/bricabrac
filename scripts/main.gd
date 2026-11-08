@@ -35,6 +35,12 @@ var selected: Part
 var drag_part: Part
 var drag_is_new := false
 var drag_origin := Vector2.ZERO
+## Sélection multiple (Maj+clic, Ctrl+A) : toutes les pièces choisies, `selected` compris.
+var group: Array[Part] = []
+## Pendant le glisser d'un groupe : position de départ de chaque pièce.
+var _group_origins: Dictionary = {}
+## Entrées copiées par Ctrl+C, cordes comprises quand leurs deux bouts sont copiés.
+var clipboard: Array = []
 
 var rope_tool := false
 ## Lien en cours de pose avec l'outil corde : "rope" ou "elastic".
@@ -427,7 +433,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		_handle_key(event)
 	elif event is InputEventMouseButton and event.pressed:
-		_handle_click(event.button_index)
+		_handle_click(event.button_index, event.shift_pressed)
 
 
 func _handle_key(event: InputEventKey) -> void:
@@ -447,6 +453,12 @@ func _handle_key(event: InputEventKey) -> void:
 				_redo() if event.shift_pressed else _undo()
 			KEY_Y:
 				_redo()
+			KEY_C:
+				copy_selection()
+			KEY_V:
+				paste()
+			KEY_A:
+				select_all()
 		return
 	match event.keycode:
 		KEY_SPACE:
@@ -482,7 +494,7 @@ func _handle_key(event: InputEventKey) -> void:
 			_remove_selected()
 
 
-func _handle_click(button: MouseButton) -> void:
+func _handle_click(button: MouseButton, shift := false) -> void:
 	if board.running:
 		return
 	if rope_tool:
@@ -500,14 +512,19 @@ func _handle_click(button: MouseButton) -> void:
 				_remove_selected()
 		MOUSE_BUTTON_LEFT:
 			var target := board.part_at(_mouse)
-			if _is_player_part(target):
+			if not _is_player_part(target):
+				if not shift:
+					_select(null)
+			elif shift:
+				_toggle_in_group(target)
+			elif group.size() > 1 and group.has(target):
+				_start_group_drag(target)
+			else:
 				_select(target)
 				if not target is RopePart:
 					drag_part = target
 					drag_is_new = false
 					drag_origin = target.position
-			else:
-				_select(null)
 
 
 func _to_board(screen_pos: Vector2) -> Vector2:
@@ -611,15 +628,54 @@ func _grab_from_bin(kind: String) -> void:
 
 
 func _drag_to(pos: Vector2) -> void:
-	board.move_part(drag_part, pos)
+	if _group_origins.is_empty():
+		board.move_part(drag_part, pos)
+	else:
+		var delta := board.snap(pos) - drag_origin
+		for p: Part in _group_origins:
+			board.move_part(p, _group_origins[p] + delta)
 	_update_drag_tint()
 
 
 func _update_drag_tint() -> void:
-	drag_part.modulate = Color.WHITE if board.is_valid(drag_part) else Color(1, 0.35, 0.35, 0.8)
+	var moving: Array = [drag_part] if _group_origins.is_empty() else _group_origins.keys()
+	for p: Part in moving:
+		p.modulate = Color.WHITE if board.is_valid(p) else Color(1, 0.35, 0.35, 0.8)
+
+
+func _start_group_drag(target: Part) -> void:
+	_group_origins.clear()
+	for p in group:
+		if not p is RopePart:
+			_group_origins[p] = p.position
+	drag_part = target
+	drag_is_new = false
+	drag_origin = target.position
+
+
+## Lâcher d'un groupe : tout le groupe se pose, ou tout reprend sa place.
+func _drop_group() -> void:
+	drag_part = null
+	var origins := _group_origins
+	_group_origins = {}
+	var ok := true
+	for p: Part in origins:
+		p.modulate = Color.WHITE
+		ok = ok and board.is_valid(p)
+	if ok:
+		board.sfx.play("place")
+	else:
+		board.sfx.play("deny")
+		for p: Part in origins:
+			board.move_part(p, origins[p])
+		_status.text = "Pas de place ici : les pièces reprennent leur position."
+	_commit()
 
 
 func _drop() -> void:
+	if not _group_origins.is_empty():
+		_drop_group()
+		return
 	var part := drag_part
 	drag_part = null
 	part.modulate = Color.WHITE
@@ -785,6 +841,10 @@ func _store_layout(state: Array) -> void:
 # --- Pièce sélectionnée ---------------------------------------------------------
 
 func _select(part: Part) -> void:
+	for p in group:
+		if is_instance_valid(p):
+			p.selected = false
+	group.clear()
 	if is_instance_valid(selected):
 		selected.selected = false
 	selected = part
@@ -848,12 +908,133 @@ func _cycle_channel() -> void:
 
 
 func _remove_selected() -> void:
-	if selected != null:
-		var part := selected
-		_select(null)
-		board.remove(part)
-		board.sfx.play("remove")
-		_commit()
+	var parts := _selection()
+	if parts.is_empty():
+		return
+	_select(null)
+	for part in parts:
+		# Retirer un objet retire aussi ses cordes, qui peuvent faire partie du groupe.
+		if board.placed.has(part.entry):
+			board.remove(part)
+	board.sfx.play("remove")
+	_commit()
+
+
+# --- Sélection multiple, copier-coller ------------------------------------------
+
+## Les pièces du joueur actuellement choisies : le groupe, ou la seule pièce sélectionnée.
+func _selection() -> Array[Part]:
+	var result: Array[Part] = []
+	for p in group:
+		if is_instance_valid(p) and _is_player_part(p):
+			result.append(p)
+	if result.is_empty() and is_instance_valid(selected) and _is_player_part(selected):
+		result.append(selected)
+	return result
+
+
+func _set_group(parts: Array[Part]) -> void:
+	_select(null)
+	for p in parts:
+		p.selected = true
+	group = parts.duplicate()
+	selected = parts[-1] if not parts.is_empty() else null
+	_refresh_context()
+	if parts.size() > 1:
+		_status.text = "%d pièces sélectionnées : glisser pour les déplacer ensemble, Ctrl+C pour les copier." \
+				% parts.size()
+
+
+func _toggle_in_group(part: Part) -> void:
+	var parts := _selection()
+	if parts.has(part):
+		parts.erase(part)
+	else:
+		parts.append(part)
+	_set_group(parts)
+
+
+func select_all() -> void:
+	if board.running or drag_part != null or rope_tool:
+		return
+	var parts: Array[Part] = []
+	for p in board.parts:
+		if _is_player_part(p):
+			parts.append(p)
+	_set_group(parts)
+
+
+func copy_selection() -> void:
+	var parts := _selection()
+	if parts.is_empty() or rope_tool:
+		board.sfx.play("deny")
+		return
+	var ids := {}
+	for p in parts:
+		if not p is RopePart:
+			ids[p.entry.id] = true
+	clipboard.clear()
+	for entry: Dictionary in board.placed:
+		var keep: bool = ids.has(entry.id)
+		if Catalog.is_link(entry.kind):
+			keep = ids.has(entry.get("from", "")) and ids.has(entry.get("to", ""))
+			for via: Variant in entry.get("via", []):
+				keep = keep and ids.has(str(via))
+		if keep:
+			clipboard.append(entry.duplicate(true))
+	board.sfx.play("tick")
+	_status.text = "%d pièce(s) copiée(s) : Ctrl+V pour les coller sous la souris." % clipboard.size()
+
+
+## Colle la copie centrée sous la souris (ou décalée, si la souris est hors du plateau), dans
+## la limite du bac ; ce qui n'a pas de place reste dans le bac.
+func paste() -> void:
+	if board.running or drag_part != null or rope_tool or clipboard.is_empty():
+		board.sfx.play("deny")
+		return
+	var objects: Array = clipboard.filter(func(e: Dictionary) -> bool: return not Catalog.is_link(e.kind))
+	var center := Vector2.ZERO
+	for entry: Dictionary in objects:
+		center += entry.pos
+	center /= maxf(objects.size(), 1.0)
+	var on_board := Rect2(Vector2.ZERO, Board.SIZE).has_point(_mouse)
+	var offset := board.snap((_mouse if on_board else center + Vector2(40, 40)) - center)
+	var new_ids := {}
+	var pasted: Array[Part] = []
+	var skipped := 0
+	for entry: Dictionary in clipboard:
+		var link := Catalog.is_link(entry.kind)
+		var wanted := entry.duplicate(true)
+		if link:
+			wanted.from = new_ids.get(entry.get("from", ""), "")
+			wanted.to = new_ids.get(entry.get("to", ""), "")
+			wanted.via = entry.get("via", []).map(func(id: Variant) -> String: return new_ids.get(str(id), ""))
+			if wanted.from == "" or wanted.to == "" or wanted.via.has(""):
+				skipped += 1
+				continue
+		if board.remaining(entry.kind) <= 0:
+			skipped += 1
+			continue
+		var part := board.place(entry.kind, Vector2.ZERO if link else entry.pos + offset)
+		wanted.id = part.entry.id
+		wanted.pos = part.entry.pos
+		part.entry.merge(wanted, true)
+		part = board.rebuild_part(part)
+		if not link and not board.is_valid(part):
+			board.remove(part)
+			skipped += 1
+			continue
+		new_ids[entry.id] = part.entry.id
+		pasted.append(part)
+	if pasted.is_empty():
+		board.sfx.play("deny")
+		_status.text = "Rien à coller ici : bac vide ou pas de place."
+		return
+	board.sfx.play("place")
+	_commit()
+	_set_group(pasted)
+	_status.text = "%d pièce(s) collée(s)%s." % [pasted.size(),
+			"" if skipped == 0 else ", %d restée(s) dans le bac (épuisé ou pas de place)" % skipped]
 
 
 # --- Construction de l'interface ------------------------------------------------
