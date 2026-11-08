@@ -1,6 +1,7 @@
 class_name LevelData
 ## Niveaux du jeu. `fixed` : décor ; `inventory` : pièces du joueur ;
-## `solution` : disposition rejouée par tests/test_levels.gd pour prouver que le niveau se résout.
+## `solution` : disposition rejouée par tests/test_levels.gd pour prouver que le niveau se résout ;
+## `par_time` : temps de l'objectif bonus « Rapide », que la solution doit tenir.
 
 
 static func steel(x: float, y: float, length: float, rot := 0.0) -> Dictionary:
@@ -17,6 +18,7 @@ static func all() -> Array:
 	return [
 		{
 			"id": "pente",
+			"par_time": 3.0,
 			"name": "Première pente",
 			"goal_text": "Amène la bille dans le panier doré.",
 			"intro": "Glisse une pièce du bac vers le plateau, oriente-la avec R ou la molette, puis Lancer (Espace).",
@@ -56,6 +58,7 @@ static func all() -> Array:
 		},
 		{
 			"id": "rebond",
+			"par_time": 4.0,
 			"name": "Par-dessus le mur",
 			"goal_text": "Fais passer la bille au-dessus du mur, jusque dans le panier.",
 			"intro": "Le ressort renvoie tout à la même vitesse, dans l'axe de sa face verte.",
@@ -88,6 +91,7 @@ static func all() -> Array:
 		},
 		{
 			"id": "dominos",
+			"par_time": 8.0,
 			"name": "Effet domino",
 			"goal_text": "Allume la lampe : un objet doit toucher la plaque.",
 			"intro": "La bille finira dans la fosse… mais une rangée de dominos peut transmettre le choc au-delà.",
@@ -114,6 +118,7 @@ static func all() -> Array:
 		},
 		{
 			"id": "courant",
+			"par_time": 3.5,
 			"name": "Courant d'air",
 			"goal_text": "Fais éclater le ballon sur les pointes.",
 			"intro": "Le ballon monte tout seul, mais le toit le bloque. Le vent pousse surtout ce qui est léger.",
@@ -130,6 +135,7 @@ static func all() -> Array:
 		},
 		{
 			"id": "bascule",
+			"par_time": 4.5,
 			"name": "Catapulte",
 			"goal_text": "Envoie la bille bleue dans le panier en hauteur.",
 			"intro": "La bascule penche à droite : une charge sur le côté gauche catapulte la bille bleue.",
@@ -148,6 +154,7 @@ static func all() -> Array:
 		},
 		{
 			"id": "canon",
+			"par_time": 3.0,
 			"name": "Coup de canon",
 			"goal_text": "Déclenche le canon et loge sa bille dans le panier.",
 			"intro": "Une plaque alimente toutes les pièces du même canal. La touche C change le canal de ta pièce.",
@@ -189,6 +196,7 @@ static func all() -> Array:
 		},
 		{
 			"id": "contrepoids",
+			"par_time": 2.0,
 			"name": "Contrepoids",
 			"goal_text": "Fais monter la bille jusqu'à la plaque du haut pour allumer la lampe.",
 			"intro": "Corde : clique le boulet, les poulies dans l'ordre, puis la bille. Le plus lourd entraîne l'autre.",
@@ -232,6 +240,7 @@ static func all() -> Array:
 		},
 		{
 			"id": "pendule",
+			"par_time": 2.5,
 			"name": "Le pendule",
 			"goal_text": "Fais tomber la caisse sur une plaque.",
 			"intro": "Sans attache, le boulet tombe tout droit. Relié à la poutre, il se balance.",
@@ -253,6 +262,7 @@ static func all() -> Array:
 		},
 		{
 			"id": "chaine",
+			"par_time": 6.0,
 			"name": "Réaction en chaîne",
 			"goal_text": "Fais éclater le ballon : la bille doit démarrer toute la machine.",
 			"intro": "Bille → plaque → tapis → caisse → seconde plaque → ventilateur → ballon.",

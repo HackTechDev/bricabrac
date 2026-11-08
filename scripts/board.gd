@@ -18,6 +18,8 @@ var placed: Array[Dictionary] = []
 var parts: Array[Part] = []
 var running := false
 var has_won := false
+## Durée de la simulation en cours, en secondes ; elle s'arrête à la victoire.
+var elapsed := 0.0
 ## État des canaux 1 à 3 pendant la simulation (le canal 0 est toujours en marche).
 var channel_on: Array[bool] = [true, false, false, false]
 var sfx := Sfx.new()
@@ -310,13 +312,14 @@ func _spawn_now(entry: Dictionary) -> void:
 		_make(entry)
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if not running:
 		return
 	_blow()
 	_solve_gears()
 	if has_won:
 		return
+	elapsed += delta
 	var goals := 0
 	for part in parts:
 		if part.entry.get("goal", false):
@@ -331,6 +334,7 @@ func _physics_process(_delta: float) -> void:
 func _rebuild(run: bool) -> void:
 	running = run
 	has_won = false
+	elapsed = 0.0
 	channel_on = [true, false, false, false]
 	for part in parts:
 		_part_layer.remove_child(part)

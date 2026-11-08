@@ -15,6 +15,8 @@ var board: Board
 var levels: Array = []
 var current := 0
 var completed := {}
+## Objectifs bonus obtenus, par niveau : identifiant → liste de types (voir Bonus).
+var bonuses := {}
 
 var selected: Part
 var drag_part: Part
@@ -43,6 +45,7 @@ var _bin: VBoxContainer
 var _items: Array[BinItem] = []
 var _ctx_buttons := {}
 var _win_overlay: Control
+var _win_bonus: Label
 var _win_next: Button
 var _rope_preview: Line2D
 var _sound_button: Button
@@ -674,6 +677,9 @@ func _build_win_overlay() -> void:
 	label.add_theme_font_size_override("font_size", 34)
 	label.add_theme_color_override("font_color", Part.GOLD)
 	box.add_child(label)
+	_win_bonus = Label.new()
+	_win_bonus.add_theme_font_size_override("font_size", 17)
+	box.add_child(_win_bonus)
 	_win_next = Button.new()
 	_win_next.pressed.connect(func() -> void:
 		load_level((current + 1) % levels.size()))
@@ -745,12 +751,38 @@ func _refresh_level_picker() -> void:
 	_level_picker.clear()
 	for i in levels.size():
 		var mark := "[OK] " if completed.has(levels[i].id) else ""
-		_level_picker.add_item("%s%d. %s" % [mark, i + 1, levels[i].name])
+		_level_picker.add_item("%s%d. %s%s" % [mark, i + 1, levels[i].name, _stars(levels[i])])
 	_level_picker.select(current)
 
 
+## Étoiles des objectifs bonus : pleines pour ceux obtenus.
+func _stars(level: Dictionary) -> String:
+	var offered := Bonus.offered(level)
+	if offered.is_empty() or not completed.has(level.id):
+		return ""
+	var got: Array = bonuses.get(level.id, [])
+	var text := "  "
+	for kind in offered:
+		text += "★" if got.has(kind) else "☆"
+	return text
+
+
 func _on_won() -> void:
-	completed[levels[current].id] = true
+	var level: Dictionary = levels[current]
+	completed[level.id] = true
+	var got: Array = bonuses.get(level.id, [])
+	var now := Bonus.earned(level, board.placed.size(), board.elapsed)
+	var lines: PackedStringArray = []
+	for kind in Bonus.offered(level):
+		var mark := "★ " if now.has(kind) else "☆ "
+		var fresh := now.has(kind) and not got.has(kind)
+		lines.append(mark + Bonus.describe(kind, level) + ("  (nouveau !)" if fresh else ""))
+		if now.has(kind) and not got.has(kind):
+			got.append(kind)
+	bonuses[level.id] = got
+	lines.append("Temps : %s s, pièces posées : %d" % [String.num(board.elapsed, 1).replace(".", ","),
+			board.placed.size()])
+	_win_bonus.text = "\n".join(lines)
 	_save_progress()
 	_refresh_level_picker()
 	board.sfx.play("win")
@@ -864,12 +896,14 @@ func _load_progress() -> void:
 		saved_layouts = cfg.get_value("layouts", "by_level", {})
 		for id: String in cfg.get_value("progress", "tutorials", []):
 			tutorials_done[id] = true
+		bonuses = cfg.get_value("progress", "bonuses", {})
 
 
 func _save_progress() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("progress", "completed", completed.keys())
 	cfg.set_value("progress", "tutorials", tutorials_done.keys())
+	cfg.set_value("progress", "bonuses", bonuses)
 	cfg.set_value("settings", "muted", muted)
 	cfg.set_value("layouts", "by_level", saved_layouts)
 	cfg.save(save_path)

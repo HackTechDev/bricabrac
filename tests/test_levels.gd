@@ -52,6 +52,10 @@ func _check(level: Dictionary) -> void:
 			slowest = maxf(slowest, time)
 	_report(level.id, "solution gagnante %d/%d (%.2fs à %.2fs)" % [wins, REPEATS, fastest, slowest],
 			wins == REPEATS, "pas de victoire en %ds" % SOLVE_SECONDS)
+	_report(level.id, "bonus Rapide tenu par la solution (%.1fs)" % Bonus.par_time(level),
+			slowest <= Bonus.par_time(level), "%.2fs" % slowest)
+	_report(level.id, "bonus Économe tenu par la solution", Bonus.par_parts(level) >= solution.size(),
+			"%d pièces" % solution.size())
 	await _check_saved_copy(level)
 
 

@@ -178,6 +178,18 @@ terminés portent la mention `[OK]`. Le bouton **Indice** donne un coup de pouce
 8. **Le pendule :** la corde comme balancier.
 9. **Réaction en chaîne :** une machine complète, avec plusieurs mécanismes en cascade.
 
+## Les objectifs bonus
+
+Chaque victoire fait le point sur trois défis facultatifs, qui rapportent chacun une étoile :
+
+- **Économe :** gagner avec au plus autant de pièces que la solution de référence.
+- **Rapide :** gagner avant un temps donné, compté depuis le lancement.
+- **Complet :** gagner en posant toutes les pièces du bac. Ce défi n'existe que si le bac contient
+  plus de pièces qu'il n'en faut.
+
+Économe et Complet ne s'obtiennent pas avec la même machine : il faut rejouer le niveau. Les étoiles
+gagnées restent acquises, et la liste des niveaux les affiche à côté de chaque niveau terminé.
+
 ## Conseils
 
 - **Lance souvent :** une courte tentative renseigne mieux qu'une longue réflexion.

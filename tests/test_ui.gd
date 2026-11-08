@@ -48,6 +48,12 @@ func _run() -> void:
 		if main._win_overlay.visible:
 			break
 	_check("écran de victoire", main._win_overlay.visible)
+	var got: Array = main.bonuses.get("pente", [])
+	_check("bonus Économe et Rapide obtenus", got.has("parts") and got.has("time"))
+	_check("bonus Complet manqué : une planche reste au bac", not got.has("all"))
+	_check("bonus affichés à la victoire", main._win_bonus.text.contains("★ Économe")
+			and main._win_bonus.text.contains("☆ Complet") and main._win_bonus.text.contains("nouveau"))
+	_check("étoiles dans la liste des niveaux", main._level_picker.get_item_text(0).ends_with("★★☆"))
 	await _steps(2)
 	await _click(main._win_next.get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	_check("niveau suivant", main.current == 1 and not board.running)
@@ -314,6 +320,7 @@ func _test_persistence() -> void:
 	await _steps(2)
 	_check("redémarrage : pièces restaurées", board.layout() == layout_before)
 	_check("redémarrage : pas d'annulation d'avant", main._ctx_buttons.undo.disabled)
+	_check("redémarrage : bonus conservés", main.bonuses.get("pente", []).has("parts"))
 	var spring := board.part_at(layout_before[0].pos)
 	_check("redémarrage : pièce restaurée sélectionnable", spring != null)
 
