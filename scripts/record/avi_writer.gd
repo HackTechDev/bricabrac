@@ -48,7 +48,7 @@ func finish() -> PackedByteArray:
 		offset += 8 + padded
 
 	var avih := StreamPeerBuffer.new()
-	avih.put_u32(1000000 / fps)
+	avih.put_u32(floori(1000000.0 / fps))
 	avih.put_u32(biggest * fps)
 	avih.put_u32(0)
 	avih.put_u32(0x10)

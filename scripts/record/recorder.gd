@@ -26,7 +26,7 @@ func start(p_mode: String, p_region: Rect2i) -> void:
 	_clock = 0.0
 	_elapsed = 0.0
 	if mode == "gif":
-		_gif = GifWriter.new(region.size.x / 2, region.size.y / 2)
+		_gif = GifWriter.new(floori(region.size.x / 2.0), floori(region.size.y / 2.0))
 	else:
 		_avi = AviWriter.new(region.size.x, region.size.y, VIDEO_FPS)
 	_capture()

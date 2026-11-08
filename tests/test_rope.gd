@@ -8,7 +8,7 @@ func _run() -> void:
 	await _test_atwood()
 	await _test_equal_masses()
 	await _test_pendulum()
-	await _test_pulley_wrap()
+	_test_pulley_wrap()
 	await _test_corner_wrap()
 	await _test_hammock()
 	await _test_only_pulls()

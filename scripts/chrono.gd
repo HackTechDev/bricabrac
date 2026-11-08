@@ -38,9 +38,9 @@ func reset(p_par: float) -> void:
 	queue_redraw()
 
 
-func set_tries(text: String) -> void:
-	if text != tries:
-		tries = text
+func set_tries(value: String) -> void:
+	if value != tries:
+		tries = value
 		queue_redraw()
 
 

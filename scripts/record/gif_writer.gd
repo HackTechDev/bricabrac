@@ -32,8 +32,8 @@ func _init(p_width: int, p_height: int) -> void:
 	_out.append(0)
 	_out.append(0)
 	for i in 256:
-		var r := i / (LEVELS_G * LEVELS_B)
-		var g := (i / LEVELS_B) % LEVELS_G
+		var r := floori(i / float(LEVELS_G * LEVELS_B))
+		var g := floori(i / float(LEVELS_B)) % LEVELS_G
 		var b := i % LEVELS_B
 		if i >= LEVELS_R * LEVELS_G * LEVELS_B:
 			r = 0
@@ -92,7 +92,7 @@ func finish() -> PackedByteArray:
 
 
 func _quantize(rgb: PackedByteArray) -> PackedByteArray:
-	var count := rgb.size() / 3
+	var count := floori(rgb.size() / 3.0)
 	var indices := PackedByteArray()
 	indices.resize(count)
 	for i in count:

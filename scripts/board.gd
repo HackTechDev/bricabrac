@@ -269,10 +269,10 @@ func place(kind: String, pos: Vector2) -> Part:
 
 
 ## Pose une liste d'entrées complètes (solutions de niveau) : les cordes en dernier.
-func apply_layout(layout: Array) -> Array[Part]:
+func apply_layout(entries: Array) -> Array[Part]:
 	var result: Array[Part] = []
 	for ropes: bool in [false, true]:
-		for wanted: Dictionary in layout:
+		for wanted: Dictionary in entries:
 			if Catalog.is_link(wanted.kind) == ropes:
 				var part := place(wanted.kind, wanted.get("pos", Vector2.ZERO))
 				part.entry.merge(wanted, true)
@@ -731,18 +731,18 @@ func _draw_hints() -> void:
 
 
 static func _hint_label(entry: Dictionary) -> String:
-	var parts := PackedStringArray([Catalog.label(entry.kind)])
+	var bits := PackedStringArray([Catalog.label(entry.kind)])
 	if entry.get("rot", 0.0) != 0.0:
-		parts.append("%d°" % roundi(entry.rot))
+		bits.append("%d°" % roundi(entry.rot))
 	if entry.get("dir", 1) == -1:
-		parts.append(Lang.t("miroir"))
+		bits.append(Lang.t("miroir"))
 	if entry.get("channel", 0) != 0:
-		parts.append(Lang.t("canal %d") % entry.channel)
+		bits.append(Lang.t("canal %d") % entry.channel)
 	if entry.has("delay"):
-		parts.append(Lang.t("%s s") % String.num(entry.delay, 1).replace(".", Lang.decimal_mark()))
+		bits.append(Lang.t("%s s") % String.num(entry.delay, 1).replace(".", Lang.decimal_mark()))
 	if entry.has("tension"):
-		parts.append(Lang.t("tendu à %d %%") % roundi(entry.tension))
-	return ", ".join(parts)
+		bits.append(Lang.t("tendu à %d %%") % roundi(entry.tension))
+	return ", ".join(bits)
 
 
 ## Ombre du vent : derrière chaque obstacle, la bande qu'il abrite jusqu'au bord du plateau,

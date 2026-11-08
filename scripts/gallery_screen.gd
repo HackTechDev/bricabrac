@@ -128,11 +128,11 @@ func _make_row(entry: Dictionary) -> Control:
 	var text := VBoxContainer.new()
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row_box.add_child(text)
-	var name := Label.new()
-	name.text = entry.name
-	name.add_theme_font_size_override("font_size", 19)
-	name.add_theme_color_override("font_color", Part.GOLD)
-	text.add_child(name)
+	var name_label := Label.new()
+	name_label.text = entry.name
+	name_label.add_theme_font_size_override("font_size", 19)
+	name_label.add_theme_color_override("font_color", Part.GOLD)
+	text.add_child(name_label)
 	var by := Label.new()
 	by.text = Lang.t("par %s%s  ·  %s") % [entry.author, "  ·  " + entry.added if entry.added != "" else "",
 			entry.level.goal_text]

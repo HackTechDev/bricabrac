@@ -108,17 +108,17 @@ func setup(levels: Array) -> void:
 
 
 func _make_card(index: int) -> Button:
-	var card := Button.new()
-	card.focus_mode = Control.FOCUS_NONE
-	card.custom_minimum_size = THUMB + Vector2(16, 82)  # Nom, état et record.
-	card.pressed.connect(func() -> void:
+	var button := Button.new()
+	button.focus_mode = Control.FOCUS_NONE
+	button.custom_minimum_size = THUMB + Vector2(16, 82)  # Nom, état et record.
+	button.pressed.connect(func() -> void:
 		hide()
 		chosen.emit(index))
 	var box := VBoxContainer.new()
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.position = Vector2(8, 8)
 	box.add_theme_constant_override("separation", 4)
-	card.add_child(box)
+	button.add_child(box)
 	var thumb := TextureRect.new()
 	thumb.custom_minimum_size = THUMB
 	thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -135,9 +135,9 @@ func _make_card(index: int) -> Button:
 	status.add_theme_font_size_override("font_size", 13)
 	status.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(status)
-	_cards[index] = card
+	_cards[index] = button
 	_status[index] = status
-	return card
+	return button
 
 
 ## Ouvre l'écran ; `statuses` donne, par niveau, la ligne d'état (terminé, étoiles), et
@@ -180,12 +180,12 @@ func _render_thumb(level: Dictionary) -> Texture2D:
 	vp.render_target_update_mode = SubViewport.UPDATE_ONCE
 	vp.disable_3d = true
 	add_child(vp)
-	var mini := Board.new()
-	vp.add_child(mini)
-	mini.load_level(level.duplicate(true))
-	mini.darkness.set_strength(Darkness.PREVIEW_DARKNESS)
-	mini.set_process(false)
-	mini.sfx.process_mode = Node.PROCESS_MODE_DISABLED
+	var thumb_board := Board.new()
+	vp.add_child(thumb_board)
+	thumb_board.load_level(level.duplicate(true))
+	thumb_board.darkness.set_strength(Darkness.PREVIEW_DARKNESS)
+	thumb_board.set_process(false)
+	thumb_board.sfx.process_mode = Node.PROCESS_MODE_DISABLED
 	# La sous-fenêtre a sa propre physique : on la fige, le dessin suffit.
-	mini.process_mode = Node.PROCESS_MODE_DISABLED
+	thumb_board.process_mode = Node.PROCESS_MODE_DISABLED
 	return vp.get_texture()

@@ -17,9 +17,9 @@ static func use(code: String) -> void:
 	if code != "fr" and not _loaded.has(code):
 		var translation := Translation.new()
 		translation.locale = code
-		var messages: Dictionary = messages(code)
-		for source: String in messages:
-			translation.add_message(source, messages[source])
+		var table: Dictionary = messages(code)
+		for source: String in table:
+			translation.add_message(source, table[source])
 		_loaded[code] = translation
 	# Seule la langue choisie reste chargée : sinon Godot se rabattrait sur l'anglais (sa langue
 	# de repli) pour tout texte sans traduction française, c'est-à-dire tous.

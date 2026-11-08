@@ -34,7 +34,7 @@ func _measure(count: int, scene: String) -> float:
 	var fixed: Array = []
 	var columns := 20
 	for i in count:
-		var pos := Vector2(40 + (i % columns) * 48, 60 + (i / columns) * 44)
+		var pos := Vector2(40 + (i % columns) * 48, 60 + floori(i / float(columns)) * 44)
 		fixed.append({"kind": "ball_bouncy" if i % 2 else "ball", "id": "b%d" % i, "pos": pos})
 	# Des étagères pour que les billes se touchent et roulent, comme dans une vraie machine.
 	for row in 4:

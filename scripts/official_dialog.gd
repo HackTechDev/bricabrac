@@ -107,19 +107,19 @@ func show_list(files: Array) -> void:
 
 ## Fiche du niveau à enregistrer ; `meta` : valeurs de départ (id, world, intro, hint, par_time,
 ## challenge, tutorial), `path` : fichier qui sera écrit si l'identifiant ne change pas.
-func show_form(meta: Dictionary, path: String) -> void:
+func show_form(values: Dictionary, path: String) -> void:
 	_list_box.visible = false
 	_form_box.visible = true
 	message.text = ""
-	_meta = meta.duplicate(true)
-	id_edit.text = meta.get("id", "")
+	_meta = values.duplicate(true)
+	id_edit.text = values.get("id", "")
 	for i in world_button.item_count:
-		if world_button.get_item_metadata(i) == meta.get("world", "atelier"):
+		if world_button.get_item_metadata(i) == values.get("world", "atelier"):
 			world_button.select(i)
-	intro_edit.text = meta.get("intro", "")
-	hint_edit.text = meta.get("hint", "")
-	par_spin.value = meta.get("par_time", 0.0)
-	challenge_check.button_pressed = meta.get("challenge", false)
+	intro_edit.text = values.get("intro", "")
+	hint_edit.text = values.get("hint", "")
+	par_spin.value = values.get("par_time", 0.0)
+	challenge_check.button_pressed = values.get("challenge", false)
 	file_label.text = Lang.t("Fichier : ") + (path.get_file() if path != "" else Lang.t("nouveau, numéroté après les autres"))
 	popup_centered(Vector2i(580, 330))
 

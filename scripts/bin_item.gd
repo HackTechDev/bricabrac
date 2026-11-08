@@ -29,7 +29,7 @@ func setup(p_kind: String) -> void:
 
 
 func update_count(count: int, editable: bool) -> void:
-	_count_label.text = "∞" if count >= LevelData.UNLIMITED / 2 else "x%d" % count
+	_count_label.text = "∞" if count * 2 >= LevelData.UNLIMITED else "x%d" % count
 	_available = count > 0 and editable
 	modulate.a = 1.0 if _available else 0.4
 

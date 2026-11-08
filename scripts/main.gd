@@ -543,7 +543,10 @@ func _handle_key(event: InputEventKey) -> void:
 	if event.is_command_or_control_pressed():
 		match event.keycode:
 			KEY_Z:
-				_redo() if event.shift_pressed else _undo()
+				if event.shift_pressed:
+					_redo()
+				else:
+					_undo()
 			KEY_Y:
 				_redo()
 			KEY_C:
@@ -1005,13 +1008,13 @@ func _rotate_selected(sign_value: float) -> void:
 func _resize_selected(sign_value: float) -> void:
 	if selected == null or board.running:
 		return
-	var size := selected.size_setting()
-	if size.is_empty():
+	var setting := selected.size_setting()
+	if setting.is_empty():
 		return
-	var value: float = selected.entry.get(size.key, size.default)
-	var next := clampf(value + size.step * sign_value, size.min, size.max)
+	var value: float = selected.entry.get(setting.key, setting.default)
+	var next := clampf(value + setting.step * sign_value, setting.min, setting.max)
 	if next != value:
-		_edit_selected(size.key, next)
+		_edit_selected(setting.key, next)
 		_status.text = selected.describe()[-1]
 
 
@@ -1830,8 +1833,8 @@ func _on_tutorial_finished(_skipped: bool) -> void:
 
 ## Conditions d'avancement : "running", "stopped", "won", "placed:pièce[:nombre]",
 ## "rot:pièce:min:max" (degrés), "rope_tool", "rope_from".
-func _tutorial_condition(name: String) -> bool:
-	var args := name.split(":")
+func _tutorial_condition(condition: String) -> bool:
+	var args := condition.split(":")
 	match args[0]:
 		"running":
 			return board.running
@@ -1851,7 +1854,7 @@ func _tutorial_condition(name: String) -> bool:
 			return rope_tool or _count_placed("rope") > 0
 		"rope_from":
 			return rope_from != null or _count_placed("rope") > 0
-	push_error("Condition de tutoriel inconnue : %s" % name)
+	push_error("Condition de tutoriel inconnue : %s" % condition)
 	return false
 
 
@@ -1864,8 +1867,8 @@ func _count_placed(kind: String) -> int:
 
 
 ## Cibles : "run", "bin:pièce", "ctx:action", "part:identifiant", "zone:x,y,l,h" (plateau).
-func _tutorial_target(name: String) -> Rect2:
-	var args := name.split(":")
+func _tutorial_target(target: String) -> Rect2:
+	var args := target.split(":")
 	match args[0]:
 		"run":
 			return _run_button.get_global_rect()
@@ -2098,9 +2101,9 @@ func _toggle_goal() -> void:
 
 ## Niveau jouable tiré du plan de travail, ou message d'erreur s'il n'est pas complet.
 func _editor_level(id: String) -> Variant:
-	var name := editor.name_edit.text.strip_edges()
+	var level_name := editor.name_edit.text.strip_edges()
 	var goal := editor.goal_edit.text.strip_edges()
-	var level := LevelData.from_editor(id, name if name != "" else "Sans nom",
+	var level := LevelData.from_editor(id, level_name if level_name != "" else "Sans nom",
 			goal if goal != "" else "Atteins l'objectif.", board.layout(), editor.inventory,
 			board.gravity_factor(), board.wind())
 	if not LevelData.has_goal(level):

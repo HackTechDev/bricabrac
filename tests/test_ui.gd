@@ -1282,7 +1282,7 @@ func _test_context_menu() -> void:
 	await _click(board.to_global(Vector2(300, 300)), MOUSE_BUTTON_RIGHT)
 	_check("menu : pas d'Allonger pour une planche", menu.is_item_disabled(menu.get_item_index(main.CTX_LONGER)))
 	menu.hide()
-	var tube := board.place("tube", Vector2(500, 500))
+	board.place("tube", Vector2(500, 500))
 	main._commit()
 	await _click(board.to_global(Vector2(500, 500 + TubePart.INNER / 2.0 + 3.0)), MOUSE_BUTTON_LEFT)
 	_check("tuyau droit : choisi", main.selected != null and main.selected.kind == "tube")

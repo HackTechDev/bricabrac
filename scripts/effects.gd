@@ -36,8 +36,8 @@ func smoke(at: Vector2, axis: Vector2) -> void:
 
 ## Poussière d'un choc ; `strength` de 0 à 1, `normal` orienté hors de la surface touchée.
 func dust(at: Vector2, normal: Vector2, strength: float) -> void:
-	var count := int(clampf(strength, 0.2, 1.0) * 8.0)
-	for i in count:
+	var amount := int(clampf(strength, 0.2, 1.0) * 8.0)
+	for i in amount:
 		var spread := normal.rotated(_rng.randf_range(-1.3, 1.3))
 		_add({"pos": at, "vel": spread * _rng.randf_range(40.0, 120.0) * clampf(strength + 0.4, 0.5, 1.4),
 				"life": _rng.randf_range(0.3, 0.55), "size": _rng.randf_range(2.0, 3.5),
@@ -46,8 +46,8 @@ func dust(at: Vector2, normal: Vector2, strength: float) -> void:
 
 ## Gouttes d'un objet qui frappe la surface de l'eau ; `strength` de 0 à 1.
 func splash(at: Vector2, strength: float) -> void:
-	var count := int(clampf(strength, 0.25, 1.0) * 10.0)
-	for i in count:
+	var amount := int(clampf(strength, 0.25, 1.0) * 10.0)
+	for i in amount:
 		var v := Vector2.UP.rotated(_rng.randf_range(-0.8, 0.8)) * _rng.randf_range(90.0, 260.0) \
 				* clampf(strength + 0.3, 0.5, 1.2)
 		_add({"pos": at + Vector2(_rng.randf_range(-8.0, 8.0), 0.0), "vel": v,

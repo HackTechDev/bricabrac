@@ -222,11 +222,11 @@ func _ends() -> Array[End]:
 	ends.append(End.new(_a.main_body, first, (_outs[0][1] - first).normalized()))
 	ends.append(End.new(_b.main_body, last, (_outs[_outs.size() - 1][0] - last).normalized()))
 	for i in range(1, _nodes.size() - 1):
-		var wrap: Wrap = _nodes[i].get("wrap")
-		if wrap != null and wrap.body is RigidBody2D:
+		var hook: Wrap = _nodes[i].get("wrap")
+		if hook != null and hook.body is RigidBody2D:
 			var w: Vector2 = _nodes[i].pos
 			var pull: Vector2 = (_outs[i - 1][0] - w).normalized() + (_outs[i][1] - w).normalized()
-			ends.append(End.new(wrap.body as RigidBody2D, w, pull))
+			ends.append(End.new(hook.body as RigidBody2D, w, pull))
 	return ends
 
 
@@ -267,9 +267,9 @@ func _list_nodes() -> Array[Dictionary]:
 	for span in _via.size() + 1:
 		var wraps: Array = _wraps[span] if span < _wraps.size() else []
 		for k in wraps.size():
-			var wrap: Wrap = wraps[k]
-			if wrap.alive():
-				list.append({"pos": wrap.at(), "rho": 0.0, "span": span, "k": k, "wrap": wrap})
+			var hook: Wrap = wraps[k]
+			if hook.alive():
+				list.append({"pos": hook.at(), "rho": 0.0, "span": span, "k": k, "wrap": hook})
 		if span < _via.size():
 			list.append({"pos": _via[span].global_position, "rho": _side(span) * PulleyPart.RADIUS,
 					"span": span + 1, "k": -1})
@@ -334,8 +334,8 @@ func _update_wraps() -> void:
 		_route()
 		var freed := false
 		for i in range(1, _nodes.size() - 1):
-			var wrap: Wrap = _nodes[i].get("wrap")
-			if wrap != null and _offset(_outs[i - 1][0], _outs[i][1], _nodes[i].pos) * wrap.side < -UNWRAP:
+			var hook: Wrap = _nodes[i].get("wrap")
+			if hook != null and _offset(_outs[i - 1][0], _outs[i][1], _nodes[i].pos) * hook.side < -UNWRAP:
 				_wraps[_nodes[i].span].remove_at(_nodes[i].k)
 				freed = true
 				break
@@ -347,9 +347,9 @@ func _update_wraps() -> void:
 		_route()
 		var added := false
 		for i in _outs.size():
-			var wrap := _find_wrap(_outs[i][0], _outs[i][1], _nodes[i], _nodes[i + 1])
-			if wrap != null:
-				_wraps[_nodes[i].span].insert(_nodes[i].k + 1, wrap)
+			var hook := _find_wrap(_outs[i][0], _outs[i][1], _nodes[i], _nodes[i + 1])
+			if hook != null:
+				_wraps[_nodes[i].span].insert(_nodes[i].k + 1, hook)
 				added = true
 				break
 		if not added:
@@ -408,23 +408,23 @@ func _find_wrap(p: Vector2, q: Vector2, from: Dictionary, to: Dictionary) -> Wra
 ## Coins d'une forme, écartés de MARGIN, en coordonnées du corps. Un disque devient un polygone.
 static func _corners(body: CollisionObject2D, shape_index: int) -> PackedVector2Array:
 	var corners := PackedVector2Array()
-	var owner := body.shape_find_owner(shape_index)
-	var shape := body.shape_owner_get_shape(owner, 0)
-	var xf := body.shape_owner_get_transform(owner)
+	var shape_owner := body.shape_find_owner(shape_index)
+	var shape := body.shape_owner_get_shape(shape_owner, 0)
+	var xf := body.shape_owner_get_transform(shape_owner)
 	if shape is RectangleShape2D:
 		var half := (shape as RectangleShape2D).size / 2.0
-		for sign: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
-			corners.append(xf * ((half + Vector2.ONE * MARGIN) * sign))
+		for quadrant: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+			corners.append(xf * ((half + Vector2.ONE * MARGIN) * quadrant))
 	elif shape is CircleShape2D:
 		var r := ((shape as CircleShape2D).radius + MARGIN) / cos(PI / 12.0)
 		for i in 12:
 			corners.append(xf * (Vector2.from_angle(i * TAU / 12.0) * r))
 	elif shape is ConvexPolygonShape2D:
-		var points := (shape as ConvexPolygonShape2D).points
+		var hull := (shape as ConvexPolygonShape2D).points
 		var center := Vector2.ZERO
-		for point in points:
-			center += point / points.size()
-		for point in points:
+		for point in hull:
+			center += point / hull.size()
+		for point in hull:
 			corners.append(xf * (point + (point - center).normalized() * MARGIN * 1.5))
 	return corners
 
@@ -497,8 +497,8 @@ func paint(c: CanvasItem) -> void:
 	if path.size() < 2:
 		return
 	var col := Color.WHITE if selected else COLOR
-	var slack := rest_length - _measure(path) if running else slack()
-	var sag := minf(sqrt(maxf(slack, 0.0)) * 4.0, 90.0) if slack > 2.0 else 0.0
+	var extra := rest_length - _measure(path) if running else slack()
+	var sag := minf(sqrt(maxf(extra, 0.0)) * 4.0, 90.0) if extra > 2.0 else 0.0
 	for i in range(1, path.size()):
 		# Les petits segments d'un arc de poulie restent droits : la corde y est plaquée.
 		if sag > 0.0 and path[i - 1].distance_to(path[i]) > 30.0:

@@ -58,8 +58,8 @@ func _button(row: Control, text: String, action: Callable) -> Button:
 	return b
 
 
-func show_export(title: String, code: String, filename: String) -> void:
-	title_label.text = title
+func show_export(heading: String, code: String, filename: String) -> void:
+	title_label.text = heading
 	code_edit.text = code
 	code_edit.editable = false
 	_filename = filename
@@ -84,11 +84,11 @@ func _set_mode(exporting: bool) -> void:
 	_open.visible = not exporting
 
 
-func _browse(mode: FileDialog.FileMode) -> void:
-	_files.file_mode = mode
-	_files.title = Lang.t("Enregistrer le code") if mode == FileDialog.FILE_MODE_SAVE_FILE else Lang.t("Ouvrir un code")
+func _browse(file_mode: FileDialog.FileMode) -> void:
+	_files.file_mode = file_mode
+	_files.title = Lang.t("Enregistrer le code") if file_mode == FileDialog.FILE_MODE_SAVE_FILE else Lang.t("Ouvrir un code")
 	_files.current_file = "%s.%s" % [_filename.validate_filename(), Share.EXTENSION] \
-			if mode == FileDialog.FILE_MODE_SAVE_FILE else ""
+			if file_mode == FileDialog.FILE_MODE_SAVE_FILE else ""
 	_files.popup_centered(Vector2i(760, 480))
 
 

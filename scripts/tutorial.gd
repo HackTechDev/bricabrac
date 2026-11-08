@@ -125,28 +125,28 @@ func _show_step() -> void:
 
 ## Choisit, parmi plusieurs places autour de la cible, celle qui cache le moins de choses tout en
 ## restant proche. La cible et la zone indiquée ne sont jamais couvertes.
-func _bubble_position(target: Rect2, zone: Rect2, size: Vector2) -> Vector2:
+func _bubble_position(target: Rect2, zone: Rect2, bubble: Vector2) -> Vector2:
 	var screen := get_viewport_rect().size
 	var lowest := Vector2(MARGIN, 60.0)
-	var highest := screen - size - Vector2(MARGIN, MARGIN)
+	var highest := screen - bubble - Vector2(MARGIN, MARGIN)
 	var anchor := target.get_center() if target.has_area() else Vector2(520.0, 360.0)
 	var candidates: Array[Vector2] = [
-		Vector2(520.0, 360.0) - size / 2.0,
-		Vector2(lowest.x, lowest.y), Vector2(1030.0 - size.x, lowest.y),
-		Vector2(lowest.x, 640.0 - size.y), Vector2(1030.0 - size.x, 640.0 - size.y),
+		Vector2(520.0, 360.0) - bubble / 2.0,
+		Vector2(lowest.x, lowest.y), Vector2(1030.0 - bubble.x, lowest.y),
+		Vector2(lowest.x, 640.0 - bubble.y), Vector2(1030.0 - bubble.x, 640.0 - bubble.y),
 	]
 	if target.has_area():
-		for y: float in [target.get_center().y - size.y / 2.0, target.position.y, target.end.y - size.y]:
-			candidates.append(Vector2(target.position.x - size.x - GAP, y))
+		for y: float in [target.get_center().y - bubble.y / 2.0, target.position.y, target.end.y - bubble.y]:
+			candidates.append(Vector2(target.position.x - bubble.x - GAP, y))
 			candidates.append(Vector2(target.end.x + GAP, y))
-		for x: float in [target.position.x, target.end.x - size.x, target.get_center().x - size.x / 2.0]:
+		for x: float in [target.position.x, target.end.x - bubble.x, target.get_center().x - bubble.x / 2.0]:
 			candidates.append(Vector2(x, target.end.y + GAP))
-			candidates.append(Vector2(x, target.position.y - size.y - GAP))
+			candidates.append(Vector2(x, target.position.y - bubble.y - GAP))
 	var avoid: Array = obstacles.call() if obstacles.is_valid() else []
 	var best := candidates[0].clamp(lowest, highest)
 	var best_cost := INF
 	for candidate in candidates:
-		var rect := Rect2(candidate.clamp(lowest, highest), size)
+		var rect := Rect2(candidate.clamp(lowest, highest), bubble)
 		if rect.intersects(target.grow(6.0)) or rect.intersects(zone):
 			continue
 		# Cacher une pièce coûte bien plus cher que s'éloigner de la cible.
