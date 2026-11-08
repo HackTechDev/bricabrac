@@ -4,6 +4,7 @@ extends ColorRect
 ## sont de vrais plateaux en miniature, rendus une seule fois à la première ouverture.
 
 signal chosen(index: int)
+signal import_requested
 
 const THUMB := Vector2(192, 118)
 const COLUMNS := 5
@@ -38,6 +39,13 @@ func setup(levels: Array) -> void:
 	title.add_theme_color_override("font_color", Part.GOLD)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(title)
+	var importer := Button.new()
+	importer.text = "Importer un niveau…"
+	importer.focus_mode = Control.FOCUS_NONE
+	importer.pressed.connect(func() -> void:
+		hide()
+		import_requested.emit())
+	head.add_child(importer)
 	var close := Button.new()
 	close.text = "Fermer (Échap)"
 	close.focus_mode = Control.FOCUS_NONE

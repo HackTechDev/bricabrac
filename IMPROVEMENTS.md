@@ -26,7 +26,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Éditeur et communauté
 
-- Partage des niveaux et des solutions par fichier ou par code à copier.
 - Relecture d'une solution, enregistrable en GIF ou en vidéo.
 
 ## Présentation

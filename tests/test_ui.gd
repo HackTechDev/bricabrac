@@ -85,6 +85,7 @@ func _run() -> void:
 	await _test_level_select()
 	await _test_elastic_tool()
 	await _test_editor()
+	await _test_share()
 
 	_finish("INTERFACE OK")
 
@@ -560,4 +561,73 @@ func _test_editor() -> void:
 	main._level_select.hide()
 	main._editor_delete()
 	_check("niveau personnel : supprimé", main.custom_levels.is_empty())
+	main._editor_reset()
+
+
+## Partage : un niveau résolu donne un code ; ce code, réimporté, est vérifié en rejouant la
+## solution de l'auteur. Les codes abîmés, les niveaux non résolus ou dont la solution ne gagne pas
+## sont refusés. Une solution partagée se recharge dans son niveau.
+func _test_share() -> void:
+	var board: Board = main.board
+	main.load_level(main.editor_index())
+	await _steps(2)
+	main._editor_reset()
+	board.place("ball", Vector2(150, 60))
+	main._select(board.place("basket", Vector2(480, 590)))
+	main._toggle_goal()
+	(main.editor._spins["plank"] as SpinBox).value = 1
+	main.editor.name_edit.text = "Niveau partagé"
+	main._commit()
+	main._share_level()
+	_check("partage : refusé avant résolution", not main.share_dialog.visible and main._status.text.contains("résolu"))
+	main._editor_try()
+	board.apply_layout([{"kind": "plank", "pos": Vector2(190, 240), "rot": 30.0}])
+	main.toggle_run()
+	for i in 600:
+		await physics_frame
+		if main._win_overlay.visible:
+			break
+	main.load_level(main.editor_index())
+	await _steps(2)
+	main._share_level()
+	var code: String = main.share_dialog.code_edit.text
+	_check("partage : code produit", main.share_dialog.visible and code.begins_with(Share.PREFIX))
+	_check("partage : enregistré dans un fichier", main.share_dialog.save_to("user://test_partage.bab")
+			and FileAccess.get_file_as_string("user://test_partage.bab").strip_edges() == code)
+	main.share_dialog.hide()
+
+	main.share_dialog.show_import()
+	await main.import_code("n'importe quoi")
+	_check("import : code invalide refusé", main.share_dialog.message.text.contains("pas un code"))
+	await main.import_code(code.left(40))
+	_check("import : code tronqué refusé", main.custom_levels.is_empty())
+	var payload: Dictionary = Share.decode(code)
+	payload.level.solution = []
+	await main.import_code(Share.encode(payload))
+	_check("import : niveau non résolu refusé", main.share_dialog.message.text.contains("pas été résolu"))
+	payload = Share.decode(code)
+	payload.level.solution[0].pos = Vector2(800, 240)
+	await main.import_code(Share.encode(payload))
+	_check("import : solution perdante refusée", main.share_dialog.message.text.contains("ne gagne pas"))
+	payload = Share.decode(code)
+	payload.level.fixed[0]["kind"] = "fusée"
+	await main.import_code(Share.encode(payload))
+	_check("import : pièce inconnue refusée", main.share_dialog.message.text.contains("inconnues"))
+	await main.import_code(FileAccess.get_file_as_string("user://test_partage.bab"))
+	_check("import : niveau vérifié puis ajouté", main.custom_levels.size() == 1
+			and main.levels[main.current].get("custom", false) and main.custom_levels[0].verified)
+	_check("import : jouable", board.remaining("plank") == 1 and main._goal_label.text != "")
+	await main.import_code(code)
+	_check("import : pas de doublon", main.custom_levels.size() == 1)
+
+	var pente: Dictionary = main.levels[0]
+	var solution_code := Share.encode(Share.solution_payload(pente, pente.solution))
+	main.load_level(1)
+	await _steps(2)
+	await main.import_code(solution_code)
+	_check("solution : chargée dans son niveau", main.current == 0 and board.layout().size() == 1
+			and board.placed[0].pos == pente.solution[0].pos)
+	main.editor.custom_id = main.custom_levels[0].id
+	main._editor_delete()
+	main.load_level(main.editor_index())
 	main._editor_reset()

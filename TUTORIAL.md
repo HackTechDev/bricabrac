@@ -268,6 +268,20 @@ gagner de nouveau. Dans l'écran de sélection, un niveau qui n'a pas été rés
 Le bouton **Modifier**, en haut d'un de tes niveaux, le rouvre dans l'éditeur ; **Supprimer** l'efface
 de « Mes niveaux » et **Nouveau** vide le plan de travail. Ton brouillon est gardé entre deux parties.
 
+## Partager
+
+Les niveaux et les solutions se partagent sous forme d'un **code** à copier-coller (il commence
+par `BAB1:`) ou d'un **fichier `.bab`** contenant ce code.
+
+- **Partager un niveau :** dans l'éditeur, « Partager le niveau… ». Il faut l'avoir résolu toi-même
+  auparavant : ta solution part avec le niveau.
+- **Partager une solution :** à la victoire, « Partager ma solution… ». Le code ne vaut que pour ce
+  niveau, dans cette version.
+- **Importer :** dans l'écran de sélection, « Importer un niveau… », puis colle le code ou ouvre
+  le fichier. Un niveau importé est d'abord vérifié : le jeu rejoue en coulisse la solution de son
+  auteur, et refuse le niveau si elle ne gagne pas, si elle dépasse l'inventaire ou si le code est
+  abîmé. Une solution importée se charge dans son niveau ; il ne reste qu'à lancer la machine.
+
 ## Conseils
 
 - **Lance souvent :** une courte tentative renseigne mieux qu'une longue réflexion.

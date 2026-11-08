@@ -64,6 +64,9 @@ var _gravity_button: Button
 var _wind_button: Button
 var _win_next: Button
 var _edit_button: Button
+var _share_solution: Button
+var share_dialog: ShareDialog
+var verifier: Verifier
 var _rope_preview: Line2D
 var _sound_button: Button
 var _mouse := Vector2.ZERO
@@ -102,6 +105,11 @@ func _ready() -> void:
 	tutorial.finished.connect(_on_tutorial_finished)
 	add_child(tutorial)
 	_build_win_overlay()
+	share_dialog = ShareDialog.new()
+	add_child(share_dialog)
+	share_dialog.import_requested.connect(import_code)
+	verifier = Verifier.new()
+	add_child(verifier)
 	_build_level_select()
 	editor.load_from(_editor_draft)
 	load_level(_first_unsolved())
@@ -127,6 +135,7 @@ func _build_level_select() -> void:
 	add_child(_level_select)
 	_level_select.setup(levels)
 	_level_select.chosen.connect(load_level)
+	_level_select.import_requested.connect(func() -> void: share_dialog.show_import())
 
 
 func editor_index() -> int:
@@ -745,6 +754,7 @@ func _build_side_panel() -> void:
 	editor.save_requested.connect(_editor_save)
 	editor.delete_requested.connect(_editor_delete)
 	editor.reset_requested.connect(_editor_reset)
+	editor.share_requested.connect(_share_level)
 	editor.goal_button.pressed.connect(_toggle_goal)
 
 	col.add_child(HSeparator.new())
@@ -804,6 +814,10 @@ func _build_win_overlay() -> void:
 	_win_next = Button.new()
 	_win_next.pressed.connect(func() -> void: load_level(_next_index()))
 	box.add_child(_win_next)
+	_share_solution = Button.new()
+	_share_solution.text = "Partager ma solution…"
+	_share_solution.pressed.connect(_share_my_solution)
+	box.add_child(_share_solution)
 	var again := Button.new()
 	again.text = "Revenir à l'atelier"
 	again.pressed.connect(toggle_run)
@@ -962,6 +976,7 @@ func _on_won() -> void:
 	_refresh_level_picker()
 	board.sfx.play("win")
 	var next: Dictionary = levels[_next_index()]
+	_share_solution.visible = true
 	_win_next.text = "Ouvrir le bac à sable" if next.get("sandbox", false) \
 			else "Rejouer le premier niveau" if _next_index() == 0 else "Niveau suivant"
 	_win_overlay.show()
@@ -985,6 +1000,7 @@ func _on_test_won() -> void:
 	_win_bonus.text = "Résolu ! Ton niveau peut se gagner avec %d pièce(s), en %s s.\nTu peux maintenant l'enregistrer et le partager." % [
 			board.placed.size(), String.num(board.elapsed, 1).replace(".", ",")]
 	board.sfx.play("win")
+	_share_solution.visible = false
 	_win_next.text = "Retour à l'éditeur"
 	_win_overlay.show()
 
@@ -1248,3 +1264,104 @@ func _reload_level_list(index_of: Callable) -> void:
 	editor.refresh()
 	_refresh_level_picker()
 	_refresh_controls()
+
+
+# --- Partage --------------------------------------------------------------------
+
+## Partage du niveau de l'éditeur : refusé tant que l'auteur ne l'a pas résolu.
+func _share_level() -> void:
+	if board.running:
+		return
+	var level: Variant = _editor_level(editor.custom_id if editor.custom_id != "" else "perso_%d" % int(Time.get_unix_time_from_system()))
+	if level is String:
+		_status.text = level
+		board.sfx.play("deny")
+		return
+	if not editor.is_proven(level):
+		_status.text = "Un niveau ne se partage qu'une fois résolu par son auteur : gagne-le d'abord avec « Essayer »."
+		board.sfx.play("deny")
+		return
+	if editor.name_edit.text.strip_edges() == "":
+		_status.text = "Donne un nom à ton niveau avant de le partager."
+		board.sfx.play("deny")
+		return
+	level.solution = editor.proof.solution
+	share_dialog.show_export("Partager « %s »" % level.name, Share.encode(Share.level_payload(level)), level.name)
+
+
+func _share_my_solution() -> void:
+	var level: Dictionary = levels[current]
+	share_dialog.show_export("Ma solution de « %s »" % level.name,
+			Share.encode(Share.solution_payload(level, board.layout())), "solution " + level.name)
+
+
+## Import d'un code collé ou lu dans un fichier : niveau (vérifié en rejouant sa solution) ou
+## solution d'un niveau existant.
+func import_code(code: String) -> void:
+	if verifier.busy:
+		return
+	var payload: Variant = Share.decode(code)
+	if payload is String:
+		share_dialog.message.text = payload
+		return
+	match payload.get("type", ""):
+		"level":
+			await _import_level(payload.get("level"))
+		"solution":
+			_import_solution(payload)
+		_:
+			share_dialog.message.text = "Code inconnu."
+
+
+func _import_level(raw: Variant) -> void:
+	var level: Variant = Share.clean_level(raw)
+	if level is String:
+		share_dialog.message.text = level
+		return
+	for other: Dictionary in custom_levels:
+		if LevelData.signature(other) == LevelData.signature(level):
+			share_dialog.message.text = "Ce niveau est déjà dans « Mes niveaux »."
+			return
+	share_dialog.message.text = "Vérification : la solution de l'auteur est rejouée…"
+	var reason: String = await verifier.verify(level)
+	if reason != "":
+		share_dialog.message.text = reason
+		return
+	var taken := {}
+	for other: Dictionary in levels:
+		taken[other.id] = true
+	if taken.has(level.id) or not level.id.begins_with("perso"):
+		level.id = "perso_%d" % absi(LevelData.signature(level))
+	level.merge({"world": "perso", "custom": true, "verified": true, "intro": level.goal_text,
+			"hint": "Niveau importé."}, true)
+	custom_levels.append(level)
+	_reload_level_list(func() -> int: return current)
+	share_dialog.hide()
+	for i in levels.size():
+		if levels[i].id == level.id:
+			load_level(i)
+	_status.text = "« %s » est importé dans « Mes niveaux ». À toi de le résoudre !" % level.name
+
+
+func _import_solution(payload: Dictionary) -> void:
+	var index := -1
+	for i in levels.size():
+		if levels[i].id == payload.get("level_id", ""):
+			index = i
+	if index < 0:
+		share_dialog.message.text = "Cette solution est pour un niveau que tu n'as pas."
+		return
+	if payload.get("signature", 0) != LevelData.signature(levels[index]):
+		share_dialog.message.text = "Cette solution est pour une autre version de ce niveau."
+		return
+	var layout: Variant = Share.clean_layout(payload.get("layout", []))
+	if layout == null:
+		share_dialog.message.text = "Solution illisible."
+		return
+	load_level(index)
+	board.clear_placed()
+	var dropped := board.restore_layout(layout)
+	_commit()
+	share_dialog.hide()
+	_status.text = "Solution chargée : lance la machine pour la voir." if dropped == 0 \
+			else "Solution chargée, sauf %d pièce(s) qui n'avaient pas leur place." % dropped

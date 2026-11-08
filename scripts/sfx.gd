@@ -8,6 +8,8 @@ const MIN_INTERVAL_MS := 45
 
 ## Nombre de demandes par son, y compris celles coupées par la limite de fréquence.
 var counts := {}
+## Plateau invisible (vérification d'un niveau importé) : aucun son.
+var silent := false
 
 static var _bank := {}
 
@@ -27,6 +29,8 @@ func _ready() -> void:
 
 func play(sound: String, volume := 1.0) -> void:
 	counts[sound] = counts.get(sound, 0) + 1
+	if silent:
+		return
 	var now := Time.get_ticks_msec()
 	if now - _last_played.get(sound, -1000) < MIN_INTERVAL_MS:
 		return

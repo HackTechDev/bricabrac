@@ -9,6 +9,7 @@ signal try_requested
 signal save_requested
 signal delete_requested
 signal reset_requested
+signal share_requested
 
 ## Identifiant du niveau personnel en cours d'édition ; vide pour un nouveau niveau.
 var custom_id := ""
@@ -52,6 +53,8 @@ func _init() -> void:
 	new_button.pressed.connect(func() -> void: reset_requested.emit())
 	delete_button = _button(grid, "Supprimer", "Supprime ce niveau de « Mes niveaux ».")
 	delete_button.pressed.connect(func() -> void: delete_requested.emit())
+	var share_button := _button(self, "Partager le niveau…", "Code ou fichier à donner à d'autres joueurs. Le niveau doit être résolu.")
+	share_button.pressed.connect(func() -> void: share_requested.emit())
 	inventory_button.pressed.connect(open_inventory)
 	_build_dialog()
 
