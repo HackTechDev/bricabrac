@@ -23,6 +23,7 @@ func _run() -> void:
 	await _test_pipe()
 	await _test_repel()
 	await _test_candle()
+	await _test_effects()
 	_end("PIÈCES OK")
 
 
@@ -460,3 +461,38 @@ func _test_candle() -> void:
 	_check("bougie sur canal : éteinte avant le signal", not (board.find_part("attend") as BalloonPart).popped)
 	await _steps(90)
 	_check("bougie sur canal : allumée au signal", (board.find_part("attend") as BalloonPart).popped)
+
+
+## Particules : éclats du ballon, fumée du canon, poussière d'une chute ; rien au repos ni après
+## l'arrêt, et rien quand les animations sont réduites.
+func _test_effects() -> void:
+	_level([
+		{"kind": "ball_heavy", "id": "chute", "pos": Vector2(200, 400)},
+	])
+	board.start()
+	var most := 0
+	for i in 90:
+		await _steps(1)
+		most = maxi(most, board.effects.count())
+	_check("poussière : une chute soulève de la poussière (%d)" % most, most > 0)
+	_level([
+		{"kind": "candle", "pos": Vector2(200, 600)},
+		{"kind": "balloon", "pos": Vector2(200, 500)},
+	])
+	board.start()
+	await _steps(30)
+	_check("éclats : le ballon éclate en morceaux (%d)" % board.effects.count(), board.effects.count() >= 10)
+	board.stop()
+	_check("particules effacées à l'arrêt", board.effects.count() == 0)
+	_level([
+		{"kind": "cannon", "pos": Vector2(200, 600), "channel": 1},
+		{"kind": "timer", "pos": Vector2(900, 300), "channel": 1, "delay": 0.5},
+	])
+	board.start()
+	await _steps(70)
+	_check("fumée : le canon fume (%d)" % board.effects.count(), board.effects.count() > 0)
+	Effects.enabled = false
+	board.start()
+	await _steps(70)
+	_check("animations réduites : pas de particules", board.effects.count() == 0)
+	Effects.enabled = true

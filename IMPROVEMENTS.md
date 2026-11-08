@@ -42,7 +42,7 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Présentation
 
-- Particules : éclats du ballon, fumée du canon, poussière des chocs.
+- D'autres particules : gouttes du bac d'eau, étincelles des engrenages.
 - Écrasement et étirement des objets lors des impacts.
 - Musique d'atelier discrète, avec un réglage de volume séparé des effets.
 - Sons continus pour le tapis et le ventilateur.

@@ -17,6 +17,8 @@ func on_powered() -> void:
 		return
 	var axis := Vector2.RIGHT.rotated(global_rotation) * dir
 	board.sfx.play("cannon")
+	var muzzle := global_position + axis * (SIZE.x / 2.0 + 4.0)
+	board.effects.smoke(board.to_local(muzzle), axis.rotated(-board.global_rotation))
 	board.spawn({
 		"kind": "ball",
 		# Les positions de la disposition sont relatives au plateau, pas à l'écran.

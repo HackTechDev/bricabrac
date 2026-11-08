@@ -13,6 +13,8 @@ const LAYER_WORLD := 1
 const LAYER_GEARS := 2
 const IMPACT_MIN_SPEED := 70.0
 const IMPACT_FULL_SPEED := 700.0
+## Choc à partir duquel un nuage de poussière se lève.
+const IMPACT_DUST_SPEED := 160.0
 const CHANNEL_COLORS: Array[Color] = [
 	Color("8a94a6"), Color("ff5d5d"), Color("ffc94d"), Color("5dd39e"),
 ]
@@ -304,6 +306,23 @@ func _on_contact(_other: Node) -> void:
 	var shock := (_tracked.linear_velocity - _velocity_before).length()
 	if sound != "" and shock > IMPACT_MIN_SPEED:
 		board.sfx.play(sound, shock / IMPACT_FULL_SPEED)
+	if shock > IMPACT_DUST_SPEED:
+		_dust(shock)
+
+
+## Poussière au point de choc, estimé à partir du changement de vitesse : il repousse le corps
+## hors de la surface touchée.
+func _dust(shock: float) -> void:
+	var normal := (_tracked.linear_velocity - _velocity_before).normalized()
+	var reach := INF
+	for s in solids:
+		if s.get_parent() == _tracked:
+			var r := s.shape.get_rect()
+			reach = minf(reach, minf(r.size.x, r.size.y) / 2.0)
+	if reach == INF:
+		return
+	var at := _tracked.global_position - normal * reach
+	board.effects.dust(board.to_local(at), normal.rotated(-board.global_rotation), shock / IMPACT_FULL_SPEED)
 
 
 func _material(bounce: float, friction: float) -> PhysicsMaterial:

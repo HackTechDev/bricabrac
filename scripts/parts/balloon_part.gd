@@ -3,6 +3,7 @@ extends Part
 ## Ballon : monte tout seul, éclate sur les pointes.
 
 const RADIUS := 22.0
+const COLOR := Color("ff6b6b")
 
 var body: RigidBody2D
 var popped := false
@@ -20,6 +21,7 @@ func pop() -> void:
 		return
 	popped = true
 	board.sfx.play("pop")
+	board.effects.shards(board.to_local(body.global_position), COLOR)
 	solids.clear()
 	visuals.clear()
 	body.queue_free()
@@ -34,7 +36,7 @@ func icon_scale() -> float:
 
 
 func paint(c: CanvasItem) -> void:
-	var col := Color("ff6b6b")
+	var col := COLOR
 	c.draw_line(Vector2(0, RADIUS), Vector2(4, RADIUS + 18), Color(1, 1, 1, 0.7), 1.5)
 	c.draw_circle(Vector2.ZERO, RADIUS, col)
 	c.draw_arc(Vector2.ZERO, RADIUS, 0.0, TAU, 32, INK, 2.0)

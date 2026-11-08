@@ -30,6 +30,8 @@ var elapsed := 0.0
 ## État des canaux 1 à 3 pendant la simulation (le canal 0 est toujours en marche).
 var channel_on: Array[bool] = [true, false, false, false]
 var sfx := Sfx.new()
+## Particules décoratives : éclats, fumée, poussière.
+var effects := Effects.new()
 var probe := CircleShape2D.new()
 ## Trajectoires fantômes du dernier essai : [{points: PackedVector2Array, goal: bool}], dessinées
 ## sous les pièces pour ajuster une pose sans relancer.
@@ -57,6 +59,7 @@ func _ready() -> void:
 	_build_walls()
 	_part_layer = Node2D.new()
 	add_child(_part_layer)
+	add_child(effects)
 
 
 func load_level(p_level: Dictionary) -> void:
@@ -397,6 +400,7 @@ func _rebuild(run: bool) -> void:
 	has_won = false
 	elapsed = 0.0
 	channel_on = [true, false, false, false]
+	effects.clear()
 	for part in parts:
 		_part_layer.remove_child(part)
 		part.queue_free()
