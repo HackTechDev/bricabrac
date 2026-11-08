@@ -31,11 +31,14 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 - `scripts/board.gd` : mécanique de jeu (disposition, simulation, victoire), sans interface.
 - `scripts/main.gd`, `bin_item.gd`, `part_icon.gd` : interface.
 - `scripts/history.gd` : historique d'annulation, par niveau.
-- `scripts/tutorial.gd` : bulles du tutoriel intégré ; les étapes sont dans `level_data.gd`.
+- `scripts/tutorial.gd` : bulles du tutoriel intégré ; les étapes sont dans les fichiers de niveau.
 - `scripts/parts/` : une classe par pièce, dessinée par le code. `catalog.gd` les référence.
 - `scripts/parts/rope_part.gd` : contrainte de longueur de la corde, enroulée sur les poulies et accrochée aux coins des obstacles (Godot n'a pas de joint poulie en 2D).
 - `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio.
-- `scripts/level_data.gd` : les niveaux, regroupés en quatre mondes, chacun avec une solution.
+- `levels/` : les niveaux du jeu, un fichier texte par niveau (`07_contrepoids.cfg`), joués dans
+  l'ordre des noms ; chacun indique son monde et sa solution.
+- `scripts/level_file.gd` : lecture et écriture de ces fichiers ; `level_data.gd` : mondes, bac à
+  sable, éditeur et liste des niveaux.
 
 ## Tests
 
@@ -48,8 +51,10 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
     SWEEP=spec.json $GODOT --headless --path . --fixed-fps 120 -s tests/sweep.gd   # aide à la conception
     CAPTURE_DIR=dossier $GODOT --path . -s tests/capture.gd              # captures (affichage requis)
 
-Pour ajouter un niveau : le décrire dans `level_data.gd`, chercher une large zone gagnante avec
-`sweep.gd`, puis renseigner sa `solution` pour que `test_levels.gd` la vérifie.
+Pour ajouter un niveau : créer son fichier dans `levels/` (le préfixe numérique fixe sa place),
+chercher une large zone gagnante avec `sweep.gd`, puis renseigner sa `solution` pour que
+`test_levels.gd` la vérifie. Le format est décrit en tête de `scripts/level_file.gd` ; un niveau
+fait dans l'éditeur du jeu a les mêmes champs, et `LevelFile.save` l'écrit sous cette forme.
 
 ## Licence
 

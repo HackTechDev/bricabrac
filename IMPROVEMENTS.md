@@ -37,7 +37,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 - Rendre le vent bloquable par les obstacles : il traverse tout aujourd'hui.
 - Réduire la variation de durée observée sur le niveau Dominos.
 - Lancer les tests automatiquement sur GitHub Actions à chaque envoi.
-- Déplacer les niveaux dans des fichiers de données, ce que l'éditeur demandera de toute façon.
 - Mesurer les performances avec beaucoup d'objets : les corps physiques ne s'endorment jamais.
 
 ## Diffusion

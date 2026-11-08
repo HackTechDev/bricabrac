@@ -23,6 +23,7 @@ func _run() -> void:
 	board.position = Vector2(0, 56)  # Même décalage que dans le jeu, sous la barre du haut.
 	root.add_child(board)
 	await process_frame
+	_check_files()
 	var only := OS.get_environment("ONLY")
 	for level: Dictionary in LevelData.all():
 		if only != "" and level.id != only:
@@ -31,6 +32,26 @@ func _run() -> void:
 	print("ÉCHECS : %d" % failures if failures else "TOUS LES NIVEAUX PASSENT")
 	board.free()
 	quit(1 if failures else 0)
+
+
+## Les niveaux viennent des fichiers de res://levels : tous lus, identifiants uniques, mondes
+## connus, et un fichier réécrit puis relu redonne exactement le même niveau.
+func _check_files() -> void:
+	var levels := LevelData.all()
+	_report("fichiers", "18 niveaux lus", levels.size() == 18, "%d lus" % levels.size())
+	var ids := {}
+	for level: Dictionary in levels:
+		ids[level.id] = true
+		_report(level.id, "monde connu", LevelData.world(level.get("world", "")).id == level.get("world"),
+				str(level.get("world")))
+		var back := LevelFile.from_text(LevelFile.to_text(level))
+		_report(level.id, "fichier relu à l'identique", var_to_str(back) == var_to_str(level), "différent")
+	_report("fichiers", "identifiants uniques", ids.size() == levels.size(), "doublon")
+	levels[0].name = "modifié"
+	_report("fichiers", "chaque appel rend une copie", LevelData.all()[0].name != "modifié", "partagé")
+	_report("fichiers", "texte sans niveau refusé", LevelFile.from_text("[niveau]\nname=\"sans id\"").is_empty()
+			and LevelFile.from_text("[autre]\nid=\"x\"").is_empty()
+			and LevelFile.from_text("n'importe quoi").is_empty(), "accepté")
 
 
 func _check(level: Dictionary) -> void:
