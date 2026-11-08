@@ -134,6 +134,12 @@ func _play(level: Dictionary, solution: Array) -> float:
 			return -1.0
 		if part.entry.pos != board.snap(part.entry.pos):
 			_report(level.id, "grille", false, "%s hors grille" % part.kind)
+		# Le joueur ne tourne une pièce que par crans (touche R) : la solution doit s'y tenir.
+		var rot: float = part.entry.get("rot", 0.0)
+		var step := part.rotate_step()
+		var off := fposmod(rot, step) if step > 0.0 else rot
+		if not (is_zero_approx(off) or is_equal_approx(off, step)):
+			_report(level.id, "angle accessible", false, "%s à %s°, crans de %s°" % [part.kind, rot, step])
 		if not board.is_valid(part):
 			_report(level.id, "pose valide", false, "%s à %s" % [part.kind, part.entry.pos])
 	board.start()
