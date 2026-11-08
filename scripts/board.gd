@@ -100,13 +100,20 @@ func set_physics(gravity: float, p_wind: Vector2) -> void:
 func _apply_physics() -> void:
 	PhysicsServer2D.area_set_param(get_world_2d().space, PhysicsServer2D.AREA_PARAM_GRAVITY,
 			ProjectSettings.get_setting("physics/2d/default_gravity") * gravity_factor())
-	set_process(wind() != Vector2.ZERO)
+	_update_redraw()
 	queue_redraw()
 
 
 ## Physique propre au niveau : gravité relative (1 : normale) et vent permanent.
 func gravity_factor() -> float:
 	return level.get("gravity", 1.0)
+
+
+## Le plateau se redessine à chaque image quand une ombre de vent peut bouger : vent du niveau
+## ou ventilateur posé.
+func _update_redraw() -> void:
+	set_process(wind() != Vector2.ZERO or parts.any(func(p: Part) -> bool: return p is FanPart))
+	queue_redraw()
 
 
 ## Niveau plongé dans le noir, éclairé par les lampes de poche : tout le grenier, ou un niveau qui
@@ -490,6 +497,7 @@ func _rebuild(run: bool) -> void:
 		_find_gear_pairs()
 	if darkness.visible:
 		darkness.refresh()
+	_update_redraw()
 	if run or was_running:
 		running_changed.emit()
 
@@ -499,6 +507,8 @@ func _make(entry: Dictionary) -> Part:
 	part.setup(entry, self, running)
 	_part_layer.add_child(part)
 	parts.append(part)
+	if part is FanPart:
+		_update_redraw()
 	return part
 
 
@@ -738,6 +748,52 @@ func wind_shadows() -> Array[PackedVector2Array]:
 	return result
 
 
+## Ombre du souffle des ventilateurs : dans la bande de chacun, ce que cachent les obstacles.
+## À l'atelier, tous les ventilateurs la montrent ; en marche, seulement ceux qui soufflent.
+func fan_shadows() -> Array[PackedVector2Array]:
+	var result: Array[PackedVector2Array] = []
+	var to_board := get_global_transform().affine_inverse()
+	for fan in parts:
+		if not fan is FanPart or (running and not fan.powered):
+			continue
+		var xf := to_board * fan.global_transform
+		var axis := xf.basis_xform(Vector2.RIGHT).normalized() * fan.dir
+		var across := axis.orthogonal() * FanPart.WIND_WIDTH / 2.0
+		var face := xf.origin + axis * FanPart.FACE
+		var reach := axis * FanPart.RANGE
+		var zone := PackedVector2Array([face + across, face + across + reach, face - across + reach,
+				face - across])
+		var zone_box := _bounds(zone)
+		for part in parts:
+			if part == fan or part.collision_layer() & Part.LAYER_WORLD == 0:
+				continue
+			for col in part.solids:
+				if not is_instance_valid(col) or not col.is_inside_tree():
+					continue
+				var outline := (to_board * col.global_transform) * WaterPart._outline(col.shape)
+				if outline.size() < 3 or not _bounds(outline).intersects(zone_box):
+					continue
+				var swept := outline.duplicate()
+				for point in outline:
+					swept.append(point + reach)
+				result.append_array(Geometry2D.intersect_polygons(Geometry2D.convex_hull(swept), zone))
+	return result
+
+
+func in_fan_shadow(point: Vector2) -> bool:
+	for shadow in fan_shadows():
+		if Geometry2D.is_point_in_polygon(point, shadow):
+			return true
+	return false
+
+
+static func _bounds(points: PackedVector2Array) -> Rect2:
+	var box := Rect2(points[0], Vector2.ZERO)
+	for point in points:
+		box = box.expand(point)
+	return box
+
+
 func in_wind_shadow(point: Vector2) -> bool:
 	for shadow in wind_shadows():
 		if Geometry2D.is_point_in_polygon(point, shadow):
@@ -746,7 +802,7 @@ func in_wind_shadow(point: Vector2) -> bool:
 
 
 func _draw_wind_shadows() -> void:
-	for piece in wind_shadows():
+	for piece in wind_shadows() + fan_shadows():
 		draw_colored_polygon(piece, WIND_SHADOW)
 		var edge := piece.duplicate()
 		edge.append(piece[0])

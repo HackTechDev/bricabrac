@@ -26,6 +26,7 @@ func _run() -> void:
 	await _test_effects()
 	await _test_hums()
 	await _test_darkness()
+	await _test_fan_shadow()
 	_end("PIÈCES OK")
 
 
@@ -566,4 +567,25 @@ func _test_darkness() -> void:
 	board.activate_channel(1)
 	await _steps(2)
 	_check("lampe de poche sur canal : allumée au signal", board.darkness.light_at(Vector2(450, 550)) > 0.9)
+	board.stop()
+
+
+## Ombre du souffle : une caisse devant le ventilateur abrite la bande derrière elle, et seulement
+## dans la portée du souffle ; en marche, un ventilateur éteint n'en a plus.
+func _test_fan_shadow() -> void:
+	_level([
+		{"kind": "fan", "pos": Vector2(200, 300)},
+		{"kind": "crate", "pos": Vector2(320, 300)},
+		{"kind": "fan", "pos": Vector2(200, 500), "channel": 1},
+	])
+	_check("ombre du souffle : derrière la caisse", board.in_fan_shadow(Vector2(450, 300)))
+	_check("ombre du souffle : pas devant la caisse", not board.in_fan_shadow(Vector2(260, 300)))
+	_check("ombre du souffle : pas à côté de la bande", not board.in_fan_shadow(Vector2(450, 360)))
+	_check("ombre du souffle : pas au-delà de la portée",
+			not board.in_fan_shadow(Vector2(200 + FanPart.FACE + FanPart.RANGE + 20.0, 300)))
+	_check("ombre du souffle : le plateau se redessine", board.is_processing())
+	board.start()
+	await _steps(2)
+	var shadows := board.fan_shadows().size()
+	_check("ombre du souffle : en marche, seul le ventilateur allumé (%d)" % shadows, shadows == 1)
 	board.stop()

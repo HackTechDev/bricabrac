@@ -7,6 +7,8 @@ const BODY_SIZE := Vector2(36, 70)
 const RANGE := 340.0
 const WIND_WIDTH := 80.0
 const FORCE := 620.0
+## Distance du centre à la face d'où part le souffle.
+const FACE := 20.0
 
 var wind: Area2D
 
@@ -15,14 +17,14 @@ func _build() -> void:
 	var body := make_static()
 	add_box(body, BODY_SIZE)
 	add_visual(body, paint)
-	wind = add_sensor(Vector2(RANGE, WIND_WIDTH), Vector2((RANGE / 2.0 + 20.0) * dir, 0))
+	wind = add_sensor(Vector2(RANGE, WIND_WIDTH), Vector2((RANGE / 2.0 + FACE) * dir, 0))
 
 
 func _physics_process(_delta: float) -> void:
 	if not powered or wind == null:
 		return
 	var axis := Vector2.RIGHT.rotated(global_rotation) * dir
-	var face := main_body.global_position + axis * 20.0
+	var face := main_body.global_position + axis * FACE
 	var exclude: Array[RID] = [main_body.get_rid()]
 	var upwind := func(point: Vector2) -> float: return (point - face).dot(axis)
 	for node in wind.get_overlapping_bodies():

@@ -120,7 +120,9 @@ présents dans le niveau restent en place.
   rebondit sur le levier ne compte qu'une fois.
 - **Ventilateur :** pousse fort ce qui est léger et presque pas ce qui est lourd. Son souffle
   s'arrête au premier obstacle : ce qui est caché derrière une planche ou un mur n'est pas poussé.
-  Incliné, il peut souffler par-dessus un rebord.
+  Dans sa bande de souffle (340 px), la zone abritée derrière chaque obstacle est assombrie dès
+  l'atelier ; en marche, seuls les ventilateurs allumés la montrent. Incliné, il peut souffler
+  par-dessus un rebord.
 - **Minuterie :** allume son canal un certain temps après le lancement. R et la molette règlent
   ce délai, de 0,5 à 15 secondes.
 - **Trappe et porte :** s'ouvrent quand leur canal s'allume et se referment quand il s'éteint. La

@@ -15,7 +15,8 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 - Écouter les sons en situation, surtout le volume des chocs répétés, le ronronnement continu
   du tapis et du ventilateur, et la musique sur une longue partie (la boucle dure 20 s).
 - Juger en jouant si l'écrasement aux chocs et la poussière aident à lire la machine ou la
-  brouillent, et si l'ombre du vent reste lisible sur chaque fond de monde.
+  brouillent, et si l'ombre du vent et celle des ventilateurs restent lisibles sur chaque fond de
+  monde (faut-il aussi dessiner la bande de souffle à l'atelier ?).
 - Essayer l'entonnoir, le tuyau coudé, l'aimant répulsif et la bougie dans le bac à sable avant
   de bâtir des niveaux autour d'eux : taille de l'ouverture, vitesse de sortie du coude, délai
   de chauffe de la bougie.
@@ -60,7 +61,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 - Atténuer la musique pendant la simulation et la remonter à l'atelier, pour mieux entendre la
   machine.
 - Une musique par monde, sur la même trame que celle de l'atelier.
-- Montrer aussi l'ombre du souffle des ventilateurs.
 - Faire relire la traduction anglaise par un anglophone, puis ajouter d'autres langues
   (un fichier `i18n/<code>.json` et une ligne dans `Lang.LANGUAGES`).
 - Changer de langue sans revenir à l'écran titre, en rafraîchissant les textes en place.
