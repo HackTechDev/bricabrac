@@ -80,9 +80,9 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Marquer l'objectif (éditeur) | G |
 
 L'accélération ne change rien au résultat : la machine fait exactement la même chose, seulement plus
-vite. La pause fige tout, le temps du chrono compris. Après chaque essai, le trajet des objets reste
-dessiné en pointillés (en doré pour l'objectif), jusqu'au lancement suivant : de quoi retoucher une
-pose sans tout revoir. Les boutons du panneau de droite font la même
+vite. La pause fige tout, le temps du chrono compris. Après chaque essai, la touche T montre le
+trajet des objets en pointillés (en doré pour l'objectif), jusqu'au lancement suivant : de quoi
+retoucher une pose sans tout revoir. Cette trace est masquée par défaut. Les boutons du panneau de droite font la même
 chose que R, F et C. Ils restent grisés quand la pièce
 sélectionnée ne propose pas l'action.
 

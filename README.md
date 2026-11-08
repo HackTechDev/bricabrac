@@ -3,8 +3,8 @@
 Jeu de puzzle physique sous Godot 4.7 : on dispose des pièces dans un atelier, on lance la
 simulation, et la réaction en chaîne doit atteindre l'objectif du niveau.
 
-Pour découvrir le jeu, suis le [tutoriel](TUTORIAL.md). Les pistes pour la suite sont dans
-[IMPROVEMENTS.md](IMPROVEMENTS.md).
+Pour découvrir le jeu, suis le [tutoriel](TUTORIAL.md). La liste complète des fonctionnalités est
+dans [FEATURES.md](FEATURES.md), les pistes pour la suite dans [IMPROVEMENTS.md](IMPROVEMENTS.md).
 
 ## Jouer
 
