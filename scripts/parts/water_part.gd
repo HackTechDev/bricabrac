@@ -44,7 +44,7 @@ func can_tie() -> bool:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("Fait flotter la caisse, le domino et la balle rebond ; la bille et le boulet coulent.")
+	lines.append(Lang.t("Fait flotter la caisse, le domino et la balle rebond ; la bille et le boulet coulent."))
 	return lines
 
 

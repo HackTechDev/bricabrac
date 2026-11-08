@@ -35,15 +35,15 @@ func _init() -> void:
 	_buttons.position = Vector2(490, 292)
 	_buttons.size = Vector2(300, 0)
 	add_child(_buttons)
-	_play_button = _add_button("Jouer", play)
-	_add_button("Choisir un niveau", choose)
-	_add_button("Bac à sable", sandbox)
-	_add_button("Galerie des joueurs", gallery)
-	_add_button("Éditeur de niveaux", editor)
-	_add_button("Options", options, false)
+	_play_button = _add_button(Lang.t("Jouer"), play)
+	_add_button(Lang.t("Choisir un niveau"), choose)
+	_add_button(Lang.t("Bac à sable"), sandbox)
+	_add_button(Lang.t("Galerie des joueurs"), gallery)
+	_add_button(Lang.t("Éditeur de niveaux"), editor)
+	_add_button(Lang.t("Options"), options, false)
 	if not OS.has_feature("web"):
 		var quit := Button.new()
-		quit.text = "Quitter"
+		quit.text = Lang.t("Quitter")
 		quit.focus_mode = Control.FOCUS_NONE
 		quit.custom_minimum_size.y = 40
 		quit.pressed.connect(func() -> void: get_tree().quit())
@@ -74,7 +74,7 @@ func _add_button(text: String, sig: Signal, closing := true) -> Button:
 func open(p_progress: String, p_resume: bool) -> void:
 	progress_text = p_progress
 	resume = p_resume
-	_play_button.text = "Continuer" if resume else "Jouer"
+	_play_button.text = Lang.t("Continuer") if resume else Lang.t("Jouer")
 	_progress.text = progress_text
 	if _tween != null:
 		_tween.kill()
@@ -134,7 +134,7 @@ func _draw() -> void:
 	var at := Vector2((1280.0 - width) / 2.0, 210)
 	draw_string(font, at + Vector2(4, 5), title, HORIZONTAL_ALIGNMENT_LEFT, -1, title_size, Part.INK)
 	draw_string(font, at, title, HORIZONTAL_ALIGNMENT_LEFT, -1, title_size, Part.GOLD)
-	var tagline := "Des machines farfelues, une pièce à la fois"
+	var tagline := Lang.t("Des machines farfelues, une pièce à la fois")
 	var tag_width := font.get_string_size(tagline, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
 	draw_string(font, Vector2((1280.0 - tag_width) / 2.0, 262), tagline, HORIZONTAL_ALIGNMENT_LEFT, -1, 20,
 			Color(1, 1, 1, 0.75))

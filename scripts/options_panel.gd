@@ -31,7 +31,7 @@ func _init() -> void:
 	box.add_theme_constant_override("separation", 12)
 	margin.add_child(box)
 	_title = Label.new()
-	_title.text = "Options"
+	_title.text = Lang.t("Options")
 	_title.add_theme_font_size_override("font_size", 22)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_title)
@@ -39,7 +39,7 @@ func _init() -> void:
 	_rows.add_theme_constant_override("separation", 10)
 	box.add_child(_rows)
 	_close = Button.new()
-	_close.text = "Fermer"
+	_close.text = Lang.t("Fermer")
 	_close.focus_mode = Control.FOCUS_NONE
 	_close.custom_minimum_size.y = 36
 	_close.pressed.connect(close)

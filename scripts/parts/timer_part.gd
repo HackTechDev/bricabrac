@@ -32,7 +32,7 @@ func delay() -> float:
 
 func setting() -> Dictionary:
 	return {"key": "delay", "step": 0.5, "min": 0.5, "max": 15.0, "default": DEFAULT_DELAY,
-			"label": "Délai (R)"}
+			"label": Lang.t("Délai (R)")}
 
 
 func channel_range() -> Vector2i:
@@ -49,7 +49,7 @@ func icon_scale() -> float:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("Délai : %.1f s après le lancement" % delay())
+	lines.append(Lang.t("Délai : %.1f s après le lancement") % delay())
 	return lines
 
 
@@ -62,7 +62,7 @@ func paint(c: CanvasItem) -> void:
 	if left > 0.0:
 		c.draw_arc(center, 11.0, -PI / 2.0, -PI / 2.0 + TAU * left, 28, CHANNEL_COLORS[channel], 6.0)
 	c.draw_line(center, center + Vector2.UP.rotated(TAU * (1.0 - left)) * 14.0, INK, 2.0)
-	var label := "%.1f s" % (maxf(delay() - elapsed, 0.0) if running else delay())
+	var label := Lang.t("%.1f s") % (maxf(delay() - elapsed, 0.0) if running else delay())
 	c.draw_string(ThemeDB.fallback_font, Vector2(-SIZE.x / 2.0, SIZE.y / 2.0 - 3.0), label,
 			HORIZONTAL_ALIGNMENT_CENTER, SIZE.x, 11, Color.WHITE)
 	paint_channel(c, Vector2(SIZE.x / 2.0 - 8.0, -SIZE.y / 2.0 + 8.0))

@@ -54,7 +54,7 @@ func icon_scale() -> float:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("S'ouvre quand son canal s'allume.")
+	lines.append(Lang.t("S'ouvre quand son canal s'allume."))
 	return lines
 
 

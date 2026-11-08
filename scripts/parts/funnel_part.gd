@@ -33,7 +33,7 @@ func icon_scale() -> float:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("Ouverture de %d px : le boulet y passe." % OPENING)
+	lines.append(Lang.t("Ouverture de %d px : le boulet y passe.") % OPENING)
 	return lines
 
 

@@ -116,7 +116,7 @@ func slack() -> float:
 
 
 func setting() -> Dictionary:
-	return {"key": "slack", "step": 20.0, "min": 0.0, "max": 400.0, "default": 0.0, "label": "Mou (R)"}
+	return {"key": "slack", "step": 20.0, "min": 0.0, "max": 400.0, "default": 0.0, "label": Lang.t("Mou (R)")}
 
 
 func is_animated() -> bool:
@@ -487,8 +487,8 @@ func describe() -> PackedStringArray:
 	var lines := PackedStringArray()
 	var via: int = entry.get("via", []).size()
 	if via > 0:
-		lines.append("Passe par %d poulie(s)" % via)
-	lines.append("Mou : %d px" % slack() if slack() > 0.0 else "Tendue (R : ajouter du mou)")
+		lines.append(Lang.t("Passe par %d poulie(s)") % via)
+	lines.append(Lang.t("Mou : %d px") % slack() if slack() > 0.0 else Lang.t("Tendue (R : ajouter du mou)"))
 	return lines
 
 

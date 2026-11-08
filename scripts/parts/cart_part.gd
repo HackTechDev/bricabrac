@@ -54,7 +54,7 @@ func impact_sound() -> String:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("Roule le long de son rail et emporte ce qu'il porte.")
+	lines.append(Lang.t("Roule le long de son rail et emporte ce qu'il porte."))
 	return lines
 
 

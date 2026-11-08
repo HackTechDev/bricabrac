@@ -34,13 +34,13 @@ func _init() -> void:
 	col.add_child(message)
 	var row := HBoxContainer.new()
 	col.add_child(row)
-	_copy = _button(row, "Copier le code", func() -> void:
+	_copy = _button(row, Lang.t("Copier le code"), func() -> void:
 		DisplayServer.clipboard_set(code_edit.text)
-		message.text = "Code copié : colle-le où tu veux pour le partager.")
-	_save = _button(row, "Enregistrer dans un fichier…", func() -> void: _browse(FileDialog.FILE_MODE_SAVE_FILE))
-	_import = _button(row, "Importer", func() -> void: import_requested.emit(code_edit.text))
-	_open = _button(row, "Ouvrir un fichier…", func() -> void: _browse(FileDialog.FILE_MODE_OPEN_FILE))
-	_button(row, "Fermer", hide)
+		message.text = Lang.t("Code copié : colle-le où tu veux pour le partager."))
+	_save = _button(row, Lang.t("Enregistrer dans un fichier…"), func() -> void: _browse(FileDialog.FILE_MODE_SAVE_FILE))
+	_import = _button(row, Lang.t("Importer"), func() -> void: import_requested.emit(code_edit.text))
+	_open = _button(row, Lang.t("Ouvrir un fichier…"), func() -> void: _browse(FileDialog.FILE_MODE_OPEN_FILE))
+	_button(row, Lang.t("Fermer"), hide)
 	_files = FileDialog.new()
 	_files.access = FileDialog.ACCESS_FILESYSTEM
 	_files.use_native_dialog = false
@@ -63,16 +63,16 @@ func show_export(title: String, code: String, filename: String) -> void:
 	code_edit.text = code
 	code_edit.editable = false
 	_filename = filename
-	message.text = "Copie ce code ou enregistre-le dans un fichier .%s." % Share.EXTENSION
+	message.text = Lang.t("Copie ce code ou enregistre-le dans un fichier .%s.") % Share.EXTENSION
 	_set_mode(true)
 	popup_centered()
 
 
 func show_import() -> void:
-	title_label.text = "Importer un niveau ou une solution"
+	title_label.text = Lang.t("Importer un niveau ou une solution")
 	code_edit.text = ""
 	code_edit.editable = true
-	message.text = "Colle un code Bric-à-Brac, ou ouvre un fichier .%s." % Share.EXTENSION
+	message.text = Lang.t("Colle un code Bric-à-Brac, ou ouvre un fichier .%s.") % Share.EXTENSION
 	_set_mode(false)
 	popup_centered()
 
@@ -86,7 +86,7 @@ func _set_mode(exporting: bool) -> void:
 
 func _browse(mode: FileDialog.FileMode) -> void:
 	_files.file_mode = mode
-	_files.title = "Enregistrer le code" if mode == FileDialog.FILE_MODE_SAVE_FILE else "Ouvrir un code"
+	_files.title = Lang.t("Enregistrer le code") if mode == FileDialog.FILE_MODE_SAVE_FILE else Lang.t("Ouvrir un code")
 	_files.current_file = "%s.%s" % [_filename.validate_filename(), Share.EXTENSION] \
 			if mode == FileDialog.FILE_MODE_SAVE_FILE else ""
 	_files.popup_centered(Vector2i(760, 480))
@@ -94,7 +94,7 @@ func _browse(mode: FileDialog.FileMode) -> void:
 
 func _on_file(path: String) -> void:
 	if _files.file_mode == FileDialog.FILE_MODE_SAVE_FILE:
-		message.text = "Enregistré dans %s." % path if save_to(path) else "Impossible d'écrire %s." % path
+		message.text = Lang.t("Enregistré dans %s.") % path if save_to(path) else Lang.t("Impossible d'écrire %s.") % path
 	else:
 		var text := FileAccess.get_file_as_string(path)
 		code_edit.text = text

@@ -34,24 +34,24 @@ func _init() -> void:
 	head.add_theme_constant_override("separation", 8)
 	outer.add_child(head)
 	var title := Label.new()
-	title.text = "Galerie de niveaux partagés"
+	title.text = Lang.t("Galerie de niveaux partagés")
 	title.add_theme_font_size_override("font_size", 28)
 	title.add_theme_color_override("font_color", Part.GOLD)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(title)
 	_sort = OptionButton.new()
-	_sort.add_item("Du plus facile au plus difficile")
-	_sort.add_item("Les plus récents d'abord")
+	_sort.add_item(Lang.t("Du plus facile au plus difficile"))
+	_sort.add_item(Lang.t("Les plus récents d'abord"))
 	_sort.focus_mode = Control.FOCUS_NONE
 	_sort.item_selected.connect(func(index: int) -> void:
 		newest_first = index == 1
 		_rebuild())
 	head.add_child(_sort)
-	_refresh = _head_button(head, "Actualiser en ligne", func() -> void: refresh_requested.emit())
-	_refresh.tooltip_text = "Télécharge la dernière version de la galerie depuis le dépôt du jeu."
-	var propose := _head_button(head, "Proposer mon niveau…", func() -> void: propose_requested.emit())
-	propose.tooltip_text = "Ouvre une demande d'ajout sur le dépôt du jeu, avec le code du niveau de ton éditeur."
-	_head_button(head, "Fermer (Échap)", hide)
+	_refresh = _head_button(head, Lang.t("Actualiser en ligne"), func() -> void: refresh_requested.emit())
+	_refresh.tooltip_text = Lang.t("Télécharge la dernière version de la galerie depuis le dépôt du jeu.")
+	var propose := _head_button(head, Lang.t("Proposer mon niveau…"), func() -> void: propose_requested.emit())
+	propose.tooltip_text = Lang.t("Ouvre une demande d'ajout sur le dépôt du jeu, avec le code du niveau de ton éditeur.")
+	_head_button(head, Lang.t("Fermer (Échap)"), hide)
 	message = Label.new()
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	message.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
@@ -98,7 +98,7 @@ func row(key: String) -> Control:
 
 func play_button(key: String) -> Button:
 	var line := row(key)
-	return null if line == null else line.find_child("Jouer", true, false) as Button
+	return null if line == null else line.find_child(Lang.t("Jouer"), true, false) as Button
 
 
 func _rebuild() -> void:
@@ -107,7 +107,7 @@ func _rebuild() -> void:
 		_list.remove_child(child)
 	if _entries.is_empty():
 		var empty := Label.new()
-		empty.text = "La galerie est vide. « Actualiser en ligne » cherche les derniers niveaux proposés."
+		empty.text = Lang.t("La galerie est vide. « Actualiser en ligne » cherche les derniers niveaux proposés.")
 		_list.add_child(empty)
 		return
 	for entry: Dictionary in Gallery.sorted(_entries, newest_first):
@@ -134,7 +134,7 @@ func _make_row(entry: Dictionary) -> Control:
 	name.add_theme_color_override("font_color", Part.GOLD)
 	text.add_child(name)
 	var by := Label.new()
-	by.text = "par %s%s  ·  %s" % [entry.author, "  ·  " + entry.added if entry.added != "" else "",
+	by.text = Lang.t("par %s%s  ·  %s") % [entry.author, "  ·  " + entry.added if entry.added != "" else "",
 			entry.level.goal_text]
 	by.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
 	by.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -151,7 +151,7 @@ func _make_row(entry: Dictionary) -> Control:
 	row_box.add_child(status)
 	var play := Button.new()
 	play.name = "Jouer"
-	play.text = "Jouer"
+	play.text = Lang.t("Jouer")
 	play.custom_minimum_size.x = 90
 	play.focus_mode = Control.FOCUS_NONE
 	play.pressed.connect(func() -> void: play_requested.emit(entry))

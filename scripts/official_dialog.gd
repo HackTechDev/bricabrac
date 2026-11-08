@@ -28,13 +28,13 @@ func _init() -> void:
 	add_child(col)
 	_list_box = VBoxContainer.new()
 	col.add_child(_list_box)
-	_list_box.add_child(_title("Ouvrir un niveau du jeu"))
+	_list_box.add_child(_title(Lang.t("Ouvrir un niveau du jeu")))
 	list = ItemList.new()
 	list.custom_minimum_size = Vector2(540, 380)
 	list.item_activated.connect(_open)
 	_list_box.add_child(list)
 	var open := Button.new()
-	open.text = "Ouvrir dans l'éditeur"
+	open.text = Lang.t("Ouvrir dans l'éditeur")
 	open.pressed.connect(func() -> void:
 		if not list.get_selected_items().is_empty():
 			_open(list.get_selected_items()[0]))
@@ -42,30 +42,30 @@ func _init() -> void:
 
 	_form_box = VBoxContainer.new()
 	col.add_child(_form_box)
-	_form_box.add_child(_title("Enregistrer comme niveau du jeu"))
+	_form_box.add_child(_title(Lang.t("Enregistrer comme niveau du jeu")))
 	var grid := GridContainer.new()
 	grid.columns = 2
 	_form_box.add_child(grid)
-	id_edit = _field(grid, "Identifiant", LineEdit.new())
-	id_edit.placeholder_text = "minuscules, chiffres et _"
-	world_button = _field(grid, "Monde", OptionButton.new())
+	id_edit = _field(grid, Lang.t("Identifiant"), LineEdit.new())
+	id_edit.placeholder_text = Lang.t("minuscules, chiffres et _")
+	world_button = _field(grid, Lang.t("Monde"), OptionButton.new())
 	for world: Dictionary in LevelData.WORLDS:
 		if world.id != "perso":
 			world_button.add_item(world.name)
 			world_button.set_item_metadata(world_button.item_count - 1, world.id)
-	intro_edit = _field(grid, "Introduction", LineEdit.new())
-	hint_edit = _field(grid, "Indice", LineEdit.new())
-	par_spin = _field(grid, "Temps « Rapide » (s)", SpinBox.new())
+	intro_edit = _field(grid, Lang.t("Introduction"), LineEdit.new())
+	hint_edit = _field(grid, Lang.t("Indice"), LineEdit.new())
+	par_spin = _field(grid, Lang.t("Temps « Rapide » (s)"), SpinBox.new())
 	par_spin.min_value = 0.0
 	par_spin.max_value = 60.0
 	par_spin.step = 0.5
-	challenge_check = _field(grid, "Niveau défi", CheckBox.new())
-	challenge_check.text = "fermé tant que le monde n'a pas toutes ses étoiles"
+	challenge_check = _field(grid, Lang.t("Niveau défi"), CheckBox.new())
+	challenge_check.text = Lang.t("fermé tant que le monde n'a pas toutes ses étoiles")
 	file_label = Label.new()
 	file_label.add_theme_font_size_override("font_size", 13)
 	_form_box.add_child(file_label)
 	var save := Button.new()
-	save.text = "Enregistrer le fichier"
+	save.text = Lang.t("Enregistrer le fichier")
 	save.pressed.connect(_confirm)
 	_form_box.add_child(save)
 	message = Label.new()
@@ -99,7 +99,7 @@ func show_list(files: Array) -> void:
 	_paths.clear()
 	for file: Dictionary in files:
 		var level: Dictionary = file.level
-		list.add_item("%s  —  %s (%s)" % [file.path.get_file().get_basename(), level.get("name", "?"),
+		list.add_item(Lang.t("%s  —  %s (%s)") % [file.path.get_file().get_basename(), level.get("name", "?"),
 				LevelData.world(level.get("world", "")).name])
 		_paths.append(file.path)
 	popup_centered(Vector2i(580, 470))
@@ -120,7 +120,7 @@ func show_form(meta: Dictionary, path: String) -> void:
 	hint_edit.text = meta.get("hint", "")
 	par_spin.value = meta.get("par_time", 0.0)
 	challenge_check.button_pressed = meta.get("challenge", false)
-	file_label.text = "Fichier : " + (path.get_file() if path != "" else "nouveau, numéroté après les autres")
+	file_label.text = Lang.t("Fichier : ") + (path.get_file() if path != "" else Lang.t("nouveau, numéroté après les autres"))
 	popup_centered(Vector2i(580, 330))
 
 
@@ -144,7 +144,7 @@ func _confirm() -> void:
 	var id: String = meta().id
 	var valid := RegEx.create_from_string("^[a-z0-9_]+$")
 	if valid.search(id) == null:
-		message.text = "Identifiant : des minuscules sans accent, des chiffres ou _."
+		message.text = Lang.t("Identifiant : des minuscules sans accent, des chiffres ou _.")
 		return
 	save_confirmed.emit(meta())
 

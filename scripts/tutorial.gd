@@ -110,8 +110,8 @@ func _show_step() -> void:
 		text = step.running_text
 	elif _retry:
 		text = step.retry
-	_text.text = text
-	_counter.text = "Tutoriel  %d / %d" % [index + 1, steps.size()]
+	_text.text = Lang.t(text)
+	_counter.text = Lang.t("Tutoriel  %d / %d") % [index + 1, steps.size()]
 	_ok_button.visible = step.get("until", "ack") == "ack"
 	# La bulle ne se replace qu'au changement d'étape ou de texte, jamais pendant la simulation.
 	var key := "%d|%s" % [index, text]
@@ -222,7 +222,7 @@ func _build_bubble() -> void:
 	row.add_theme_constant_override("separation", 8)
 	col.add_child(row)
 	_skip_button = Button.new()
-	_skip_button.text = "Passer le tutoriel"
+	_skip_button.text = Lang.t("Passer le tutoriel")
 	_skip_button.flat = true
 	_skip_button.focus_mode = Control.FOCUS_NONE
 	_skip_button.add_theme_color_override("font_color", Color("6b7280"))
@@ -232,7 +232,7 @@ func _build_bubble() -> void:
 		finished.emit(true))
 	row.add_child(_skip_button)
 	_ok_button = Button.new()
-	_ok_button.text = "Compris"
+	_ok_button.text = Lang.t("Compris")
 	_ok_button.focus_mode = Control.FOCUS_NONE
 	_ok_button.pressed.connect(func() -> void:
 		index += 1

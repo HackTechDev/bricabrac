@@ -20,16 +20,16 @@ func tension() -> float:
 
 
 func setting() -> Dictionary:
-	return {"key": "tension", "step": 10.0, "min": 0.0, "max": 70.0, "default": 0.0, "label": "Tension (R)"}
+	return {"key": "tension", "step": 10.0, "min": 0.0, "max": 70.0, "default": 0.0, "label": Lang.t("Tension (R)")}
 
 
 func describe() -> PackedStringArray:
 	var lines := PackedStringArray()
 	var via: int = entry.get("via", []).size()
 	if via > 0:
-		lines.append("Passe par %d poulie(s)" % via)
-	lines.append("Tendu à %d %% au départ" % roundi(tension() * 100.0) if tension() > 0.0
-			else "Juste tendu (R : le tendre davantage)")
+		lines.append(Lang.t("Passe par %d poulie(s)") % via)
+	lines.append(Lang.t("Tendu à %d %% au départ") % roundi(tension() * 100.0) if tension() > 0.0
+			else Lang.t("Juste tendu (R : le tendre davantage)"))
 	return lines
 
 

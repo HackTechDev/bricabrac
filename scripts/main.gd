@@ -52,6 +52,8 @@ var muted := false
 ## Volumes de 0 à 1, réglés dans les options.
 var sfx_volume := 1.0
 var music_volume := 0.5
+## Langue de l'interface (voir Lang).
+var language := "fr"
 var music: Music
 var options: OptionsPanel
 var _mute_check: CheckBox
@@ -130,6 +132,7 @@ var chrono: Chrono
 
 func _ready() -> void:
 	_load_progress()
+	Lang.use(language)
 	_assemble_levels()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -174,7 +177,7 @@ func _ready() -> void:
 		var proposal := gallery_proposal()
 		if proposal.begins_with("https://"):
 			OS.shell_open(proposal)
-			gallery_screen.message.text = "La page de proposition s'ouvre dans ton navigateur : complète-la et envoie-la."
+			gallery_screen.message.text = Lang.t("La page de proposition s'ouvre dans ton navigateur : complète-la et envoie-la.")
 		else:
 			gallery_screen.message.text = proposal)
 	_gallery_http = HTTPRequest.new()
@@ -219,9 +222,9 @@ func open_title() -> void:
 		if completed.has(level.id):
 			done += 1
 			stars += bonuses.get(level.id, []).size()
-	var progress := "%d / %d niveaux terminés" % [done, total]
+	var progress := Lang.t("%d / %d niveaux terminés") % [done, total]
 	if stars > 0:
-		progress += "  ·  %d ★" % stars
+		progress += Lang.t("  ·  %d ★") % stars
 	title_screen.open(progress, not completed.is_empty() or not saved_layouts.is_empty())
 
 
@@ -243,10 +246,10 @@ func _announce(shot: Texture2D) -> void:
 	var world := LevelData.world(level.get("world", "atelier"))
 	var line := ""
 	if level.get("sandbox", false):
-		line = "Construis librement"
+		line = Lang.t("Construis librement")
 	elif level.has("world"):
-		line = "%s  ·  niveau %d" % [world.name, current + 1]
-	transition.play(shot, line, level.name, world.color, Rect2(Vector2(0, TOP_H), Board.SIZE))
+		line = Lang.t("%s  ·  niveau %d") % [Lang.t(world.name), current + 1]
+	transition.play(shot, line, Lang.t(level.name), world.color, Rect2(Vector2(0, TOP_H), Board.SIZE))
 
 
 ## Ordre des niveaux : ceux du jeu, le bac à sable, les niveaux personnels, puis l'éditeur et
@@ -306,12 +309,12 @@ static func _physics_note(level: Dictionary) -> String:
 	var notes: PackedStringArray = []
 	var g: float = level.get("gravity", 1.0)
 	if g < 1.0:
-		notes.append("gravité faible (×%s)" % String.num(g, 2).replace(".", ","))
+		notes.append(Lang.t("gravité faible (×%s)") % String.num(g, 2).replace(".", Lang.decimal_mark()))
 	elif g > 1.0:
-		notes.append("gravité forte (×%s)" % String.num(g, 2).replace(".", ","))
+		notes.append(Lang.t("gravité forte (×%s)") % String.num(g, 2).replace(".", Lang.decimal_mark()))
 	var w: Vector2 = level.get("wind", Vector2.ZERO)
 	if w != Vector2.ZERO:
-		notes.append("vent " + _wind_arrow(w))
+		notes.append(Lang.t("vent ") + _wind_arrow(w))
 	return "" if notes.is_empty() else "  —  " + ", ".join(notes)
 
 
@@ -335,13 +338,13 @@ func load_level(index: int) -> void:
 	var dropped := board.restore_layout(saved_layouts.get(level_id, []))
 	if not histories.has(level_id):
 		histories[level_id] = History.new(board.layout())
-	_goal_label.text = levels[index].goal_text + _physics_note(levels[index])
+	_goal_label.text = Lang.t(levels[index].goal_text) + _physics_note(levels[index])
 	chrono.reset(levels[index].get("par_time", 0.0))
-	_status.text = levels[index].get("intro", "")
+	_status.text = Lang.t(levels[index].get("intro", ""))
 	if not board.placed.is_empty():
-		_status.text = "Ta machine a été remise en place. Ctrl+Z annule ta dernière action."
+		_status.text = Lang.t("Ta machine a été remise en place. Ctrl+Z annule ta dernière action.")
 	if dropped > 0:
-		_status.text = "%d pièce(s) sauvegardée(s) ne sont plus valides dans ce niveau." % dropped
+		_status.text = Lang.t("%d pièce(s) sauvegardée(s) ne sont plus valides dans ce niveau.") % dropped
 	_rebuild_bin()
 	_refresh_level_picker()
 	_refresh_controls()
@@ -388,9 +391,9 @@ func _exit_tree() -> void:
 func _refresh_speed() -> void:
 	if not board.running:
 		paused = false
-	_pause_button.text = "Reprendre" if paused else "Pause"
+	_pause_button.text = Lang.t("Reprendre") if paused else Lang.t("Pause")
 	_pause_button.disabled = not board.running
-	_speed_button.text = "×%d" % speed
+	_speed_button.text = Lang.t("×%d") % speed
 	_apply_speed()
 
 
@@ -480,7 +483,7 @@ func _handle_key(event: InputEventKey) -> void:
 			toggle_pause()
 		KEY_T:
 			board.show_ghost = not board.show_ghost
-			_status.text = "Trace du dernier essai : " + ("affichée." if board.show_ghost else "masquée (T pour la revoir).")
+			_status.text = Lang.t("Trace du dernier essai : ") + (Lang.t("affichée.") if board.show_ghost else Lang.t("masquée (T pour la revoir)."))
 		KEY_V:
 			cycle_speed()
 		KEY_TAB:
@@ -492,7 +495,7 @@ func _handle_key(event: InputEventKey) -> void:
 		KEY_ESCAPE:
 			if rope_tool:
 				_cancel_rope()
-				_status.text = "Corde annulée."
+				_status.text = Lang.t("Corde annulée.")
 			elif selected != null:
 				_select(null)
 			else:
@@ -581,11 +584,10 @@ func _track_hover(event: InputEventMouse) -> void:
 
 
 func _show_tooltip() -> void:
-	var info: Dictionary = Catalog.INFO[_hovered.kind]
-	var lines := PackedStringArray([info.label, info.desc])
+	var lines := PackedStringArray([Catalog.label(_hovered.kind), Catalog.desc(_hovered.kind)])
 	lines.append_array(_hovered.describe())
 	if not _is_player_part(_hovered):
-		lines.append("Pièce du décor : elle ne se déplace pas.")
+		lines.append(Lang.t("Pièce du décor : elle ne se déplace pas."))
 	_tooltip_label.text = "\n".join(lines)
 	_tooltip.reset_size()
 	_tooltip.show()
@@ -632,7 +634,7 @@ func _grab_from_bin(kind: String) -> void:
 		_select(null)
 		rope_tool = true
 		rope_kind = kind
-		_status.text = "%s : clique le premier objet à relier (Échap pour annuler)." % Catalog.INFO[kind].label
+		_status.text = Lang.t("%s : clique le premier objet à relier (Échap pour annuler).") % Catalog.label(kind)
 		return
 	drag_part = board.place(kind, _mouse)
 	drag_is_new = true
@@ -681,7 +683,7 @@ func _drop_group() -> void:
 		board.sfx.play("deny")
 		for p: Part in origins:
 			board.move_part(p, origins[p])
-		_status.text = "Pas de place ici : les pièces reprennent leur position."
+		_status.text = Lang.t("Pas de place ici : les pièces reprennent leur position.")
 	_commit()
 
 
@@ -700,10 +702,10 @@ func _drop() -> void:
 	if drag_is_new:
 		_select(null)
 		board.remove(part)
-		_status.text = "Pas de place ici : la pièce retourne dans le bac."
+		_status.text = Lang.t("Pas de place ici : la pièce retourne dans le bac.")
 	else:
 		board.move_part(part, drag_origin)
-		_status.text = "Pas de place ici : la pièce reprend sa position."
+		_status.text = Lang.t("Pas de place ici : la pièce reprend sa position.")
 	_commit()
 
 
@@ -717,13 +719,13 @@ func _stop_drag() -> void:
 func _handle_rope_click(button: MouseButton) -> void:
 	if button == MOUSE_BUTTON_RIGHT:
 		_cancel_rope()
-		_status.text = "Corde annulée."
+		_status.text = Lang.t("Corde annulée.")
 		return
 	if button != MOUSE_BUTTON_LEFT:
 		return
 	var target := board.part_at(_mouse)
 	if target == null or target is RopePart:
-		_status.text = "Clique sur une pièce."
+		_status.text = Lang.t("Clique sur une pièce.")
 		board.sfx.play("deny")
 	elif rope_from == null:
 		_start_rope(target)
@@ -736,18 +738,18 @@ func _handle_rope_click(button: MouseButton) -> void:
 
 func _start_rope(target: Part) -> void:
 	if not target.can_tie():
-		_status.text = "Une corde commence sur un objet, pas sur une poulie."
+		_status.text = Lang.t("Une corde commence sur un objet, pas sur une poulie.")
 		board.sfx.play("deny")
 		return
 	rope_from = target
 	rope_from_off = target.rope_anchor(board.to_global(_mouse))
 	board.sfx.play("tick")
-	_status.text = "Corde : clique les poulies dans l'ordre, puis le second objet."
+	_status.text = Lang.t("Corde : clique les poulies dans l'ordre, puis le second objet.")
 
 
 func _add_rope_pulley(target: Part) -> void:
 	if rope_via.has(target.entry.id):
-		_status.text = "La corde passe déjà par cette poulie."
+		_status.text = Lang.t("La corde passe déjà par cette poulie.")
 		board.sfx.play("deny")
 		return
 	rope_via.append(target.entry.id)
@@ -756,11 +758,11 @@ func _add_rope_pulley(target: Part) -> void:
 
 func _finish_rope(target: Part) -> void:
 	if target == rope_from:
-		_status.text = "Une corde relie deux pièces différentes."
+		_status.text = Lang.t("Une corde relie deux pièces différentes.")
 		board.sfx.play("deny")
 		return
 	if not (rope_from.main_body is RigidBody2D or target.main_body is RigidBody2D):
-		_status.text = "Une corde entre deux pièces fixes ne ferait rien : choisis un objet mobile."
+		_status.text = Lang.t("Une corde entre deux pièces fixes ne ferait rien : choisis un objet mobile.")
 		board.sfx.play("deny")
 		return
 	var off := target.rope_anchor(board.to_global(_mouse))
@@ -768,8 +770,8 @@ func _finish_rope(target: Part) -> void:
 	board.sfx.play("place")
 	_cancel_rope()
 	_commit()
-	_status.text = "Élastique posé. Sélectionne-le et appuie sur R pour le tendre." if rope_kind == "elastic" \
-			else "Corde posée, tendue. Sélectionne-la et appuie sur R pour lui donner du mou."
+	_status.text = Lang.t("Élastique posé. Sélectionne-le et appuie sur R pour le tendre.") if rope_kind == "elastic" \
+			else Lang.t("Corde posée, tendue. Sélectionne-la et appuie sur R pour lui donner du mou.")
 
 
 func _cancel_rope() -> void:
@@ -822,9 +824,9 @@ func _undo() -> void:
 		return
 	if rope_tool:
 		_cancel_rope()
-		_status.text = "Corde annulée."
+		_status.text = Lang.t("Corde annulée.")
 	elif _history().can_undo():
-		_show_state(_history().undo(), "Action annulée.")
+		_show_state(_history().undo(), Lang.t("Action annulée."))
 	else:
 		board.sfx.play("deny")
 
@@ -833,7 +835,7 @@ func _redo() -> void:
 	if board.running or drag_part != null or rope_tool:
 		return
 	if _history().can_redo():
-		_show_state(_history().redo(), "Action rétablie.")
+		_show_state(_history().redo(), Lang.t("Action rétablie."))
 	else:
 		board.sfx.play("deny")
 
@@ -878,7 +880,7 @@ func _edit_selected(key: String, value: Variant) -> void:
 		else:
 			part.entry[key] = old
 		part = board.rebuild_part(part)
-		_status.text = "Pas assez de place pour cela."
+		_status.text = Lang.t("Pas assez de place pour cela.")
 		board.sfx.play("deny")
 	else:
 		board.sfx.play("tick")
@@ -954,7 +956,7 @@ func _set_group(parts: Array[Part]) -> void:
 	selected = parts[-1] if not parts.is_empty() else null
 	_refresh_context()
 	if parts.size() > 1:
-		_status.text = "%d pièces sélectionnées : glisser pour les déplacer ensemble, Ctrl+C pour les copier." \
+		_status.text = Lang.t("%d pièces sélectionnées : glisser pour les déplacer ensemble, Ctrl+C pour les copier.") \
 				% parts.size()
 
 
@@ -996,7 +998,7 @@ func copy_selection() -> void:
 		if keep:
 			clipboard.append(entry.duplicate(true))
 	board.sfx.play("tick")
-	_status.text = "%d pièce(s) copiée(s) : Ctrl+V pour les coller sous la souris." % clipboard.size()
+	_status.text = Lang.t("%d pièce(s) copiée(s) : Ctrl+V pour les coller sous la souris.") % clipboard.size()
 
 
 ## Colle la copie centrée sous la souris (ou décalée, si la souris est hors du plateau), dans
@@ -1041,13 +1043,13 @@ func paste() -> void:
 		pasted.append(part)
 	if pasted.is_empty():
 		board.sfx.play("deny")
-		_status.text = "Rien à coller ici : bac vide ou pas de place."
+		_status.text = Lang.t("Rien à coller ici : bac vide ou pas de place.")
 		return
 	board.sfx.play("place")
 	_commit()
 	_set_group(pasted)
-	_status.text = "%d pièce(s) collée(s)%s." % [pasted.size(),
-			"" if skipped == 0 else ", %d restée(s) dans le bac (épuisé ou pas de place)" % skipped]
+	_status.text = Lang.t("%d pièce(s) collée(s)%s.") % [pasted.size(),
+			"" if skipped == 0 else Lang.t(", %d restée(s) dans le bac (épuisé ou pas de place)") % skipped]
 
 
 # --- Construction de l'interface ------------------------------------------------
@@ -1066,7 +1068,7 @@ func _build_top_bar() -> void:
 	_level_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_level_button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_level_button.focus_mode = Control.FOCUS_NONE
-	_level_button.tooltip_text = "Choisir un autre niveau (Tab)"
+	_level_button.tooltip_text = Lang.t("Choisir un autre niveau (Tab)")
 	_level_button.pressed.connect(open_level_select)
 	row.add_child(_level_button)
 
@@ -1100,19 +1102,19 @@ func _build_top_bar() -> void:
 	row.add_child(_sound_button)
 
 	_hint_button = Button.new()
-	_hint_button.text = "Indice"
+	_hint_button.text = Lang.t("Indice")
 	_hint_button.focus_mode = Control.FOCUS_NONE
 	_hint_button.pressed.connect(ask_hint)
 	row.add_child(_hint_button)
 	_hint_confirm = ConfirmationDialog.new()
-	_hint_confirm.title = "Indice"
-	_hint_confirm.ok_button_text = "Montrer"
-	_hint_confirm.cancel_button_text = "Annuler"
+	_hint_confirm.title = Lang.t("Indice")
+	_hint_confirm.ok_button_text = Lang.t("Montrer")
+	_hint_confirm.cancel_button_text = Lang.t("Annuler")
 	_hint_confirm.confirmed.connect(func() -> void: reveal_hint(_hint_level() + 1))
 	add_child(_hint_confirm)
 
 	_clear_button = Button.new()
-	_clear_button.text = "Tout retirer"
+	_clear_button.text = Lang.t("Tout retirer")
 	_clear_button.focus_mode = Control.FOCUS_NONE
 	_clear_button.pressed.connect(func() -> void:
 		_select(null)
@@ -1128,13 +1130,13 @@ func _build_top_bar() -> void:
 	_pause_button = Button.new()
 	_pause_button.focus_mode = Control.FOCUS_NONE
 	_pause_button.custom_minimum_size.x = 96
-	_pause_button.tooltip_text = "Met la simulation en pause, ou la reprend (P)"
+	_pause_button.tooltip_text = Lang.t("Met la simulation en pause, ou la reprend (P)")
 	_pause_button.pressed.connect(toggle_pause)
 	row.add_child(_pause_button)
 	_speed_button = Button.new()
 	_speed_button.focus_mode = Control.FOCUS_NONE
 	_speed_button.custom_minimum_size.x = 44
-	_speed_button.tooltip_text = "Vitesse de la simulation : ×1, ×2 ou ×4 (V)"
+	_speed_button.tooltip_text = Lang.t("Vitesse de la simulation : ×1, ×2 ou ×4 (V)")
 	_speed_button.pressed.connect(cycle_speed)
 	row.add_child(_speed_button)
 
@@ -1155,7 +1157,7 @@ func _build_side_panel() -> void:
 	panel.add_child(col)
 
 	var title := Label.new()
-	title.text = "Pièces disponibles"
+	title.text = Lang.t("Pièces disponibles")
 	col.add_child(title)
 
 	var scroll := ScrollContainer.new()
@@ -1194,12 +1196,12 @@ func _build_side_panel() -> void:
 	grid.columns = 2
 	col.add_child(grid)
 	for def: Array in [
-		["undo", "Annuler", _undo, "Ctrl+Z"],
-		["redo", "Rétablir", _redo, "Ctrl+Y"],
-		["rotate", "Pivoter (R)", func() -> void: _rotate_selected(1.0)],
-		["flip", "Miroir (F)", _flip_selected],
-		["channel", "Canal (C)", _cycle_channel],
-		["remove", "Retirer", _remove_selected],
+		["undo", Lang.t("Annuler"), _undo, Lang.t("Ctrl+Z")],
+		["redo", Lang.t("Rétablir"), _redo, Lang.t("Ctrl+Y")],
+		["rotate", Lang.t("Pivoter (R)"), func() -> void: _rotate_selected(1.0)],
+		["flip", Lang.t("Miroir (F)"), _flip_selected],
+		["channel", Lang.t("Canal (C)"), _cycle_channel],
+		["remove", Lang.t("Retirer"), _remove_selected],
 	]:
 		var b := Button.new()
 		b.text = def[1]
@@ -1236,7 +1238,7 @@ func _build_win_overlay() -> void:
 	box.add_theme_constant_override("separation", 14)
 	center.add_child(box)
 	var label := Label.new()
-	label.text = "La machine fonctionne !"
+	label.text = Lang.t("La machine fonctionne !")
 	label.add_theme_font_size_override("font_size", 34)
 	label.add_theme_color_override("font_color", Part.GOLD)
 	box.add_child(label)
@@ -1249,7 +1251,7 @@ func _build_win_overlay() -> void:
 	_replay_row = HBoxContainer.new()
 	_replay_row.add_theme_constant_override("separation", 8)
 	box.add_child(_replay_row)
-	for def: Array in [["Revoir", "watch"], ["Filmer en GIF", "gif"], ["Filmer en vidéo", "video"]]:
+	for def: Array in [[Lang.t("Revoir"), "watch"], [Lang.t("Filmer en GIF"), "gif"], [Lang.t("Filmer en vidéo"), "video"]]:
 		var b := Button.new()
 		b.text = def[0]
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1257,17 +1259,17 @@ func _build_win_overlay() -> void:
 		b.pressed.connect(func() -> void: replay(mode))
 		_replay_row.add_child(b)
 	_open_folder = Button.new()
-	_open_folder.text = "Ouvrir le dossier des enregistrements"
+	_open_folder.text = Lang.t("Ouvrir le dossier des enregistrements")
 	_open_folder.pressed.connect(func() -> void:
 		DirAccess.make_dir_recursive_absolute(Recorder.DIR)
 		OS.shell_open(ProjectSettings.globalize_path(Recorder.DIR)))
 	box.add_child(_open_folder)
 	_share_solution = Button.new()
-	_share_solution.text = "Partager ma solution…"
+	_share_solution.text = Lang.t("Partager ma solution…")
 	_share_solution.pressed.connect(_share_my_solution)
 	box.add_child(_share_solution)
 	var again := Button.new()
-	again.text = "Revenir à l'atelier"
+	again.text = Lang.t("Revenir à l'atelier")
 	again.pressed.connect(toggle_run)
 	box.add_child(again)
 	_win_overlay.hide()
@@ -1313,7 +1315,7 @@ func _refresh_context() -> void:
 	var p := selected if is_instance_valid(selected) else null
 	var adjustable := p != null and not p.setting().is_empty()
 	_ctx_buttons.rotate.disabled = p == null or (p.rotate_step() <= 0.0 and not adjustable)
-	_ctx_buttons.rotate.text = p.setting().label if adjustable else "Pivoter (R)"
+	_ctx_buttons.rotate.text = p.setting().label if adjustable else Lang.t("Pivoter (R)")
 	_ctx_buttons.flip.disabled = p == null or not p.can_flip()
 	_ctx_buttons.channel.disabled = p == null or not p.uses_channel()
 	_ctx_buttons.remove.disabled = p == null
@@ -1338,7 +1340,7 @@ func is_sandbox() -> bool:
 
 
 func _refresh_controls() -> void:
-	_run_button.text = "Arrêter" if board.running else "Lancer"
+	_run_button.text = Lang.t("Arrêter") if board.running else Lang.t("Lancer")
 	_refresh_speed()
 	_clear_button.disabled = board.running
 	_gravity_button.visible = is_sandbox()
@@ -1346,38 +1348,38 @@ func _refresh_controls() -> void:
 	_gravity_button.disabled = board.running
 	_wind_button.disabled = board.running
 	var g := board.gravity_factor()
-	_gravity_button.text = "Gravité : " + ("normale" if g == 1.0 else "×" + String.num(g, 1).replace(".", ","))
+	_gravity_button.text = Lang.t("Gravité : ") + (Lang.t("normale") if g == 1.0 else Lang.t("×") + String.num(g, 1).replace(".", Lang.decimal_mark()))
 	var w := board.wind()
-	_wind_button.text = "Vent : " + ("aucun" if w == Vector2.ZERO else _wind_arrow(w))
-	_sound_button.text = "Son : non" if muted else "Son : oui"
+	_wind_button.text = Lang.t("Vent : ") + ("aucun" if w == Vector2.ZERO else _wind_arrow(w))
+	_sound_button.text = Lang.t("Son : non") if muted else Lang.t("Son : oui")
 	AudioServer.set_bus_mute(0, muted)
 	_edit_button.visible = is_testing() or levels[current].get("custom", false)
 	_edit_button.disabled = board.running
-	_edit_button.text = "Retour à l'éditeur" if is_testing() else "Modifier"
+	_edit_button.text = Lang.t("Retour à l'éditeur") if is_testing() else Lang.t("Modifier")
 	if editor != null and is_editor():
 		editor.show_physics(board.gravity_factor(), board.wind())
 
 
 func _refresh_level_picker() -> void:
 	var level: Dictionary = levels[current]
-	var world: String = LevelData.world(level.world).name + " · " if level.has("world") else ""
-	_level_button.text = "☰  %s%d. %s%s" % [world, current + 1, level.name, _stars(level)]
+	var world: String = Lang.t(LevelData.world(level.world).name) + " · " if level.has("world") else ""
+	_level_button.text = Lang.t("☰  %s%d. %s%s") % [world, current + 1, Lang.t(level.name), _stars(level)]
 
 
 ## Ligne d'état d'une vignette : terminé ou non, étoiles des objectifs bonus.
 func _level_status(level: Dictionary) -> String:
 	if level.get("custom", false) and not level.get("verified", false):
-		return "Non vérifié"
+		return Lang.t("Non vérifié")
 	if level.get("editor", false):
-		return "Crée tes propres niveaux"
+		return Lang.t("Crée tes propres niveaux")
 	if level.get("sandbox", false):
-		return "Toutes les pièces, sans objectif"
+		return Lang.t("Toutes les pièces, sans objectif")
 	if is_locked(level):
-		return "🔒 Toutes les étoiles du monde"
+		return Lang.t("🔒 Toutes les étoiles du monde")
 	if not completed.has(level.id):
-		return "À faire"
+		return Lang.t("À faire")
 	var record := record_text(level.id)
-	return "Terminé" + _stars(level) + ("\n" + record if record != "" else "")
+	return Lang.t("Terminé") + _stars(level) + ("\n" + record if record != "" else "")
 
 
 ## Un niveau « défi » s'ouvre quand tous les autres niveaux de son monde sont terminés avec
@@ -1434,11 +1436,11 @@ func _update_record(id: String, seconds: float, count: int) -> PackedStringArray
 	if first or seconds < record.time:
 		record.time = snappedf(seconds, 0.01)
 		if not first:
-			news.append("temps")
+			news.append(Lang.t("temps"))
 	if first or count < record.parts:
 		record.parts = count
 		if not first:
-			news.append("pièces")
+			news.append(Lang.t("pièces"))
 	records[id] = record
 	return news
 
@@ -1447,7 +1449,7 @@ func record_text(id: String) -> String:
 	if not records.has(id):
 		return ""
 	var record: Dictionary = records[id]
-	return "Record : %s s · %d pièce%s" % [String.num(record.time, 1).replace(".", ","), record.parts,
+	return Lang.t("Record : %s s · %d pièce%s") % [String.num(record.time, 1).replace(".", Lang.decimal_mark()), record.parts,
 			"s" if record.parts > 1 else ""]
 
 
@@ -1466,8 +1468,8 @@ func ask_hint() -> void:
 		reveal_hint(maxi(step, 1))
 		return
 	var stars := Bonus.offered(level).size()
-	_hint_confirm.dialog_text = ("Montrer où va une pièce clé ?\nCe niveau ne pourra plus rapporter que %d étoile(s) sur %d." % [maxi(stars - 1, 0), stars]) \
-			if step == 1 else "Montrer toute la solution ?\nCe niveau ne rapportera plus de nouvelle étoile."
+	_hint_confirm.dialog_text = (Lang.t("Montrer où va une pièce clé ?\nCe niveau ne pourra plus rapporter que %d étoile(s) sur %d.") % [maxi(stars - 1, 0), stars]) \
+			if step == 1 else Lang.t("Montrer toute la solution ?\nCe niveau ne rapportera plus de nouvelle étoile.")
 	_hint_confirm.popup_centered()
 
 
@@ -1480,7 +1482,7 @@ func reveal_hint(step: int) -> void:
 	if not level.get("sandbox", false):
 		hint_levels[level.id] = maxi(_hint_level(), step)
 		_save_progress()
-	_status.text = level.get("hint", "")
+	_status.text = Lang.t(level.get("hint", ""))
 	if step == 1 and level.has("tutorial") and not board.running:
 		_start_tutorial()
 	_show_hint_pieces()
@@ -1493,10 +1495,10 @@ func _show_hint_pieces() -> void:
 	var step := _hint_level()
 	board.show_hints(solution if step >= 3 else [_key_piece(solution)] if step == 2 and not solution.is_empty() else [])
 	if step >= 2 and not solution.is_empty():
-		_status.text = "Indice : les pointillés dorés montrent %s." % ("toute la solution" if step >= 3 else "où poser une pièce clé")
-	_hint_button.text = "Indice" if step == 0 or solution.is_empty() else \
-			"Indice +" if step == 1 else "Solution" if step == 2 else "Indice ✓"
-	_hint_button.tooltip_text = "Un coup de pouce : le texte d'abord, puis une pièce clé, puis la solution (contre des étoiles)."
+		_status.text = Lang.t("Indice : les pointillés dorés montrent %s.") % (Lang.t("toute la solution") if step >= 3 else Lang.t("où poser une pièce clé"))
+	_hint_button.text = Lang.t("Indice") if step == 0 or solution.is_empty() else \
+			Lang.t("Indice +") if step == 1 else Lang.t("Solution") if step == 2 else Lang.t("Indice ✓")
+	_hint_button.tooltip_text = Lang.t("Un coup de pouce : le texte d'abord, puis une pièce clé, puis la solution (contre des étoiles).")
 
 
 ## La pièce la plus parlante de la solution : la première qui n'est ni planche ni corde.
@@ -1537,17 +1539,17 @@ func _on_won() -> void:
 	for kind in Bonus.offered(level):
 		var mark := "★ " if now.has(kind) else "☆ "
 		var fresh := now.has(kind) and not got.has(kind) and got.size() < cap
-		lines.append(mark + Bonus.describe(kind, level) + ("  (nouveau !)" if fresh else ""))
+		lines.append(mark + Bonus.describe(kind, level) + (Lang.t("  (nouveau !)") if fresh else ""))
 		if fresh:
 			got.append(kind)
 	bonuses[level.id] = got
 	if cap < Bonus.offered(level).size():
-		lines.append("Indices pris : ce niveau rapporte au plus %d étoile(s)." % cap)
-	lines.append("Temps : %s s, pièces posées : %d" % [String.num(board.elapsed, 1).replace(".", ","),
+		lines.append(Lang.t("Indices pris : ce niveau rapporte au plus %d étoile(s).") % cap)
+	lines.append(Lang.t("Temps : %s s, pièces posées : %d") % [String.num(board.elapsed, 1).replace(".", Lang.decimal_mark()),
 			board.placed.size()])
 	var news := _update_record(level.id, board.elapsed, board.placed.size())
 	if not news.is_empty():
-		lines.append("Nouveau record : " + " et ".join(news) + " !")
+		lines.append(Lang.t("Nouveau record : ") + Lang.t(" et ").join(news) + " !")
 	_win_bonus.text = "\n".join(lines)
 	_save_progress()
 	_refresh_level_picker()
@@ -1556,8 +1558,8 @@ func _on_won() -> void:
 	_share_solution.visible = true
 	_replay_row.visible = true
 	_open_folder.visible = last_recording != ""
-	_win_next.text = "Ouvrir le bac à sable" if next.get("sandbox", false) \
-			else "Rejouer le premier niveau" if _next_index() == 0 else "Niveau suivant"
+	_win_next.text = Lang.t("Ouvrir le bac à sable") if next.get("sandbox", false) \
+			else Lang.t("Rejouer le premier niveau") if _next_index() == 0 else Lang.t("Niveau suivant")
 	_win_overlay.show()
 
 
@@ -1579,13 +1581,13 @@ func _next_index() -> int:
 func _on_test_won() -> void:
 	editor.proof = {"signature": LevelData.signature(levels[current]), "solution": board.layout()}
 	_save_progress()
-	_win_bonus.text = "Résolu ! Ton niveau peut se gagner avec %d pièce(s), en %s s.\nTu peux maintenant l'enregistrer et le partager." % [
-			board.placed.size(), String.num(board.elapsed, 1).replace(".", ",")]
+	_win_bonus.text = Lang.t("Résolu ! Ton niveau peut se gagner avec %d pièce(s), en %s s.\nTu peux maintenant l'enregistrer et le partager.") % [
+			board.placed.size(), String.num(board.elapsed, 1).replace(".", Lang.decimal_mark())]
 	board.sfx.play("win")
 	_share_solution.visible = false
 	_replay_row.visible = false
 	_open_folder.visible = false
-	_win_next.text = "Retour à l'éditeur"
+	_win_next.text = Lang.t("Retour à l'éditeur")
 	_win_overlay.show()
 
 
@@ -1677,17 +1679,33 @@ func _tutorial_obstacles() -> Array:
 func _build_options() -> void:
 	options = OptionsPanel.new()
 	add_child(options)
-	options.add_slider("Effets sonores", sfx_volume, func(v: float) -> void:
+	options.add_slider(Lang.t("Effets sonores"), sfx_volume, func(v: float) -> void:
 		sfx_volume = v
 		_apply_volumes()
 		board.sfx.play("tick"))
-	options.add_slider("Musique", music_volume, func(v: float) -> void:
+	options.add_slider(Lang.t("Musique"), music_volume, func(v: float) -> void:
 		music_volume = v
 		_apply_volumes())
-	_mute_check = options.add_check("Couper tout le son (M)", muted, func(on: bool) -> void:
+	_mute_check = options.add_check(Lang.t("Couper tout le son (M)"), muted, func(on: bool) -> void:
 		if on != muted:
 			_toggle_sound())
+	var names := PackedStringArray()
+	for entry: Array in Lang.LANGUAGES:
+		names.append(entry[1])
+	options.add_choice(Lang.t("Langue"), names, Lang.index_of(language), func(i: int) -> void:
+		set_language(Lang.LANGUAGES[i][0]))
 	options.closed.connect(_save_progress)
+
+
+## Change la langue : l'interface se reconstruit dans la nouvelle langue, à l'écran titre.
+func set_language(code: String) -> void:
+	if code == language:
+		return
+	language = code
+	_save_progress()
+	Lang.use(code)
+	if get_tree().current_scene == self:
+		get_tree().reload_current_scene.call_deferred()
 
 
 func open_options() -> void:
@@ -1725,6 +1743,7 @@ func _load_progress() -> void:
 		muted = cfg.get_value("settings", "muted", false)
 		sfx_volume = cfg.get_value("settings", "sfx_volume", 1.0)
 		music_volume = cfg.get_value("settings", "music_volume", 0.5)
+		language = cfg.get_value("settings", "language", "fr")
 		saved_layouts = cfg.get_value("layouts", "by_level", {})
 		attempts = cfg.get_value("progress", "attempts", {})
 		for id: String in cfg.get_value("progress", "tutorials", []):
@@ -1781,6 +1800,7 @@ func _save_progress() -> void:
 	cfg.set_value("settings", "muted", muted)
 	cfg.set_value("settings", "sfx_volume", sfx_volume)
 	cfg.set_value("settings", "music_volume", music_volume)
+	cfg.set_value("settings", "language", language)
 	cfg.set_value("layouts", "by_level", saved_layouts)
 	if editor != null:
 		var draft := {"id": editor.custom_id, "name": editor.name_edit.text,
@@ -1801,24 +1821,24 @@ func edit_level(level: Dictionary) -> void:
 	_commit()
 	_refresh_proof()
 	_refresh_controls()
-	_status.text = "Niveau « %s » ouvert dans l'éditeur." % level.name
+	_status.text = Lang.t("Niveau « %s » ouvert dans l'éditeur.") % level.name
 
 
 func _toggle_goal() -> void:
 	if not is_editor() or board.running:
 		return
 	if selected == null:
-		_status.text = "Sélectionne d'abord un panier, une lampe ou un ballon."
+		_status.text = Lang.t("Sélectionne d'abord un panier, une lampe ou un ballon.")
 		board.sfx.play("deny")
 		return
 	if not LevelData.GOAL_KINDS.has(selected.kind):
-		_status.text = "Seuls un panier, une lampe ou un ballon peuvent servir d'objectif."
+		_status.text = Lang.t("Seuls un panier, une lampe ou un ballon peuvent servir d'objectif.")
 		board.sfx.play("deny")
 		return
 	var goal: bool = not selected.entry.get("goal", false)
 	_edit_selected("goal", goal)
 	if selected.entry.get("goal", false) == goal:
-		_status.text = "Objectif du niveau." if goal else "Ce n'est plus un objectif."
+		_status.text = Lang.t("Objectif du niveau.") if goal else Lang.t("Ce n'est plus un objectif.")
 
 
 ## Niveau jouable tiré du plan de travail, ou message d'erreur s'il n'est pas complet.
@@ -1829,9 +1849,9 @@ func _editor_level(id: String) -> Variant:
 			goal if goal != "" else "Atteins l'objectif.", board.layout(), editor.inventory,
 			board.gravity_factor(), board.wind())
 	if not LevelData.has_goal(level):
-		return "Il manque un objectif : sélectionne un panier, une lampe ou un ballon, puis G."
+		return Lang.t("Il manque un objectif : sélectionne un panier, une lampe ou un ballon, puis G.")
 	if level.inventory.is_empty():
-		return "Le joueur n'a aucune pièce : règle l'inventaire."
+		return Lang.t("Le joueur n'a aucune pièce : règle l'inventaire.")
 	return level
 
 
@@ -1850,14 +1870,14 @@ func _editor_try() -> void:
 	_test_level.custom = false
 	histories.erase("essai_editeur")
 	load_level(test_index())
-	_status.text = "Essai de ton niveau. « Retour à l'éditeur » pour le retoucher."
+	_status.text = Lang.t("Essai de ton niveau. « Retour à l'éditeur » pour le retoucher.")
 
 
 func _editor_save() -> void:
 	if board.running:
 		return
 	if editor.name_edit.text.strip_edges() == "":
-		_status.text = "Donne un nom à ton niveau."
+		_status.text = Lang.t("Donne un nom à ton niveau.")
 		board.sfx.play("deny")
 		return
 	var id := editor.custom_id if editor.custom_id != "" else "perso_%d" % int(Time.get_unix_time_from_system())
@@ -1881,8 +1901,8 @@ func _editor_save() -> void:
 	editor.custom_id = id
 	_reload_level_list(editor_index)
 	board.sfx.play("place")
-	_status.text = ("« %s » est enregistré dans « Mes niveaux »." % level.name) + (""
-			if level.verified else " Il n'est pas encore résolu : il ne pourra pas être partagé.")
+	_status.text = (Lang.t("« %s » est enregistré dans « Mes niveaux ».") % level.name) + (""
+			if level.verified else Lang.t(" Il n'est pas encore résolu : il ne pourra pas être partagé."))
 
 
 func _editor_delete() -> void:
@@ -1899,7 +1919,7 @@ func _editor_delete() -> void:
 	editor.custom_id = ""
 	_reload_level_list(editor_index)
 	board.sfx.play("remove")
-	_status.text = "Niveau supprimé. Le plan de travail reste là si tu veux le réenregistrer."
+	_status.text = Lang.t("Niveau supprimé. Le plan de travail reste là si tu veux le réenregistrer.")
 
 
 func _editor_reset() -> void:
@@ -1911,7 +1931,7 @@ func _editor_reset() -> void:
 	board.clear_placed()
 	_commit()
 	_refresh_controls()
-	_status.text = "Plan de travail vide : à toi de jouer."
+	_status.text = Lang.t("Plan de travail vide : à toi de jouer.")
 
 
 ## Reconstruit la liste des niveaux (et l'écran de sélection) en restant sur `index_of`.
@@ -1941,7 +1961,7 @@ func _open_official() -> void:
 func edit_official(path: String) -> void:
 	var level := LevelFile.load_file(path)
 	if level.is_empty():
-		_status.text = "Fichier de niveau illisible : %s" % path.get_file()
+		_status.text = Lang.t("Fichier de niveau illisible : %s") % path.get_file()
 		board.sfx.play("deny")
 		return
 	# Mêmes identifiants qu'en jeu pour le décor anonyme, auxquels la solution peut se référer.
@@ -1961,7 +1981,7 @@ func edit_official(path: String) -> void:
 		var solution := LevelData.remap_ids(level.solution, LevelData.decor_ids(board.layout()))
 		editor.proof = {"signature": LevelData.signature(normalized), "solution": solution}
 	_refresh_proof()
-	_status.text = "Niveau du jeu « %s » ouvert : %s." % [level.name, path.get_file()]
+	_status.text = Lang.t("Niveau du jeu « %s » ouvert : %s.") % [level.name, path.get_file()]
 
 
 func _ask_save_official() -> void:
@@ -1973,7 +1993,7 @@ func _ask_save_official() -> void:
 		board.sfx.play("deny")
 		return
 	if not editor.is_proven(level):
-		_status.text = "Un niveau du jeu doit avoir une solution vérifiée : gagne-le d'abord avec « Essayer »."
+		_status.text = Lang.t("Un niveau du jeu doit avoir une solution vérifiée : gagne-le d'abord avec « Essayer ».")
 		board.sfx.play("deny")
 		return
 	var meta: Dictionary = editor.source.get("meta", {"world": "atelier"})
@@ -1987,13 +2007,13 @@ func _ask_save_official() -> void:
 func _save_official(meta: Dictionary) -> void:
 	var level: Variant = _editor_level(meta.id)
 	if level is String or not editor.is_proven(level):
-		official_dialog.message.text = "Le niveau a changé depuis son essai : réessaie-le."
+		official_dialog.message.text = Lang.t("Le niveau a changé depuis son essai : réessaie-le.")
 		return
 	var old_path: String = editor.source.get("path", "")
 	var old_id: String = editor.source.get("meta", {}).get("id", "")
 	for file: Dictionary in LevelFile.list_dir(official_dir):
 		if file.level.id == meta.id and file.path != old_path:
-			official_dialog.message.text = "L'identifiant « %s » est déjà pris par %s." % [meta.id, file.path.get_file()]
+			official_dialog.message.text = Lang.t("L'identifiant « %s » est déjà pris par %s.") % [meta.id, file.path.get_file()]
 			return
 	var path := old_path
 	if path == "":
@@ -2004,7 +2024,7 @@ func _save_official(meta: Dictionary) -> void:
 	var official := LevelData.to_official(level, meta, editor.proof.solution)
 	var error := LevelFile.save(official, path)
 	if error != OK:
-		official_dialog.message.text = "Écriture impossible (%s)." % error_string(error)
+		official_dialog.message.text = Lang.t("Écriture impossible (%s).") % error_string(error)
 		return
 	if path != old_path and old_path != "":
 		DirAccess.remove_absolute(old_path)
@@ -2013,7 +2033,7 @@ func _save_official(meta: Dictionary) -> void:
 	LevelData.set_dir(official_dir)
 	_reload_level_list(editor_index)
 	board.sfx.play("place")
-	_status.text = "« %s » est enregistré dans %s." % [official.name, path.get_file()]
+	_status.text = Lang.t("« %s » est enregistré dans %s.") % [official.name, path.get_file()]
 
 
 # --- Partage --------------------------------------------------------------------
@@ -2028,21 +2048,21 @@ func _share_level() -> void:
 		board.sfx.play("deny")
 		return
 	if not editor.is_proven(level):
-		_status.text = "Un niveau ne se partage qu'une fois résolu par son auteur : gagne-le d'abord avec « Essayer »."
+		_status.text = Lang.t("Un niveau ne se partage qu'une fois résolu par son auteur : gagne-le d'abord avec « Essayer ».")
 		board.sfx.play("deny")
 		return
 	if editor.name_edit.text.strip_edges() == "":
-		_status.text = "Donne un nom à ton niveau avant de le partager."
+		_status.text = Lang.t("Donne un nom à ton niveau avant de le partager.")
 		board.sfx.play("deny")
 		return
 	level.solution = editor.proof.solution
-	share_dialog.show_export("Partager « %s »" % level.name, Share.encode(Share.level_payload(level)), level.name)
+	share_dialog.show_export(Lang.t("Partager « %s »") % level.name, Share.encode(Share.level_payload(level)), level.name)
 
 
 func _share_my_solution() -> void:
 	var level: Dictionary = levels[current]
-	share_dialog.show_export("Ma solution de « %s »" % level.name,
-			Share.encode(Share.solution_payload(level, board.layout())), "solution " + level.name)
+	share_dialog.show_export(Lang.t("Ma solution de « %s »") % level.name,
+			Share.encode(Share.solution_payload(level, board.layout())), Lang.t("solution ") + level.name)
 
 
 ## Import d'un code collé ou lu dans un fichier : niveau (vérifié en rejouant sa solution) ou
@@ -2060,17 +2080,17 @@ func import_code(code: String) -> void:
 		"solution":
 			_import_solution(payload)
 		_:
-			share_dialog.message.text = "Code inconnu."
+			share_dialog.message.text = Lang.t("Code inconnu.")
 
 
 func _import_level(raw: Variant) -> void:
-	share_dialog.message.text = "Vérification : la solution de l'auteur est rejouée…"
-	var reason: String = await _add_shared_level(raw, "Niveau importé.")
+	share_dialog.message.text = Lang.t("Vérification : la solution de l'auteur est rejouée…")
+	var reason: String = await _add_shared_level(raw, Lang.t("Niveau importé."))
 	if reason != "":
 		share_dialog.message.text = reason
 		return
 	share_dialog.hide()
-	_status.text = "« %s » est importé dans « Mes niveaux ». À toi de le résoudre !" % levels[current].name
+	_status.text = Lang.t("« %s » est importé dans « Mes niveaux ». À toi de le résoudre !") % levels[current].name
 
 
 ## Ajoute à « Mes niveaux » un niveau partagé (code importé ou galerie), une fois la solution de
@@ -2080,7 +2100,7 @@ func _add_shared_level(raw: Variant, hint: String) -> String:
 	if level is String:
 		return level
 	if _custom_index(level) >= 0:
-		return "Ce niveau est déjà dans « Mes niveaux »."
+		return Lang.t("Ce niveau est déjà dans « Mes niveaux ».")
 	var reason: String = await verifier.verify(level)
 	if reason != "":
 		return reason
@@ -2114,7 +2134,7 @@ func _custom_index(level: Dictionary) -> int:
 func open_gallery() -> void:
 	_level_select.hide()
 	gallery_entries = Gallery.merge(Gallery.load_file(Gallery.BUNDLED), Gallery.load_file(gallery_online_path))
-	gallery_screen.message.text = "%d niveau(x) proposé(s) par les joueurs. « Jouer » les ajoute à « Mes niveaux »." \
+	gallery_screen.message.text = Lang.t("%d niveau(x) proposé(s) par les joueurs. « Jouer » les ajoute à « Mes niveaux ».") \
 			% gallery_entries.size()
 	gallery_screen.open(gallery_entries, gallery_status)
 
@@ -2123,12 +2143,12 @@ func open_gallery() -> void:
 func gallery_status(entry: Dictionary) -> String:
 	var index := _custom_index(entry.level)
 	if index < 0:
-		return "À découvrir"
+		return Lang.t("À découvrir")
 	var id: String = levels[index].id
 	var tries: int = attempts.get(id, 0)
 	if completed.has(id):
-		return "Résolu en %d essai%s" % [tries, "s" if tries > 1 else ""] if tries > 0 else "Résolu"
-	return "Dans Mes niveaux" + ("  ·  %d essai%s" % [tries, "s" if tries > 1 else ""] if tries > 0 else "")
+		return Lang.t("Résolu en %d essai%s") % [tries, "s" if tries > 1 else ""] if tries > 0 else Lang.t("Résolu")
+	return Lang.t("Dans Mes niveaux") + (Lang.t("  ·  %d essai%s") % [tries, "s" if tries > 1 else ""] if tries > 0 else "")
 
 
 func _play_gallery(entry: Dictionary) -> void:
@@ -2139,31 +2159,31 @@ func _play_gallery(entry: Dictionary) -> void:
 		gallery_screen.hide()
 		load_level(index)
 		return
-	gallery_screen.message.text = "Vérification de « %s » : la solution de l'auteur est rejouée…" % entry.name
+	gallery_screen.message.text = Lang.t("Vérification de « %s » : la solution de l'auteur est rejouée…") % entry.name
 	var level: Dictionary = entry.level.duplicate(true)
 	level.name = entry.name
-	var reason: String = await _add_shared_level(level, "Niveau de la galerie, proposé par %s." % entry.author)
+	var reason: String = await _add_shared_level(level, Lang.t("Niveau de la galerie, proposé par %s.") % entry.author)
 	if reason != "":
 		gallery_screen.message.text = reason
 		return
 	gallery_screen.hide()
-	_status.text = "« %s » est ajouté à « Mes niveaux ». Bonne chance !" % entry.name
+	_status.text = Lang.t("« %s » est ajouté à « Mes niveaux ». Bonne chance !") % entry.name
 
 
 func _refresh_gallery() -> void:
 	gallery_screen.set_busy(true)
-	gallery_screen.message.text = "Téléchargement de la galerie…"
+	gallery_screen.message.text = Lang.t("Téléchargement de la galerie…")
 	if _gallery_http.request(gallery_url) != OK:
-		_gallery_failed("la requête n'a pas pu partir")
+		_gallery_failed(Lang.t("la requête n'a pas pu partir"))
 
 
 func _on_gallery_downloaded(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	if result != HTTPRequest.RESULT_SUCCESS or code != 200:
-		_gallery_failed("réponse %d" % code if result == HTTPRequest.RESULT_SUCCESS else "pas de connexion")
+		_gallery_failed(Lang.t("réponse %d") % code if result == HTTPRequest.RESULT_SUCCESS else Lang.t("pas de connexion"))
 		return
 	var text := body.get_string_from_utf8()
 	if Gallery.parse(text).is_empty():
-		_gallery_failed("contenu illisible")
+		_gallery_failed(Lang.t("contenu illisible"))
 		return
 	var file := FileAccess.open(gallery_online_path, FileAccess.WRITE)
 	if file != null:
@@ -2171,23 +2191,23 @@ func _on_gallery_downloaded(result: int, code: int, _headers: PackedStringArray,
 		file.close()
 	gallery_screen.set_busy(false)
 	open_gallery()
-	gallery_screen.message.text = "Galerie à jour : %d niveau(x)." % gallery_entries.size()
+	gallery_screen.message.text = Lang.t("Galerie à jour : %d niveau(x).") % gallery_entries.size()
 
 
 func _gallery_failed(why: String) -> void:
 	gallery_screen.set_busy(false)
-	gallery_screen.message.text = "Galerie en ligne injoignable (%s) : voici celle livrée avec le jeu." % why
+	gallery_screen.message.text = Lang.t("Galerie en ligne injoignable (%s) : voici celle livrée avec le jeu.") % why
 
 
 ## Adresse de proposition du niveau de l'éditeur, ou explication de ce qui manque.
 func gallery_proposal() -> String:
 	var level: Variant = _editor_level("proposition")
 	if level is String:
-		return "Pour proposer un niveau, ouvre-le dans l'éditeur. " + level
+		return Lang.t("Pour proposer un niveau, ouvre-le dans l'éditeur. ") + level
 	if editor.name_edit.text.strip_edges() == "":
-		return "Donne d'abord un nom à ton niveau dans l'éditeur."
+		return Lang.t("Donne d'abord un nom à ton niveau dans l'éditeur.")
 	if not editor.is_proven(level):
-		return "Gagne d'abord ton niveau avec « Essayer » : la galerie n'accepte que des niveaux résolus."
+		return Lang.t("Gagne d'abord ton niveau avec « Essayer » : la galerie n'accepte que des niveaux résolus.")
 	level.solution = editor.proof.solution
 	return Gallery.propose_url(level.name, Share.encode(Share.level_payload(level)))
 
@@ -2206,22 +2226,22 @@ func _import_solution(payload: Dictionary) -> void:
 		if levels[i].id == payload.get("level_id", ""):
 			index = i
 	if index < 0:
-		share_dialog.message.text = "Cette solution est pour un niveau que tu n'as pas."
+		share_dialog.message.text = Lang.t("Cette solution est pour un niveau que tu n'as pas.")
 		return
 	if payload.get("signature", 0) != LevelData.signature(levels[index]):
-		share_dialog.message.text = "Cette solution est pour une autre version de ce niveau."
+		share_dialog.message.text = Lang.t("Cette solution est pour une autre version de ce niveau.")
 		return
 	var layout: Variant = Share.clean_layout(payload.get("layout", []))
 	if layout == null:
-		share_dialog.message.text = "Solution illisible."
+		share_dialog.message.text = Lang.t("Solution illisible.")
 		return
 	load_level(index)
 	board.clear_placed()
 	var dropped := board.restore_layout(layout)
 	_commit()
 	share_dialog.hide()
-	_status.text = "Solution chargée : lance la machine pour la voir." if dropped == 0 \
-			else "Solution chargée, sauf %d pièce(s) qui n'avaient pas leur place." % dropped
+	_status.text = Lang.t("Solution chargée : lance la machine pour la voir.") if dropped == 0 \
+			else Lang.t("Solution chargée, sauf %d pièce(s) qui n'avaient pas leur place.") % dropped
 
 
 # --- Relecture et enregistrement --------------------------------------------------
@@ -2239,8 +2259,8 @@ func replay(mode: String) -> void:
 	_refresh_controls()
 	if mode != "watch":
 		recorder.start(mode, Rect2i(Vector2i(board.global_position), Vector2i(Board.SIZE)))
-	_status.text = "Relecture… (Espace pour l'arrêter)" if mode == "watch" \
-			else "Enregistrement de la relecture… (Espace pour l'arrêter)"
+	_status.text = Lang.t("Relecture… (Espace pour l'arrêter)") if mode == "watch" \
+			else Lang.t("Enregistrement de la relecture… (Espace pour l'arrêter)")
 	_replay_token += 1
 	_finish_replay_after(Recorder.MAX_SECONDS)
 
@@ -2259,11 +2279,11 @@ func _finish_replay() -> void:
 	replay_mode = ""
 	_replay_token += 1
 	if mode == "watch":
-		_status.text = "Fin de la relecture."
+		_status.text = Lang.t("Fin de la relecture.")
 	else:
 		last_recording = recorder.stop()
-		_status.text = "Enregistré : %s" % last_recording if last_recording != "" \
-				else "L'enregistrement n'a pas pu être écrit."
+		_status.text = Lang.t("Enregistré : %s") % last_recording if last_recording != "" \
+				else Lang.t("L'enregistrement n'a pas pu être écrit.")
 	if board.has_won:
 		_open_folder.visible = last_recording != ""
 		_win_overlay.show()

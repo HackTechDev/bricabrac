@@ -180,7 +180,7 @@ func rope_anchor(_point: Vector2) -> Vector2:
 func describe() -> PackedStringArray:
 	var lines := PackedStringArray()
 	if uses_channel():
-		lines.append("Canal %d" % channel if channel > 0 else "Canal 0 : toujours en marche")
+		lines.append(Lang.t("Canal %d") % channel if channel > 0 else Lang.t("Canal 0 : toujours en marche"))
 	return lines
 
 

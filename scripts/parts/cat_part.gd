@@ -42,7 +42,7 @@ func impact_sound() -> String:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("Bondit sur ce qui bouge devant lui, jusqu'à %d px." % SIGHT)
+	lines.append(Lang.t("Bondit sur ce qui bouge devant lui, jusqu'à %d px.") % SIGHT)
 	return lines
 
 

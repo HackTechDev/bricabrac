@@ -34,8 +34,8 @@ func icon_scale() -> float:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("Retient pour toujours ce qui la touche." if channel == 0
-			else "Retient ce qui la touche, et le lâche quand le canal %d s'allume." % channel)
+	lines.append(Lang.t("Retient pour toujours ce qui la touche.") if channel == 0
+			else Lang.t("Retient ce qui la touche, et le lâche quand le canal %d s'allume.") % channel)
 	return lines
 
 

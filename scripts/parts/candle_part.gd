@@ -67,7 +67,7 @@ func icon_scale() -> float:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("Fait éclater les ballons jusqu'à %d px au-dessus de la flamme." % HEAT_HEIGHT)
+	lines.append(Lang.t("Fait éclater les ballons jusqu'à %d px au-dessus de la flamme.") % HEAT_HEIGHT)
 	return lines
 
 

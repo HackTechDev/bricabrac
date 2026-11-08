@@ -91,9 +91,9 @@ func icon_scale() -> float:
 func describe() -> PackedStringArray:
 	var lines := super()
 	if is_motor():
-		lines.append("Tourne dans le sens %s." % ("horaire" if dir > 0 else "antihoraire"))
+		lines.append(Lang.t("Tourne dans le sens %s.") % ("horaire" if dir > 0 else "antihoraire"))
 	var count := board.gear_neighbors(self).size() if board != null else 0
-	lines.append("Engrène avec %d roue(s)." % count if count > 0 else "N'engrène avec aucune roue.")
+	lines.append(Lang.t("Engrène avec %d roue(s).") % count if count > 0 else Lang.t("N'engrène avec aucune roue."))
 	return lines
 
 

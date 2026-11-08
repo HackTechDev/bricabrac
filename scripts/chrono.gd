@@ -27,9 +27,9 @@ func reset(p_par: float) -> void:
 	par = p_par
 	seconds = 0.0
 	state = State.IDLE
-	tooltip_text = "Chronomètre : durée de la simulation."
+	tooltip_text = Lang.t("Chronomètre : durée de la simulation.")
 	if par > 0.0:
-		tooltip_text += "\nObjectif Rapide : moins de %s s." % _num(par)
+		tooltip_text += Lang.t("\nObjectif Rapide : moins de %s s.") % _num(par)
 	queue_redraw()
 
 
@@ -47,7 +47,7 @@ func track(running: bool, won: bool, elapsed: float) -> void:
 
 
 func text() -> String:
-	return "%s s" % _num(seconds)
+	return Lang.t("%s s") % _num(seconds)
 
 
 func color() -> Color:
@@ -77,4 +77,4 @@ func _draw() -> void:
 
 
 static func _num(value: float) -> String:
-	return ("%.1f" % value).replace(".", ",")
+	return ("%.1f" % value).replace(".", Lang.decimal_mark())

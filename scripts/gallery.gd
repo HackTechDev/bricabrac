@@ -92,7 +92,7 @@ static func sorted(entries: Array, newest_first: bool) -> Array:
 
 
 static func stars(difficulty: int) -> String:
-	return "★".repeat(difficulty) + "☆".repeat(3 - difficulty) + "  " + LABELS[difficulty]
+	return "★".repeat(difficulty) + "☆".repeat(3 - difficulty) + "  " + Lang.t(LABELS[difficulty])
 
 
 ## Adresse qui ouvre une demande d'ajout à la galerie, code du niveau compris.

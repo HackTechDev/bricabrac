@@ -38,11 +38,11 @@ static func offered(level: Dictionary) -> Array[String]:
 static func describe(kind: String, level: Dictionary) -> String:
 	match kind:
 		"parts":
-			return "Économe : %d pièce(s) au plus" % par_parts(level)
+			return Lang.t("Économe : %d pièce(s) au plus") % par_parts(level)
 		"time":
-			return "Rapide : en moins de %s s" % String.num(par_time(level), 1).replace(".", ",")
+			return Lang.t("Rapide : en moins de %s s") % String.num(par_time(level), 1).replace(".", Lang.decimal_mark())
 		"all":
-			return "Complet : toutes les pièces du bac"
+			return Lang.t("Complet : toutes les pièces du bac")
 	return kind
 
 

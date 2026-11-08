@@ -42,6 +42,15 @@ const INFO := {
 }
 
 
+## Nom de la pièce, dans la langue de l'interface.
+static func label(kind: String) -> String:
+	return Lang.t(INFO[kind].label)
+
+
+static func desc(kind: String) -> String:
+	return Lang.t(INFO[kind].desc)
+
+
 ## Liens posés en reliant deux pièces (corde, élastique) plutôt qu'en les glissant.
 static func is_link(kind: String) -> bool:
 	return kind == "rope" or kind == "elastic"

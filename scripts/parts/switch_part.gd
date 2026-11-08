@@ -34,7 +34,7 @@ func is_animated() -> bool:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("Allumé" if powered else "Éteint")
+	lines.append(Lang.t("Allumé") if powered else Lang.t("Éteint"))
 	return lines
 
 

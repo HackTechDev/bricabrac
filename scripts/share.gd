@@ -31,20 +31,20 @@ static func encode(payload: Dictionary) -> String:
 static func decode(code: String) -> Variant:
 	var text := code.strip_edges().replace("\n", "").replace(" ", "")
 	if not text.begins_with(PREFIX):
-		return "Ce n'est pas un code Bric-à-Brac."
+		return Lang.t("Ce n'est pas un code Bric-à-Brac.")
 	var body := text.substr(PREFIX.length())
 	var regex := RegEx.create_from_string("^[A-Za-z0-9+/]+={0,2}$")
 	if body.length() % 4 != 0 or regex.search(body) == null:
-		return "Code incomplet ou abîmé."
+		return Lang.t("Code incomplet ou abîmé.")
 	var packed := Marshalls.base64_to_raw(body)
 	if packed.is_empty():
-		return "Code incomplet ou abîmé."
+		return Lang.t("Code incomplet ou abîmé.")
 	var raw := packed.decompress_dynamic(MAX_BYTES, FileAccess.COMPRESSION_DEFLATE)
 	if raw.is_empty():
-		return "Code incomplet ou abîmé."
+		return Lang.t("Code incomplet ou abîmé.")
 	var value: Variant = bytes_to_var(raw)
 	if not value is Dictionary:
-		return "Code incomplet ou abîmé."
+		return Lang.t("Code incomplet ou abîmé.")
 	return value
 
 
@@ -108,25 +108,25 @@ static func clean_layout(items: Variant) -> Variant:
 ## Niveau nettoyé, ou message d'erreur.
 static func clean_level(raw: Variant) -> Variant:
 	if not raw is Dictionary:
-		return "Niveau illisible."
+		return Lang.t("Niveau illisible.")
 	var fixed: Variant = clean_layout(raw.get("fixed", []))
 	var solution: Variant = clean_layout(raw.get("solution", []))
 	if fixed == null or solution == null:
-		return "Le niveau contient des pièces inconnues ou mal décrites."
+		return Lang.t("Le niveau contient des pièces inconnues ou mal décrites.")
 	var inventory := {}
 	var given: Variant = raw.get("inventory", {})
 	if not given is Dictionary:
-		return "Inventaire illisible."
+		return Lang.t("Inventaire illisible.")
 	for kind: Variant in given:
 		var count: Variant = given[kind]
 		if not kind is String or not Catalog.INFO.has(kind) or not count is int or count < 0 or count > 99:
-			return "Inventaire illisible."
+			return Lang.t("Inventaire illisible.")
 		if count > 0:
 			inventory[kind] = count
 	var gravity: Variant = raw.get("gravity", 1.0)
 	var wind: Variant = raw.get("wind", Vector2.ZERO)
 	if not (gravity is float and gravity >= 0.0 and gravity <= 3.0 and wind is Vector2 and wind.length() <= 600.0):
-		return "Gravité ou vent hors des limites."
+		return Lang.t("Gravité ou vent hors des limites.")
 	var text := func(key: String, fallback: String) -> String:
 		var value: Variant = raw.get(key, fallback)
 		return (value as String).left(80) if value is String and value.strip_edges() != "" else fallback
@@ -136,7 +136,7 @@ static func clean_level(raw: Variant) -> Variant:
 		"inventory": inventory, "gravity": gravity, "wind": wind, "solution": solution,
 	}
 	if not LevelData.has_goal(level):
-		return "Ce niveau n'a pas d'objectif."
+		return Lang.t("Ce niveau n'a pas d'objectif.")
 	if (solution as Array).is_empty():
-		return "Ce niveau n'a pas été résolu par son auteur : il ne peut pas être importé."
+		return Lang.t("Ce niveau n'a pas été résolu par son auteur : il ne peut pas être importé.")
 	return level

@@ -38,30 +38,30 @@ func setup(levels: Array) -> void:
 	var head := HBoxContainer.new()
 	outer.add_child(head)
 	var title := Label.new()
-	title.text = "Choisis un niveau"
+	title.text = Lang.t("Choisis un niveau")
 	title.add_theme_font_size_override("font_size", 28)
 	title.add_theme_color_override("font_color", Part.GOLD)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(title)
 	var importer := Button.new()
-	importer.text = "Importer un niveau…"
+	importer.text = Lang.t("Importer un niveau…")
 	importer.focus_mode = Control.FOCUS_NONE
 	importer.pressed.connect(func() -> void:
 		hide()
 		import_requested.emit())
 	head.add_child(importer)
 	var to_gallery := Button.new()
-	to_gallery.text = "Galerie…"
+	to_gallery.text = Lang.t("Galerie…")
 	to_gallery.focus_mode = Control.FOCUS_NONE
 	to_gallery.pressed.connect(func() -> void: gallery_requested.emit())
 	head.add_child(to_gallery)
 	var to_title := Button.new()
-	to_title.text = "Écran titre"
+	to_title.text = Lang.t("Écran titre")
 	to_title.focus_mode = Control.FOCUS_NONE
 	to_title.pressed.connect(func() -> void: title_requested.emit())
 	head.add_child(to_title)
 	var close := Button.new()
-	close.text = "Fermer (Échap)"
+	close.text = Lang.t("Fermer (Échap)")
 	close.focus_mode = Control.FOCUS_NONE
 	close.pressed.connect(hide)
 	head.add_child(close)
@@ -77,8 +77,8 @@ func setup(levels: Array) -> void:
 	scroll.add_child(list)
 	var groups: Array = []
 	for w: Dictionary in LevelData.WORLDS:
-		groups.append([w.name, w.id])
-	groups.append(["Création libre", ""])
+		groups.append([Lang.t(w.name), w.id])
+	groups.append([Lang.t("Création libre"), ""])
 	for group: Array in groups:
 		var indices: Array[int] = []
 		for i in levels.size():
@@ -119,7 +119,7 @@ func _make_card(index: int) -> Button:
 	box.add_child(thumb)
 	_thumb_rects[index] = thumb
 	var name_label := Label.new()
-	name_label.text = "%d. %s" % [index + 1, _levels[index].name]
+	name_label.text = Lang.t("%d. %s") % [index + 1, Lang.t(_levels[index].name)]
 	name_label.custom_minimum_size.x = THUMB.x
 	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE

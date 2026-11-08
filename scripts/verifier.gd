@@ -22,9 +22,9 @@ func verify(level: Dictionary) -> String:
 	var reason := ""
 	for part: Part in board.apply_layout(level.get("solution", [])):
 		if board.remaining(part.kind) < 0:
-			reason = "La solution utilise plus de pièces que l'inventaire n'en offre."
+			reason = Lang.t("La solution utilise plus de pièces que l'inventaire n'en offre.")
 		elif not part is RopePart and not board.is_valid(part):
-			reason = "La solution pose une pièce là où elle n'a pas la place."
+			reason = Lang.t("La solution pose une pièce là où elle n'a pas la place.")
 	if reason == "":
 		board.start()
 		var ticks := int(TIMEOUT * ProjectSettings.get_setting("physics/common/physics_ticks_per_second"))
@@ -33,7 +33,7 @@ func verify(level: Dictionary) -> String:
 			if board.has_won:
 				break
 		if not board.has_won:
-			reason = "La solution fournie ne gagne pas : le niveau est refusé."
+			reason = Lang.t("La solution fournie ne gagne pas : le niveau est refusé.")
 	viewport.queue_free()
 	busy = false
 	return reason

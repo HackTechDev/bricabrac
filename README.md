@@ -27,7 +27,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 | Annuler / rétablir | Ctrl+Z / Ctrl+Y ou Ctrl+Maj+Z |
 | Lancer / arrêter | Espace |
 | Couper le son | M |
-| Options (volumes des effets et de la musique) | O |
+| Options (volumes, langue) | O |
 | Écran titre | Échap, quand rien n'est sélectionné |
 
 ## Organisation
@@ -42,6 +42,9 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 - `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio, dont les sons continus du
   tapis et du ventilateur ; `music.gd` : musique d'atelier, composée par le code elle aussi.
 - `scripts/options_panel.gd` : fenêtre d'options ; `effects.gd` : particules décoratives.
+- `scripts/lang.gd` et `i18n/en.json` : traduction anglaise. Les textes sont écrits en français
+  dans le code (`Lang.t("…")`) et dans les niveaux ; le fichier JSON associe à chacun sa
+  traduction. `test_lang.gd` signale tout texte nouveau qui n'y figure pas.
 - `scripts/wind.gd` : abri du vent, par lancer de rayons depuis l'amont.
 - `gallery/index.cfg` : galerie de niveaux partagés (codes `BAB1:`) ; `scripts/gallery.gd` en décrit le
   format. Pour y ajouter un niveau proposé, coller son code dans une nouvelle section.
@@ -59,6 +62,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_rope.gd     # physique de la corde, sons
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_parts.gd    # pièces mécaniques
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_tutorial.gd # tutoriel intégré
+    $GODOT --headless --path . --fixed-fps 120 -s tests/test_lang.gd     # traduction anglaise
     SWEEP=spec.json $GODOT --headless --path . --fixed-fps 120 -s tests/sweep.gd   # aide à la conception
     CAPTURE_DIR=dossier $GODOT --path . -s tests/capture.gd              # captures (affichage requis)
 

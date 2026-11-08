@@ -49,7 +49,7 @@ func icon_scale() -> float:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("Ce qui entre par le haut ressort %s." % ("à droite" if dir > 0 else "à gauche"))
+	lines.append(Lang.t("Ce qui entre par le haut ressort %s.") % (Lang.t("à droite") if dir > 0 else Lang.t("à gauche")))
 	return lines
 
 

@@ -644,17 +644,17 @@ func _draw_hints() -> void:
 
 
 static func _hint_label(entry: Dictionary) -> String:
-	var parts := PackedStringArray([Catalog.INFO[entry.kind].label])
+	var parts := PackedStringArray([Catalog.label(entry.kind)])
 	if entry.get("rot", 0.0) != 0.0:
 		parts.append("%d°" % roundi(entry.rot))
 	if entry.get("dir", 1) == -1:
-		parts.append("miroir")
+		parts.append(Lang.t("miroir"))
 	if entry.get("channel", 0) != 0:
-		parts.append("canal %d" % entry.channel)
+		parts.append(Lang.t("canal %d") % entry.channel)
 	if entry.has("delay"):
-		parts.append("%s s" % String.num(entry.delay, 1).replace(".", ","))
+		parts.append(Lang.t("%s s") % String.num(entry.delay, 1).replace(".", Lang.decimal_mark()))
 	if entry.has("tension"):
-		parts.append("tendu à %d %%" % roundi(entry.tension))
+		parts.append(Lang.t("tendu à %d %%") % roundi(entry.tension))
 	return ", ".join(parts)
 
 

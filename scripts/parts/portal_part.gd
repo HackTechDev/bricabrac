@@ -42,8 +42,8 @@ func icon_scale() -> float:
 func describe() -> PackedStringArray:
 	var lines := super()
 	var exit := partner() if board != null else null
-	lines.append("Relié à un autre portail du canal %d." % channel if exit != null
-			else "Sans autre portail du canal %d, il ne fait rien." % channel)
+	lines.append(Lang.t("Relié à un autre portail du canal %d.") % channel if exit != null
+			else Lang.t("Sans autre portail du canal %d, il ne fait rien.") % channel)
 	return lines
 
 

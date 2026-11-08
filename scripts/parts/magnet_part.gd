@@ -59,7 +59,7 @@ func icon_scale() -> float:
 
 func describe() -> PackedStringArray:
 	var lines := super()
-	lines.append("%s le boulet et la bille jusqu'à %d px." % ["Repousse" if _sign() < 0.0 else "Attire", RANGE])
+	lines.append(Lang.t("%s le boulet et la bille jusqu'à %d px.") % [Lang.t("Repousse") if _sign() < 0.0 else Lang.t("Attire"), RANGE])
 	return lines
 
 

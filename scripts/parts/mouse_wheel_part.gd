@@ -78,13 +78,13 @@ func _wake() -> void:
 
 
 func describe() -> PackedStringArray:
-	var lines := PackedStringArray([Catalog.INFO[kind].label])
+	var lines := PackedStringArray([Catalog.label(kind)])
 	if uses_channel():
-		lines.append("Canal %d" % channel)
-	lines.append("Court et fait tourner les engrenages voisins." if awake
-			else "Dort : un choc ou son canal la réveillent.")
+		lines.append(Lang.t("Canal %d") % channel)
+	lines.append(Lang.t("Court et fait tourner les engrenages voisins.") if awake
+			else Lang.t("Dort : un choc ou son canal la réveillent."))
 	var count := board.gear_neighbors(self).size() if board != null else 0
-	lines.append("Engrène avec %d roue(s)." % count if count > 0 else "N'engrène avec aucune roue.")
+	lines.append(Lang.t("Engrène avec %d roue(s).") % count if count > 0 else Lang.t("N'engrène avec aucune roue."))
 	return lines
 
 

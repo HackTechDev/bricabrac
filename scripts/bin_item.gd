@@ -11,8 +11,7 @@ var _available := false
 
 func setup(p_kind: String) -> void:
 	kind = p_kind
-	var info: Dictionary = Catalog.INFO[kind]
-	tooltip_text = info.desc
+	tooltip_text = Catalog.desc(kind)
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
@@ -22,7 +21,7 @@ func setup(p_kind: String) -> void:
 	icon.setup(kind)
 	row.add_child(icon)
 	var label := Label.new()
-	label.text = info.label
+	label.text = Catalog.label(kind)
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(label)
 	_count_label = Label.new()

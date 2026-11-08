@@ -47,11 +47,11 @@ var _spins := {}
 func _init() -> void:
 	add_theme_constant_override("separation", 6)
 	var title := Label.new()
-	title.text = "Éditeur de niveaux"
+	title.text = Lang.t("Éditeur de niveaux")
 	title.add_theme_color_override("font_color", Part.GOLD)
 	add_child(title)
-	name_edit = _line("Nom du niveau")
-	goal_edit = _line("Objectif affiché au joueur")
+	name_edit = _line(Lang.t("Nom du niveau"))
+	goal_edit = _line(Lang.t("Objectif affiché au joueur"))
 	goal_edit.max_length = 160  # Les objectifs des niveaux du jeu dépassent parfois 60 signes.
 	proof_label = Label.new()
 	proof_label.add_theme_font_size_override("font_size", 13)
@@ -60,25 +60,25 @@ func _init() -> void:
 	var grid := GridContainer.new()
 	grid.columns = 2
 	add_child(grid)
-	goal_button = _button(grid, "Objectif (G)", "Fait de la pièce sélectionnée l'objectif du niveau, ou le lui retire.")
-	inventory_button = _button(grid, "Inventaire…", "Pièces offertes au joueur.")
-	var try_button := _button(grid, "Essayer", "Joue ton niveau avec l'inventaire choisi.")
+	goal_button = _button(grid, Lang.t("Objectif (G)"), Lang.t("Fait de la pièce sélectionnée l'objectif du niveau, ou le lui retire."))
+	inventory_button = _button(grid, Lang.t("Inventaire…"), Lang.t("Pièces offertes au joueur."))
+	var try_button := _button(grid, Lang.t("Essayer"), Lang.t("Joue ton niveau avec l'inventaire choisi."))
 	try_button.pressed.connect(func() -> void: try_requested.emit())
-	var save_button := _button(grid, "Enregistrer", "Range le niveau dans « Mes niveaux ».")
+	var save_button := _button(grid, Lang.t("Enregistrer"), Lang.t("Range le niveau dans « Mes niveaux »."))
 	save_button.pressed.connect(func() -> void: save_requested.emit())
-	var new_button := _button(grid, "Nouveau", "Vide le plan de travail pour un autre niveau.")
+	var new_button := _button(grid, Lang.t("Nouveau"), Lang.t("Vide le plan de travail pour un autre niveau."))
 	new_button.pressed.connect(func() -> void: reset_requested.emit())
-	delete_button = _button(grid, "Supprimer", "Supprime ce niveau de « Mes niveaux ».")
+	delete_button = _button(grid, Lang.t("Supprimer"), Lang.t("Supprime ce niveau de « Mes niveaux »."))
 	delete_button.pressed.connect(func() -> void: delete_requested.emit())
-	physics_button = _button(self, "Physique…", "Gravité et vent du niveau.")
+	physics_button = _button(self, Lang.t("Physique…"), Lang.t("Gravité et vent du niveau."))
 	physics_button.pressed.connect(open_physics)
-	var share_button := _button(self, "Partager le niveau…", "Code ou fichier à donner à d'autres joueurs. Le niveau doit être résolu.")
+	var share_button := _button(self, Lang.t("Partager le niveau…"), Lang.t("Code ou fichier à donner à d'autres joueurs. Le niveau doit être résolu."))
 	share_button.pressed.connect(func() -> void: share_requested.emit())
 	official_box = HBoxContainer.new()
 	add_child(official_box)
-	var open_official := _button(official_box, "Ouvrir (jeu)…", "Ouvre un niveau du jeu, du dossier levels/.")
+	var open_official := _button(official_box, Lang.t("Ouvrir (jeu)…"), Lang.t("Ouvre un niveau du jeu, du dossier levels/."))
 	open_official.pressed.connect(func() -> void: open_official_requested.emit())
-	var save_official := _button(official_box, "Écrire (jeu)…", "Enregistre ce niveau dans levels/, avec sa solution vérifiée.")
+	var save_official := _button(official_box, Lang.t("Écrire (jeu)…"), Lang.t("Enregistre ce niveau dans levels/, avec sa solution vérifiée."))
 	save_official.pressed.connect(func() -> void: save_official_requested.emit())
 	official_box.visible = false
 	inventory_button.pressed.connect(open_inventory)
@@ -128,10 +128,10 @@ func is_proven(level: Dictionary) -> bool:
 
 func show_proof(level: Dictionary) -> void:
 	if is_proven(level):
-		proof_label.text = "✔ Résolu par toi : prêt à partager."
+		proof_label.text = Lang.t("✔ Résolu par toi : prêt à partager.")
 		proof_label.add_theme_color_override("font_color", Color("8fd18f"))
 	else:
-		proof_label.text = "✘ Pas encore résolu : gagne-le avec « Essayer » avant de le partager."
+		proof_label.text = Lang.t("✘ Pas encore résolu : gagne-le avec « Essayer » avant de le partager.")
 		proof_label.add_theme_color_override("font_color", Color("f0a070"))
 
 
@@ -139,7 +139,7 @@ func inventory_text() -> String:
 	var total := 0
 	for count: int in inventory.values():
 		total += count
-	return "Inventaire (%d)…" % total
+	return Lang.t("Inventaire (%d)…") % total
 
 
 func refresh() -> void:
@@ -158,7 +158,7 @@ func _build_dialog() -> void:
 	var col := VBoxContainer.new()
 	_dialog.add_child(col)
 	var head := Label.new()
-	head.text = "Pièces offertes au joueur"
+	head.text = Lang.t("Pièces offertes au joueur")
 	col.add_child(head)
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(500, 480)
@@ -168,7 +168,7 @@ func _build_dialog() -> void:
 	scroll.add_child(grid)
 	for kind: String in Catalog.INFO:
 		var label := Label.new()
-		label.text = Catalog.INFO[kind].label
+		label.text = Catalog.label(kind)
 		label.custom_minimum_size.x = 130
 		grid.add_child(label)
 		var spin := SpinBox.new()
@@ -182,7 +182,7 @@ func _build_dialog() -> void:
 		grid.add_child(spin)
 		_spins[kind] = spin
 	var close := Button.new()
-	close.text = "Fermer"
+	close.text = Lang.t("Fermer")
 	close.pressed.connect(_dialog.hide)
 	col.add_child(close)
 
@@ -198,18 +198,18 @@ func _sync_spins() -> void:
 ## Affiche la gravité et le vent du plan de travail, sans renvoyer de signal.
 func show_physics(gravity: float, wind: Vector2) -> void:
 	gravity_slider.set_value_no_signal(gravity)
-	_gravity_label.text = "Gravité : ×%s" % String.num(gravity, 1).replace(".", ",")
+	_gravity_label.text = Lang.t("Gravité : ×%s") % String.num(gravity, 1).replace(".", Lang.decimal_mark())
 	var direction := 0
 	if wind != Vector2.ZERO:
 		direction = 1 + wrapi(roundi(wind.angle() / (PI / 4.0)), 0, 8)
 		wind_force.set_value_no_signal(wind.length())
 	wind_direction.select(direction)
 	wind_force.editable = direction != 0
-	var text := "×%s" % String.num(gravity, 1).replace(".", ",")
-	text += ", sans vent" if wind == Vector2.ZERO else ", vent %s %d" % [
+	var text := Lang.t("×%s") % String.num(gravity, 1).replace(".", Lang.decimal_mark())
+	text += Lang.t(", sans vent") if wind == Vector2.ZERO else Lang.t(", vent %s %d") % [
 			WIND_DIRECTIONS[direction].get_slice(" ", 0), roundi(wind.length())]
-	physics_button.text = "Physique : " + text
-	physics_button.tooltip_text = "Gravité et vent du niveau : gravité %s." % text
+	physics_button.text = Lang.t("Physique : ") + text
+	physics_button.tooltip_text = Lang.t("Gravité et vent du niveau : gravité %s.") % text
 
 
 func open_physics() -> void:
@@ -232,7 +232,7 @@ func _build_physics_dialog() -> void:
 	col.custom_minimum_size = Vector2(400, 0)
 	_physics_dialog.add_child(col)
 	var head := Label.new()
-	head.text = "Physique du niveau"
+	head.text = Lang.t("Physique du niveau")
 	head.add_theme_color_override("font_color", Part.GOLD)
 	col.add_child(head)
 	_gravity_label = Label.new()
@@ -248,13 +248,13 @@ func _build_physics_dialog() -> void:
 	var row := HBoxContainer.new()
 	col.add_child(row)
 	wind_direction = OptionButton.new()
-	for text in WIND_DIRECTIONS:
+	for text: String in WIND_DIRECTIONS.map(func(t: String) -> String: return Lang.t(t)):
 		wind_direction.add_item(text)
 	wind_direction.item_selected.connect(func(_i: int) -> void: _emit_physics())
 	wind_direction.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(wind_direction)
 	var force := Label.new()
-	force.text = "Force"
+	force.text = Lang.t("Force")
 	row.add_child(force)
 	wind_force = SpinBox.new()
 	wind_force.min_value = 30.0
@@ -265,11 +265,11 @@ func _build_physics_dialog() -> void:
 	wind_force.value_changed.connect(func(_v: float) -> void: _emit_physics())
 	row.add_child(wind_force)
 	var note := Label.new()
-	note.text = "Un vent de 120 emporte un ballon ; le boulet y résiste."
+	note.text = Lang.t("Un vent de 120 emporte un ballon ; le boulet y résiste.")
 	note.add_theme_font_size_override("font_size", 13)
 	col.add_child(note)
 	var close := Button.new()
-	close.text = "Fermer"
+	close.text = Lang.t("Fermer")
 	close.pressed.connect(_physics_dialog.hide)
 	col.add_child(close)
 
