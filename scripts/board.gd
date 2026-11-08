@@ -36,7 +36,8 @@ var probe := CircleShape2D.new()
 ## Trajectoires fantômes du dernier essai : [{points: PackedVector2Array, goal: bool}], dessinées
 ## sous les pièces pour ajuster une pose sans relancer.
 var ghost: Array = []
-var show_ghost := true:
+## Masquée par défaut ; T la montre.
+var show_ghost := false:
 	set(value):
 		show_ghost = value
 		queue_redraw()

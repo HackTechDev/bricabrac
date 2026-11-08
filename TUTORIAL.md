@@ -71,7 +71,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Lancer ou arrêter | Espace |
 | Mettre en pause ou reprendre | P, ou bouton Pause |
 | Accélérer la simulation (×1, ×2, ×4) | V, ou bouton ×1 |
-| Montrer ou masquer la trace du dernier essai | T |
+| Montrer ou masquer la trace du dernier essai (masquée par défaut) | T |
 | Couper le son | M |
 | Options : volumes, langue (English), accessibilité | O, ou bouton Options de l'écran titre |
 | Choisir un niveau | Tab, ou le bouton en haut à gauche |

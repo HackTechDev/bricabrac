@@ -1078,14 +1078,15 @@ func _test_speed() -> void:
 	board.clear_placed()
 
 
-## Trace fantôme : après un essai, la trajectoire de la bille reste dessinée ; T la masque ; un
-## autre niveau l'efface.
+## Trace fantôme : après un essai, la trajectoire de la bille est gardée, mais ne se voit qu'après
+## T ; un second T la masque ; un autre niveau l'efface.
 func _test_ghost() -> void:
 	var board: Board = main.board
 	main.load_level(0)
 	await _steps(2)
 	board.clear_placed()
 	_check("trace : rien avant le premier essai", board.ghost.is_empty())
+	_check("trace : masquée par défaut", not board.show_ghost)
 	main.toggle_run()
 	await _steps(120)
 	main.toggle_run()
@@ -1096,11 +1097,12 @@ func _test_ghost() -> void:
 	board.place("plank", Vector2(190, 240))
 	_check("trace : reste pendant les retouches", board.ghost.size() == 1)
 	await _key(KEY_T)
-	_check("trace : T la masque", not board.show_ghost)
+	_check("trace : T la montre", board.show_ghost)
 	await _key(KEY_T)
+	_check("trace : un second T la masque", not board.show_ghost)
 	main.load_level(1)
 	await _steps(2)
-	_check("trace : effacée par un autre niveau", board.ghost.is_empty() and board.show_ghost)
+	_check("trace : effacée par un autre niveau", board.ghost.is_empty() and not board.show_ghost)
 	main.load_level(0)
 	await _steps(2)
 	board.clear_placed()
