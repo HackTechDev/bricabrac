@@ -12,28 +12,52 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 - Régler en jouant le chat, l'élastique et la corde qui s'accroche aux obstacles, jusqu'ici
   réglés seulement par des tests.
 - Vérifier que la nouvelle solution de la Bouée (ventilateur incliné) se trouve sans l'indice.
-- Écouter les sons en situation, surtout le volume des chocs répétés.
+- Écouter les sons en situation, surtout le volume des chocs répétés, le ronronnement continu
+  du tapis et du ventilateur, et la musique sur une longue partie (la boucle dure 20 s).
+- Juger en jouant si l'écrasement aux chocs et la poussière aident à lire la machine ou la
+  brouillent, et si l'ombre du vent reste lisible sur chaque fond de monde.
+- Essayer l'entonnoir, le tuyau coudé, l'aimant répulsif et la bougie dans le bac à sable avant
+  de bâtir des niveaux autour d'eux : taille de l'ouverture, vitesse de sortie du coude, délai
+  de chauffe de la bougie.
 
 ## Nouveaux niveaux
 
-- Des niveaux qui mettent en scène l'entonnoir, le tuyau coudé, l'aimant répulsif et la bougie,
-  pour l'instant disponibles dans le bac à sable et l'éditeur.
+- Des niveaux qui mettent en scène les nouvelles pièces, par exemple :
+  - Cuisine, « Le gâteau d'anniversaire » : des bougies à allumer avec une minuterie pour faire
+    éclater des ballons, l'un d'eux abrité derrière une planche qu'il faut écarter.
+  - Usine, « Le tri » : un entonnoir et des coudes qui envoient la bille dans un panier et le
+    boulet dans un autre.
+  - Espace, « Le frein » : un aimant répulsif qui ralentit un boulet trop rapide avant le panier.
 - Un sixième monde, par exemple un grenier sombre où une lampe de poche éclaire le décor.
 - Remplacer les niveaux « La fronde » et « Le hamster » de la galerie, qui ont maintenant leur
   version officielle, par d'autres niveaux d'exemple.
 
 ## Confort de jeu
 
+- Avancer pas à pas pendant la pause (une touche = un pas de simulation), pour comprendre un
+  choc trop rapide, et un ralenti ×0,5 à côté de ×2 et ×4.
+- Déplacer la pièce sélectionnée ou le groupe d'un cran de grille avec les flèches du clavier.
 - Sélection d'un groupe au cadre, en glissant sur une zone vide.
+- Comparer deux essais : garder la trace de l'avant-dernier en plus de la dernière, d'une autre
+  couleur.
+- Un menu au clic droit sur une pièce (pivoter, miroir, canal, copier, retirer), plus facile à
+  découvrir que les raccourcis.
 - Prise en charge du tactile, pour une future version mobile.
 
 ## Éditeur et communauté
 
+- Vérifier dans l'éditeur, avant l'enregistrement, que le niveau ne se gagne pas seul, comme le
+  fait `test_levels.gd`.
+- Permettre de donner un nom et un objectif en anglais à un niveau personnel, et les garder
+  dans le code de partage.
 - Mesurer la difficulté de la galerie à partir des essais de tous les joueurs, ce qui demande
   un serveur ; elle est aujourd'hui donnée par l'auteur ou déduite de sa solution.
 
 ## Contenu et rejouabilité
 
+- Un mode contre la montre : enchaîner les niveaux d'un monde, temps total comparé au record.
+- Des succès simples (tous les défis, aucun indice dans un monde, une machine de plus de
+  20 pièces dans le bac à sable), affichés sur l'écran titre.
 - D'autres animaux aux réactions simples : un chien qui court après la balle, un oiseau qui
   s'envole au bruit.
 - Défis quotidiens : un niveau du jeu avec une contrainte en plus (sans tel type de pièce, en
@@ -42,28 +66,39 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Présentation
 
-- D'autres particules : gouttes du bac d'eau, étincelles des engrenages.
+- Atténuer la musique pendant la simulation et la remonter à l'atelier, pour mieux entendre la
+  machine.
 - Une musique par monde, sur la même trame que celle de l'atelier.
+- D'autres particules : gouttes du bac d'eau, étincelles des engrenages.
 - Montrer aussi l'ombre du souffle des ventilateurs.
 - Faire relire la traduction anglaise par un anglophone, puis ajouter d'autres langues
   (un fichier `i18n/<code>.json` et une ligne dans `Lang.LANGUAGES`).
+- Changer de langue sans revenir à l'écran titre, en rafraîchissant les textes en place.
 - Traduire aussi le tutoriel écrit (`TUTORIAL.md`) et le README.
 - D'autres options d'accessibilité : taille du texte, commandes entièrement au clavier.
 
 ## Technique
 
-- Chercher dans les autres niveaux des surfaces fixes qui se chevauchent à la même hauteur : un
-  objet posé sur la jointure touche deux formes, dans un ordre qui change d'un essai à l'autre
-  (c'était la cause de la variation de durée du niveau Dominos).
-- Lancer les tests automatiquement sur GitHub Actions à chaque envoi.
+- Enregistrer les volumes dès qu'un curseur bouge : ils ne le sont aujourd'hui qu'à la
+  fermeture de la fenêtre d'options, et se perdent si l'on quitte le jeu avant.
+- Garder la musique calculée quand la scène se recharge (changement de langue) : elle est
+  aujourd'hui recomposée, avec près d'une seconde de silence.
+- Détecter automatiquement, dans `test_levels.gd`, les surfaces fixes qui se chevauchent à la
+  même hauteur : un objet posé sur la jointure touche deux formes, dans un ordre qui change
+  d'un essai à l'autre (c'était la cause de la variation de durée du niveau Dominos).
+- Signaler dans `test_levels.gd` les solutions dont la durée varie de plus de 0,2 s sur leurs
+  8 essais, signe d'une machine fragile.
+- Lancer les tests automatiquement sur GitHub Actions à chaque envoi, `test_render.gd` compris
+  avec un affichage virtuel (Xvfb).
 - Alléger le vent et les cordes au-delà de 100 objets (voir « Performances » dans le README) :
   un seul rayon pour un corps à découvert, ne chercher les coins d'une corde que si ses segments
   ont bougé.
-- Lancer `test_render.gd` en intégration continue avec un affichage virtuel (Xvfb).
 
 ## Diffusion
 
-- Préparer les exports Linux, Windows et web, en vérifiant que l'export web charge bien les
-  fichiers de `levels/`.
-- Publier une démo jouable sur itch.io pour recueillir des retours.
+- Préparer les exports Linux, Windows et web. Pour le web, vérifier que les fichiers de
+  `levels/` et `i18n/` sont inclus, et que la musique, calculée dans un fil d'exécution, se
+  compose bien sans fils (sinon la calculer à l'avance ou sur le fil principal).
+- Publier une démo jouable sur itch.io, avec une page en français et en anglais, pour
+  recueillir des retours.
 - Illustrer le README avec des captures d'écran et un GIF, faits avec « Filmer en GIF ».
