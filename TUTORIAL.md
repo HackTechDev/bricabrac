@@ -282,6 +282,20 @@ par `BAB1:`) ou d'un **fichier `.bab`** contenant ce code.
   auteur, et refuse le niveau si elle ne gagne pas, si elle dépasse l'inventaire ou si le code est
   abîmé. Une solution importée se charge dans son niveau ; il ne reste qu'à lancer la machine.
 
+## Revoir et filmer une solution
+
+À la victoire, trois boutons rejouent ta machine depuis le début :
+
+- **Revoir :** la relance simplement, pour le plaisir des yeux.
+- **Filmer en GIF :** l'enregistre en image animée (demi-taille, environ 12 images par seconde),
+  idéale pour un message ou un forum.
+- **Filmer en vidéo :** l'enregistre en vidéo AVI (MJPEG, 30 images par seconde, pleine taille),
+  lisible par VLC ou ffmpeg.
+
+L'enregistrement s'arrête une seconde après la victoire, au plus tard après 20 secondes, ou dès
+que tu appuies sur « Arrêter ». Le chemin du fichier s'affiche en bas de l'écran, et « Ouvrir le
+dossier des enregistrements » ouvre le dossier `enregistrements` des données du jeu.
+
 ## Conseils
 
 - **Lance souvent :** une courte tentative renseigne mieux qu'une longue réflexion.

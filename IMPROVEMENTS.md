@@ -17,16 +17,9 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 - Trajectoire fantôme du dernier essai, pour ajuster une pose sans tout revoir.
 - Prise en charge du tactile, pour une future version mobile.
 
-## Nouvelles pièces
-
-
 ## Contenu et rejouabilité
 
 - Personnages ou animaux aux réactions simples, pour donner de l'humour aux machines.
-
-## Éditeur et communauté
-
-- Relecture d'une solution, enregistrable en GIF ou en vidéo.
 
 ## Présentation
 

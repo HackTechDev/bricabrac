@@ -67,6 +67,14 @@ var _edit_button: Button
 var _share_solution: Button
 var share_dialog: ShareDialog
 var verifier: Verifier
+var recorder: Recorder
+## Relecture en cours après une victoire : "watch", "gif" ou "video" ; vide sinon.
+var replay_mode := ""
+var last_recording := ""
+## Numéro de la relecture en cours : un minuteur d'une relecture passée ne doit pas clore la suivante.
+var _replay_token := 0
+var _replay_row: HBoxContainer
+var _open_folder: Button
 var _rope_preview: Line2D
 var _sound_button: Button
 var _mouse := Vector2.ZERO
@@ -110,6 +118,8 @@ func _ready() -> void:
 	share_dialog.import_requested.connect(import_code)
 	verifier = Verifier.new()
 	add_child(verifier)
+	recorder = Recorder.new()
+	add_child(recorder)
 	_build_level_select()
 	editor.load_from(_editor_draft)
 	load_level(_first_unsolved())
@@ -205,6 +215,8 @@ func load_level(index: int) -> void:
 
 
 func toggle_run() -> void:
+	if replay_mode != "":
+		_finish_replay()
 	_stop_drag()
 	_cancel_rope()
 	_select(null)
@@ -814,6 +826,22 @@ func _build_win_overlay() -> void:
 	_win_next = Button.new()
 	_win_next.pressed.connect(func() -> void: load_level(_next_index()))
 	box.add_child(_win_next)
+	_replay_row = HBoxContainer.new()
+	_replay_row.add_theme_constant_override("separation", 8)
+	box.add_child(_replay_row)
+	for def: Array in [["Revoir", "watch"], ["Filmer en GIF", "gif"], ["Filmer en vidéo", "video"]]:
+		var b := Button.new()
+		b.text = def[0]
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var mode: String = def[1]
+		b.pressed.connect(func() -> void: replay(mode))
+		_replay_row.add_child(b)
+	_open_folder = Button.new()
+	_open_folder.text = "Ouvrir le dossier des enregistrements"
+	_open_folder.pressed.connect(func() -> void:
+		DirAccess.make_dir_recursive_absolute(Recorder.DIR)
+		OS.shell_open(ProjectSettings.globalize_path(Recorder.DIR)))
+	box.add_child(_open_folder)
 	_share_solution = Button.new()
 	_share_solution.text = "Partager ma solution…"
 	_share_solution.pressed.connect(_share_my_solution)
@@ -952,6 +980,10 @@ func _stars(level: Dictionary) -> String:
 
 
 func _on_won() -> void:
+	if replay_mode != "":
+		# La relecture continue une seconde après la victoire, pour voir le dénouement.
+		_finish_replay_after(1.0)
+		return
 	var level: Dictionary = levels[current]
 	if level.get("sandbox", false):
 		return  # Ni le bac à sable ni l'éditeur n'ont d'objectif à remplir.
@@ -977,6 +1009,8 @@ func _on_won() -> void:
 	board.sfx.play("win")
 	var next: Dictionary = levels[_next_index()]
 	_share_solution.visible = true
+	_replay_row.visible = true
+	_open_folder.visible = last_recording != ""
 	_win_next.text = "Ouvrir le bac à sable" if next.get("sandbox", false) \
 			else "Rejouer le premier niveau" if _next_index() == 0 else "Niveau suivant"
 	_win_overlay.show()
@@ -1001,6 +1035,8 @@ func _on_test_won() -> void:
 			board.placed.size(), String.num(board.elapsed, 1).replace(".", ",")]
 	board.sfx.play("win")
 	_share_solution.visible = false
+	_replay_row.visible = false
+	_open_folder.visible = false
 	_win_next.text = "Retour à l'éditeur"
 	_win_overlay.show()
 
@@ -1365,3 +1401,48 @@ func _import_solution(payload: Dictionary) -> void:
 	share_dialog.hide()
 	_status.text = "Solution chargée : lance la machine pour la voir." if dropped == 0 \
 			else "Solution chargée, sauf %d pièce(s) qui n'avaient pas leur place." % dropped
+
+
+# --- Relecture et enregistrement --------------------------------------------------
+
+## Rejoue la machine gagnante depuis le début (la simulation est déterministe), en la filmant si
+## `mode` vaut "gif" ou "video".
+func replay(mode: String) -> void:
+	if replay_mode != "":
+		return
+	_win_overlay.hide()
+	board.stop()
+	board.start()
+	replay_mode = mode
+	_refresh_bin()
+	_refresh_controls()
+	if mode != "watch":
+		recorder.start(mode, Rect2i(Vector2i(board.global_position), Vector2i(Board.SIZE)))
+	_status.text = "Relecture… (Espace pour l'arrêter)" if mode == "watch" \
+			else "Enregistrement de la relecture… (Espace pour l'arrêter)"
+	_replay_token += 1
+	_finish_replay_after(Recorder.MAX_SECONDS)
+
+
+func _finish_replay_after(seconds: float) -> void:
+	var token := _replay_token
+	get_tree().create_timer(seconds).timeout.connect(func() -> void:
+		if token == _replay_token:
+			_finish_replay())
+
+
+func _finish_replay() -> void:
+	if replay_mode == "":
+		return
+	var mode := replay_mode
+	replay_mode = ""
+	_replay_token += 1
+	if mode == "watch":
+		_status.text = "Fin de la relecture."
+	else:
+		last_recording = recorder.stop()
+		_status.text = "Enregistré : %s" % last_recording if last_recording != "" \
+				else "L'enregistrement n'a pas pu être écrit."
+	if board.has_won:
+		_open_folder.visible = last_recording != ""
+		_win_overlay.show()

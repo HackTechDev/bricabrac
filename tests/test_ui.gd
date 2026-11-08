@@ -86,6 +86,7 @@ func _run() -> void:
 	await _test_elastic_tool()
 	await _test_editor()
 	await _test_share()
+	await _test_replay()
 
 	_finish("INTERFACE OK")
 
@@ -631,3 +632,41 @@ func _test_share() -> void:
 	main._editor_delete()
 	main.load_level(main.editor_index())
 	main._editor_reset()
+
+
+## Après une victoire : « Revoir » rejoue la machine, et les boutons « Filmer » écrivent un GIF et
+## une vidéo AVI lisibles (en-têtes vérifiés ici ; le contenu l'est par ffprobe et PIL à part).
+func _test_replay() -> void:
+	var board: Board = main.board
+	main.load_level(0)
+	await _steps(2)
+	board.clear_placed()
+	board.apply_layout(main.levels[0].solution)
+	main.toggle_run()
+	for i in 600:
+		await physics_frame
+		if main._win_overlay.visible:
+			break
+	_check("relecture : boutons à la victoire", main._replay_row.visible)
+	main.replay("watch")
+	await _steps(30)
+	_check("relecture : la machine repart du début", main.replay_mode == "watch" and board.running
+			and not main._win_overlay.visible and board.elapsed < 0.5)
+	for i in 600:
+		await physics_frame
+		if main.replay_mode == "":
+			break
+	_check("relecture : terminée après la victoire", main._win_overlay.visible)
+	for mode: String in ["gif", "video"]:
+		main.replay(mode)
+		for i in 900:
+			await physics_frame
+			if main.replay_mode == "":
+				break
+		var path: String = main.last_recording
+		var head := FileAccess.get_file_as_bytes(path).slice(0, 6).get_string_from_ascii() if path != "" else ""
+		var expected := "GIF89a" if mode == "gif" else "RIFF"
+		_check("enregistrement %s écrit (%d images)" % [mode, main.recorder.frames], head.begins_with(expected))
+		_check("enregistrement %s : bouton du dossier" % mode, main._open_folder.visible)
+		DirAccess.remove_absolute(path)
+	await _key(KEY_SPACE)
