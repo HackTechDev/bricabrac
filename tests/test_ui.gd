@@ -87,6 +87,7 @@ func _run() -> void:
 	await _test_editor()
 	await _test_share()
 	await _test_replay()
+	await _test_chrono()
 
 	_finish("INTERFACE OK")
 
@@ -672,3 +673,39 @@ func _test_replay() -> void:
 		_check("enregistrement %s : bouton du dossier" % mode, main._open_folder.visible)
 		DirAccess.remove_absolute(path)
 	await _key(KEY_SPACE)
+
+
+## Le chronomètre suit la simulation, se fige à la victoire et repart de zéro au niveau suivant.
+func _test_chrono() -> void:
+	var board: Board = main.board
+	main.load_level(0)
+	await _steps(2)
+	var chrono: Chrono = main.chrono
+	_check("chrono : à zéro au chargement", chrono.text() == "0,0 s" and chrono.state == Chrono.State.IDLE
+			and chrono.par == main.levels[0].par_time)
+	board.clear_placed()
+	board.apply_layout(main.levels[0].solution)
+	main.toggle_run()
+	await _steps(60)
+	await process_frame
+	_check("chrono : défile pendant la simulation (%s)" % chrono.text(),
+			chrono.state == Chrono.State.RUNNING and absf(chrono.seconds - board.elapsed) < 0.05
+			and chrono.seconds > 0.4)
+	_check("chrono : doré sous le temps à battre", chrono.color() == Chrono.GOLD)
+	for i in 600:
+		await physics_frame
+		if main._win_overlay.visible:
+			break
+	await process_frame
+	var final := chrono.seconds
+	await _steps(30)
+	await process_frame
+	_check("chrono : figé et vert à la victoire (%s)" % chrono.text(), chrono.state == Chrono.State.WON
+			and chrono.seconds == final and is_equal_approx(final, board.elapsed))
+	main.toggle_run()
+	await process_frame
+	_check("chrono : garde le dernier temps à l'arrêt", chrono.state == Chrono.State.IDLE
+			and chrono.seconds == final)
+	main.load_level(main.levels.find_custom(func(l: Dictionary) -> bool: return l.id == "bac_a_sable"))
+	await process_frame
+	_check("chrono : pas de temps à battre au bac à sable", chrono.par == 0.0 and chrono.seconds == 0.0)

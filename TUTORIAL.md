@@ -19,7 +19,7 @@ avec `GODOT` pointant vers l'exécutable de Godot :
 
 ## L'écran
 
-- **En haut :** le bouton du niveau en cours, qui ouvre l'écran de sélection, l'objectif, puis les boutons Son, Indice, Tout retirer et Lancer.
+- **En haut :** le bouton du niveau en cours, qui ouvre l'écran de sélection, l'objectif, puis les boutons Son, Indice, Tout retirer, le chronomètre et Lancer.
 - **Au centre :** le plateau, où tu construis ta machine.
 - **À droite :** le bac des pièces disponibles et, dessous, les actions sur la pièce sélectionnée.
 - **En bas :** une ligne de messages, qui te guide et explique pourquoi une action est refusée.
@@ -230,7 +230,10 @@ Le bouton **Indice** donne un coup de pouce sans tout révéler.
 Chaque victoire fait le point sur trois défis facultatifs, qui rapportent chacun une étoile :
 
 - **Économe :** gagner avec au plus autant de pièces que la solution de référence.
-- **Rapide :** gagner avant un temps donné, compté depuis le lancement.
+- **Rapide :** gagner avant un temps donné, compté depuis le lancement. Le **chronomètre**, à
+  côté de Lancer, mesure ce temps : son cadran fait un tour en 10 secondes, l'arc doré marque le
+  temps à battre, et le temps reste doré tant que tu es dans les clous. Il passe au vert à la
+  victoire et garde le dernier temps quand tu arrêtes la machine.
 - **Complet :** gagner en posant toutes les pièces du bac. Ce défi n'existe que si le bac contient
   plus de pièces qu'il n'en faut.
 

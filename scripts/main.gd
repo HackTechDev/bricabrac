@@ -82,6 +82,7 @@ var _tooltip: PanelContainer
 var _tooltip_label: Label
 var _hovered: Part
 var _hover_time := 0.0
+var chrono: Chrono
 
 
 func _ready() -> void:
@@ -197,6 +198,7 @@ func load_level(index: int) -> void:
 	if not histories.has(level_id):
 		histories[level_id] = History.new(board.layout())
 	_goal_label.text = levels[index].goal_text + _physics_note(levels[index])
+	chrono.reset(levels[index].get("par_time", 0.0))
 	_status.text = levels[index].get("intro", "")
 	if not board.placed.is_empty():
 		_status.text = "Ta machine a été remise en place. Ctrl+Z annule ta dernière action."
@@ -332,6 +334,7 @@ const TOOLTIP_DELAY := 0.5
 
 
 func _process(delta: float) -> void:
+	chrono.track(board.running, board.has_won, board.elapsed)
 	if _hovered == null:
 		return
 	if not is_instance_valid(_hovered):
@@ -730,6 +733,9 @@ func _build_top_bar() -> void:
 		board.sfx.play("remove")
 		_commit())
 	row.add_child(_clear_button)
+
+	chrono = Chrono.new()
+	row.add_child(chrono)
 
 	_run_button = Button.new()
 	_run_button.custom_minimum_size.x = 110
