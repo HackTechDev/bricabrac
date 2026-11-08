@@ -83,6 +83,7 @@ func _run() -> void:
 	await _test_stale_save()
 	await _test_sandbox()
 	await _test_level_select()
+	await _test_elastic_tool()
 
 	_finish("INTERFACE OK")
 
@@ -456,3 +457,25 @@ func _test_level_select() -> void:
 	await _click(select.card(10).get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	_check("sélection : clic sur une vignette", main.current == 10 and not select.visible)
 	_check("sélection : nom du monde sur le bouton", main._level_button.text.contains("Cuisine"))
+
+
+## L'élastique se pose avec l'outil des cordes, puis R règle sa tension.
+func _test_elastic_tool() -> void:
+	var board: Board = main.board
+	main.load_level(main.levels.size() - 1)
+	await _steps(2)
+	board.clear_placed()
+	board.place("ball", Vector2(300, 300))
+	board.place("plank", Vector2(600, 300))
+	main._grab_from_bin("elastic")
+	await _click(board.to_global(Vector2(300, 300)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(600, 300)), MOUSE_BUTTON_LEFT)
+	var elastic: Part = null
+	for part in board.parts:
+		if part is ElasticPart:
+			elastic = part
+	_check("élastique posé à la souris", elastic != null and elastic.entry.kind == "elastic")
+	main._select(elastic)
+	await _key(KEY_R)
+	_check("élastique : R règle la tension", board.placed.back().get("tension", 0.0) == 10.0)
+	board.clear_placed()

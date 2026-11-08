@@ -10,6 +10,7 @@ func _run() -> void:
 	await _test_pendulum()
 	await _test_only_pulls()
 	await _test_slack()
+	await _test_elastic()
 	await _test_balloon_cut()
 	_test_cascade()
 	_test_sound_bank()
@@ -96,6 +97,29 @@ func _test_only_pulls() -> void:
 
 
 ## Corde de 200 px avec 100 px de mou : chute libre sur 100 px, puis la corde retient la bille.
+## Élastique : la bille pendue s'immobilise quand la raideur compense son poids (allongement
+## m·g/k) ; tendu au départ, il ramène vivement la bille vers son point d'attache.
+func _test_elastic() -> void:
+	_level([
+		{"kind": "plank", "id": "p", "pos": Vector2(500, 100), "len": 100.0, "locked": true},
+		{"kind": "ball", "id": "m", "pos": Vector2(500, 200)},
+		{"kind": "elastic", "from": "m", "to": "p"},
+	])
+	board.start()
+	await _steps(900)
+	var expected := 200.0 + 1.5 * 980.0 / ElasticPart.STIFF
+	_near("élastique : équilibre de la bille pendue", _pos("m").y, expected, 0.03)
+	_check("élastique : au repos", _rigid("m").linear_velocity.length() < 5.0)
+	_level([
+		{"kind": "plank", "id": "mur", "pos": Vector2(200, 560), "len": 160.0, "rot": 90.0, "locked": true},
+		{"kind": "ball", "id": "m", "pos": Vector2(700, 624)},
+		{"kind": "elastic", "from": "m", "to": "mur", "tension": 50.0},
+	])
+	board.start()
+	await _steps(60)
+	_check("élastique tendu : la bille file vers l'attache (%.0f)" % _pos("m").x, _pos("m").x < 450.0)
+
+
 func _test_slack() -> void:
 	_level([
 		{"kind": "plank", "id": "p", "pos": Vector2(500, 100), "len": 100.0, "locked": true},

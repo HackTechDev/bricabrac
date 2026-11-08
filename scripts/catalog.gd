@@ -29,9 +29,15 @@ const INFO := {
 	"cannon": {"label": "Canon", "desc": "Tire une bille quand son canal s'allume."},
 	"pulley": {"label": "Poulie", "desc": "Point de passage pour une corde."},
 	"rope": {"label": "Corde", "desc": "Clique un objet, d'éventuelles poulies, puis un autre objet. R : mou."},
+	"elastic": {"label": "Élastique", "desc": "Se pose comme une corde, mais s'étire et tire comme un ressort. R : tension."},
 	"lamp": {"label": "Lampe", "desc": "S'allume avec son canal."},
 	"basket": {"label": "Panier", "desc": "Objectif : y déposer un objet."},
 }
+
+
+## Liens posés en reliant deux pièces (corde, élastique) plutôt qu'en les glissant.
+static func is_link(kind: String) -> bool:
+	return kind == "rope" or kind == "elastic"
 
 
 static func create(kind: String) -> Part:
@@ -60,6 +66,7 @@ static func create(kind: String) -> Part:
 		"cannon": part = CannonPart.new()
 		"pulley": part = PulleyPart.new()
 		"rope": part = RopePart.new()
+		"elastic": part = ElasticPart.new()
 		"lamp": part = LampPart.new()
 		"basket": part = BasketPart.new()
 		_:

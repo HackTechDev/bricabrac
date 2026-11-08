@@ -7,7 +7,7 @@ const PANEL_X := 1040.0
 const BIN_ORDER: Array[String] = [
 	"plank", "domino", "spring", "seesaw", "conveyor", "fan", "plate", "switch", "timer", "trapdoor", "door", "scissors", "magnet", "motor", "gear", "portal", "water", "suction",
 	"cannon",
-	"pulley", "rope", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes",
+	"pulley", "rope", "elastic", "ball", "ball_bouncy", "ball_heavy", "crate", "balloon", "spikes",
 	"lamp", "basket",
 ]
 ## Réglages proposés dans le bac à sable.
@@ -28,6 +28,8 @@ var drag_is_new := false
 var drag_origin := Vector2.ZERO
 
 var rope_tool := false
+## Lien en cours de pose avec l'outil corde : "rope" ou "elastic".
+var rope_kind := "rope"
 var rope_from: Part
 var rope_from_off := Vector2.ZERO
 var rope_via: Array = []
@@ -333,10 +335,11 @@ func _build_tooltip() -> void:
 func _grab_from_bin(kind: String) -> void:
 	if board.running or board.remaining(kind) <= 0:
 		return
-	if kind == "rope":
+	if Catalog.is_link(kind):
 		_select(null)
 		rope_tool = true
-		_status.text = "Corde : clique le premier objet à relier (Échap pour annuler)."
+		rope_kind = kind
+		_status.text = "%s : clique le premier objet à relier (Échap pour annuler)." % Catalog.INFO[kind].label
 		return
 	drag_part = board.place(kind, _mouse)
 	drag_is_new = true
@@ -429,11 +432,12 @@ func _finish_rope(target: Part) -> void:
 		board.sfx.play("deny")
 		return
 	var off := target.rope_anchor(board.to_global(_mouse))
-	board.add_rope(rope_from, rope_from_off, rope_via.duplicate(), target, off)
+	board.add_rope(rope_from, rope_from_off, rope_via.duplicate(), target, off, rope_kind)
 	board.sfx.play("place")
 	_cancel_rope()
 	_commit()
-	_status.text = "Corde posée, tendue. Sélectionne-la et appuie sur R pour lui donner du mou."
+	_status.text = "Élastique posé. Sélectionne-le et appuie sur R pour le tendre." if rope_kind == "elastic" \
+			else "Corde posée, tendue. Sélectionne-la et appuie sur R pour lui donner du mou."
 
 
 func _cancel_rope() -> void:

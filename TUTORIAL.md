@@ -167,6 +167,11 @@ dessus. Retirer une pièce ou une poulie renvoie aussi au bac les cordes qui y s
   où tu cliques. Cela permet par exemple de régler un pendule.
 - **Il faut au moins un objet mobile :** une corde entre deux pièces fixes est refusée.
 
+L'**élastique** se pose exactement comme la corde, mais il s'étire : au-delà de sa longueur de
+repos, il tire d'autant plus fort qu'il est allongé, comme un ressort. Sélectionné, R ou la molette
+règlent sa tension de départ, de 0 à 70 % par pas de 10 : tendu, il ramène vivement ce qu'il retient,
+de quoi fabriquer une fronde. Il s'amincit à mesure qu'il s'étire.
+
 ## Les niveaux
 
 Les 18 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles

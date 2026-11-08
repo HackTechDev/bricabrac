@@ -133,7 +133,7 @@ func restore_layout(state: Array) -> int:
 	var dropped := 0
 	for ropes: bool in [false, true]:
 		for item: Variant in state:
-			var is_rope: bool = item is Dictionary and item.get("kind") == "rope"
+			var is_rope: bool = item is Dictionary and Catalog.is_link(item.get("kind", ""))
 			if is_rope != ropes:
 				continue
 			if not _restore_entry(item):
@@ -170,15 +170,16 @@ func apply_layout(layout: Array) -> Array[Part]:
 	var result: Array[Part] = []
 	for ropes: bool in [false, true]:
 		for wanted: Dictionary in layout:
-			if (wanted.kind == "rope") == ropes:
+			if Catalog.is_link(wanted.kind) == ropes:
 				var part := place(wanted.kind, wanted.get("pos", Vector2.ZERO))
 				part.entry.merge(wanted, true)
 				result.append(rebuild_part(part))
 	return result
 
 
-func add_rope(from: Part, from_off: Vector2, via: Array, to: Part, to_off: Vector2) -> Part:
-	var part := place("rope", Vector2.ZERO)
+func add_rope(from: Part, from_off: Vector2, via: Array, to: Part, to_off: Vector2,
+		kind := "rope") -> Part:
+	var part := place(kind, Vector2.ZERO)
 	part.entry.merge({
 		"from": from.entry.id, "from_off": from_off, "via": via, "to": to.entry.id, "to_off": to_off,
 	}, true)
@@ -360,7 +361,7 @@ func _rebuild(run: bool) -> void:
 	# Les cordes s'accrochent à des pièces qui doivent déjà exister.
 	for ropes: bool in [false, true]:
 		for entry: Dictionary in level.get("fixed", []) + mine:
-			if (entry.kind == "rope") == ropes:
+			if Catalog.is_link(entry.kind) == ropes:
 				_make(entry)
 	if run:
 		_find_gear_pairs()
@@ -380,7 +381,7 @@ func _restore_entry(item: Variant) -> bool:
 	var entry: Dictionary = (item as Dictionary).duplicate(true)
 	if remaining(entry.kind) <= 0:
 		return false
-	if entry.kind == "rope":
+	if Catalog.is_link(entry.kind):
 		if not _rope_targets_exist(entry):
 			return false
 	elif not entry.get("pos") is Vector2:
