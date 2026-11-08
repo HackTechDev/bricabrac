@@ -12,6 +12,7 @@ func _run() -> void:
 	await _test_magnet()
 	await _test_gears()
 	await _test_portals()
+	await _test_water()
 	_end("PIÈCES OK")
 
 
@@ -166,6 +167,29 @@ func _test_portals() -> void:
 	board.start()
 	await _steps(120)
 	_near("portail seul : la bille le traverse", _pos("b").x, 200.0, 5.0)
+
+
+## Lâchés au-dessus du bac, les objets légers flottent et les lourds coulent jusqu'au fond.
+func _test_water() -> void:
+	var tank := Vector2(500, 500)
+	var surface := tank.y + WaterPart.INNER.y / 2.0 - WaterPart.DEPTH
+	var bottom := tank.y + WaterPart.INNER.y / 2.0
+	_level([
+		{"kind": "water", "pos": tank},
+		{"kind": "crate", "id": "caisse", "pos": Vector2(430, 300)},
+		{"kind": "ball_bouncy", "id": "balle", "pos": Vector2(500, 300)},
+		{"kind": "ball", "id": "bille", "pos": Vector2(560, 300)},
+		{"kind": "ball_heavy", "id": "boulet", "pos": Vector2(470, 200)},
+	])
+	board.start()
+	await _steps(600)
+	for id: String in ["caisse", "balle"]:
+		var y := _pos(id).y
+		_check("eau : %s flotte (%.0f, surface %.0f)" % [id, y, surface], absf(y - surface) < 20.0)
+		_check("eau : %s au repos" % id, _rigid(id).linear_velocity.length() < 20.0)
+	for id: String in ["bille", "boulet"]:
+		_check("eau : %s au fond (%.0f)" % [id, _pos(id).y], _pos(id).y > bottom - 30.0)
+	_check("eau : le bac retient tout", absf(_pos("caisse").x - tank.x) < WaterPart.INNER.x / 2.0)
 
 
 func _lamp() -> LampPart:

@@ -18,6 +18,7 @@ const INFO := {
 	"gear": {"label": "Engrenage", "desc": "Roue à bras, entraînée par les roues qui la touchent. R : bras."},
 	"motor": {"label": "Moteur", "desc": "Fait tourner les engrenages qui le touchent. Miroir : sens."},
 	"portal": {"label": "Portail", "desc": "Renvoie les objets par l'autre portail du même canal, à la même vitesse."},
+	"water": {"label": "Bac d'eau", "desc": "Fait flotter les objets légers ; les lourds coulent lentement."},
 	"timer": {"label": "Minuterie", "desc": "Allume son canal un délai après le lancement (R : délai)."},
 	"switch": {"label": "Interrupteur", "desc": "Chaque choc sur le levier allume ou éteint son canal."},
 	"conveyor": {"label": "Tapis", "desc": "Canal 0 : toujours en marche."},
@@ -46,6 +47,7 @@ static func create(kind: String) -> Part:
 		"timer": part = TimerPart.new()
 		"gear", "motor": part = GearPart.new()
 		"portal": part = PortalPart.new()
+		"water": part = WaterPart.new()
 		"magnet": part = MagnetPart.new()
 		"scissors": part = ScissorsPart.new()
 		"trapdoor", "door": part = GatePart.new()

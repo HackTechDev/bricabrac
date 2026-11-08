@@ -20,7 +20,8 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Nouvelles pièces
 
-- Liquide ou bain d'eau pour faire flotter les objets légers.
+- Ventouse, élastique et chariot sur rail.
+- Pièces animées : souris dans une roue, chat qui saute sur ce qui bouge.
 
 ## Contenu et rejouabilité
 

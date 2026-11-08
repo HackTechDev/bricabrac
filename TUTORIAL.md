@@ -109,6 +109,8 @@ présents dans le niveau restent en place.
   Si les deux portails n'ont pas la même orientation, la trajectoire tourne d'autant : une bille
   qui tombe dans un portail couché ressort à l'horizontale d'un portail debout. Rien ne heurte
   un portail, et il fonctionne sans être allumé.
+- **Bac d'eau :** la caisse, le domino et la balle rebond y flottent ; la bille et le boulet coulent
+  lentement jusqu'au fond. L'eau freine tout ce qui la traverse, ce qui amortit une chute.
 - **Canon :** tire une seule bille quand son canal s'allume. Il suffit de le faire pivoter pour viser.
 - **Pointes :** solides pour tout le monde, fatales pour les ballons.
 - **Lampe :** s'allume avec son canal. C'est souvent l'objectif.
