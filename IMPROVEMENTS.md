@@ -7,7 +7,7 @@ section, les idées les plus utiles ou les moins coûteuses viennent en premier.
 
 Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
-- Faire essayer les 19 niveaux à de vrais joueurs et noter où ils bloquent.
+- Faire essayer les 20 niveaux à de vrais joueurs et noter où ils bloquent.
 - Revoir la difficulté de la Catapulte et du Pendule, dont les zones gagnantes sont étroites.
 - Régler en jouant le chat, l'élastique et la corde qui s'accroche aux obstacles, jusqu'ici
   réglés seulement par des tests.
@@ -16,12 +16,10 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Nouveaux niveaux
 
-Aucun niveau officiel n'utilise encore la ventouse, le chariot, la souris, le chat
+Aucun niveau officiel n'utilise encore le chariot, la souris, le chat
 ni les ciseaux. Chaque niveau ci-dessous en présente un, comme les premiers niveaux le font
 pour les pièces de base.
 
-- **Prise ferme** (cuisine) : une ventouse retient une bille jusqu'à ce qu'une minuterie la
-  lâche au bon moment, sur un tapis qui passe.
 - **Le wagonnet** (usine) : un chariot sur rail transporte une caisse d'un quai à l'autre,
   poussé par un ventilateur.
 - **Le hamster** (cuisine) : une bille réveille la souris, dont la roue entraîne un train

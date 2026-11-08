@@ -202,7 +202,7 @@ au-delà de son point d'attache, de quoi fabriquer une fronde. Il s'amincit à m
 
 ## Les niveaux
 
-Les 19 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
+Les 20 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
 dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
 Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles.
 Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran.
@@ -226,18 +226,19 @@ Le bouton **Indice** donne un coup de pouce sans tout révéler.
 11. **Le minuteur :** la minuterie et la trappe.
 12. **La bouée :** faire flotter une caisse jusqu'à une plaque.
 13. **Le batteur :** le moteur et l'engrenage.
+14. **Prise ferme :** la ventouse, qui retient la bille jusqu'au bon moment.
 
 **L'usine**, avec ses machines et sa ventilation :
 
-14. **Train d'engrenages :** relier un moteur lointain par des roues.
-15. **Le palan magnétique :** soulever une bille avec l'aimant.
-16. **Ventilation :** un vent permanent contrarie le ballon.
+15. **Train d'engrenages :** relier un moteur lointain par des roues.
+16. **Le palan magnétique :** soulever une bille avec l'aimant.
+17. **Ventilation :** un vent permanent contrarie le ballon.
 
 **L'espace**, où la gravité est faible :
 
-17. **Bond lunaire :** un saut sur ressort qui porte très loin.
-18. **Le sas :** les portails.
-19. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
+18. **Bond lunaire :** un saut sur ressort qui porte très loin.
+19. **Le sas :** les portails.
+20. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
 
 ## Les objectifs bonus
 
