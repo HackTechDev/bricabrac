@@ -202,7 +202,7 @@ au-delà de son point d'attache, de quoi fabriquer une fronde. Il s'amincit à m
 
 ## Les niveaux
 
-Les 22 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
+Les 23 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
 dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
 Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles.
 Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran.
@@ -228,19 +228,20 @@ Le bouton **Indice** donne un coup de pouce sans tout révéler.
 13. **Le batteur :** le moteur et l'engrenage.
 14. **Prise ferme :** la ventouse, qui retient la bille jusqu'au bon moment.
 15. **Le hamster :** la souris, réveillée par une bille, entraîne les engrenages.
+16. **Le chat et la pelote :** le chat, qui bondit sur un ballon jusque dans les dominos.
 
 **L'usine**, avec ses machines et sa ventilation :
 
-16. **Train d'engrenages :** relier un moteur lointain par des roues.
-17. **Le palan magnétique :** soulever une bille avec l'aimant.
-18. **Ventilation :** un vent permanent contrarie le ballon.
-19. **Le wagonnet :** le chariot, à hisser jusqu'en haut de son rail.
+17. **Train d'engrenages :** relier un moteur lointain par des roues.
+18. **Le palan magnétique :** soulever une bille avec l'aimant.
+19. **Ventilation :** un vent permanent contrarie le ballon.
+20. **Le wagonnet :** le chariot, à hisser jusqu'en haut de son rail.
 
 **L'espace**, où la gravité est faible :
 
-20. **Bond lunaire :** un saut sur ressort qui porte très loin.
-21. **Le sas :** les portails.
-22. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
+21. **Bond lunaire :** un saut sur ressort qui porte très loin.
+22. **Le sas :** les portails.
+23. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
 
 ## Les objectifs bonus
 
