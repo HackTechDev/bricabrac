@@ -56,8 +56,9 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
   objet posé sur la jointure touche deux formes, dans un ordre qui change d'un essai à l'autre
   (c'était la cause de la variation de durée du niveau Dominos).
 - Lancer les tests automatiquement sur GitHub Actions à chaque envoi.
-- Mesurer les performances avec beaucoup d'objets : les corps physiques ne s'endorment jamais,
-  et le vent comme la corde lancent maintenant des rayons à chaque pas de simulation.
+- Alléger le vent et les cordes au-delà de 100 objets (voir « Performances » dans le README) :
+  un seul rayon pour un corps à découvert, ne chercher les coins d'une corde que si ses segments
+  ont bougé.
 - Vérifier les cartes de niveau et les vignettes par un test avec rendu, le mode sans écran ne
   produisant pas d'image.
 

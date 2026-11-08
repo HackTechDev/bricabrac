@@ -51,6 +51,7 @@ var _gear_pairs: Array = []
 var _part_layer: Node2D
 var _wall_shapes: Array[CollisionShape2D] = []
 var _walls: StaticBody2D
+var _surfaces := {}
 
 
 func _ready() -> void:
@@ -113,15 +114,24 @@ func _blow() -> void:
 		return
 	var flow := w.normalized()
 	var exclude: Array[RID] = [_walls.get_rid()]
+	var upwind := _upwind.bind(flow)
 	var shelter := {}
 	for part in parts:
 		for col in part.solids:
 			var body := col.get_parent() as RigidBody2D
 			if body != null and not body.freeze:
 				if not shelter.has(body):
-					shelter[body] = Wind.exposure(body, flow, _upwind.bind(flow), exclude)
-				var surface := WaterPart._shape_area(WaterPart._outline(col.shape))
-				body.apply_central_force(w * AIR_DENSITY * surface * shelter[body])
+					shelter[body] = Wind.exposure(body, flow, upwind, exclude)
+				body.apply_central_force(w * AIR_DENSITY * _surface(col.shape) * shelter[body])
+
+
+## Aire d'une forme, gardée d'un pas à l'autre : les formes ne changent pas pendant la simulation.
+func _surface(shape: Shape2D) -> float:
+	var area: Variant = _surfaces.get(shape)
+	if area == null:
+		area = WaterPart._shape_area(WaterPart._outline(shape))
+		_surfaces[shape] = area
+	return area
 
 
 ## Distance d'un point (global) au bord du plateau d'où vient le vent.
@@ -422,6 +432,7 @@ func _rebuild(run: bool) -> void:
 	channel_on = [true, false, false, false]
 	effects.clear()
 	sfx.stop_hums()
+	_surfaces.clear()
 	for part in parts:
 		_part_layer.remove_child(part)
 		part.queue_free()

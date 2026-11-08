@@ -64,8 +64,26 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_parts.gd    # pièces mécaniques
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_tutorial.gd # tutoriel intégré
     $GODOT --headless --path . --fixed-fps 120 -s tests/test_lang.gd     # traduction anglaise
+    $GODOT --headless --path . --fixed-fps 120 -s tests/bench_perf.gd    # coût d'un pas de simulation
     SWEEP=spec.json $GODOT --headless --path . --fixed-fps 120 -s tests/sweep.gd   # aide à la conception
     CAPTURE_DIR=dossier $GODOT --path . -s tests/capture.gd              # captures (affichage requis)
+
+### Performances
+
+Mesures de `bench_perf.gd` (billes sur des étagères, millisecondes par pas ; le jeu en fait 120
+par seconde, soit un budget de 8,3 ms) :
+
+| Objets | Billes seules | Avec vent | Avec cordes |
+| --- | --- | --- | --- |
+| 25 | 0,5 | 1,7 | 1,8 |
+| 100 | 2,4 | 6,8 | 6,8 |
+| 200 | 4,6 | 14,1 | 14,9 |
+
+Les niveaux du jeu comptent moins de 30 objets et restent loin du budget. Le vent (trois rayons
+par corps et par pas) et les cordes (rayons pour s'accrocher aux coins) triplent le coût : au-delà
+d'une centaine d'objets ventés ou reliés, le bac à sable peut ralentir. Les corps ne s'endorment
+jamais, pour que la simulation reste identique d'un essai à l'autre ; le coût des billes seules en
+découle, mais il reste modeste.
 
 Pour ajouter un niveau : le construire dans l'éditeur du jeu lancé depuis les sources, le gagner
 avec « Essayer », puis « Écrire (jeu)… » écrit son fichier dans `levels/` avec sa solution.
