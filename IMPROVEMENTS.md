@@ -26,8 +26,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 - D'autres niveaux pour le grenier (il n'en a que quatre), et une obscurité qui compte en jeu :
   un chat qui ne voit que ce qui est éclairé, une cellule qui allume son canal dans un faisceau.
-- Remplacer les niveaux « La fronde » et « Le hamster » de la galerie, qui ont maintenant leur
-  version officielle, par d'autres niveaux d'exemple.
 
 ## Confort de jeu
 

@@ -926,16 +926,16 @@ func _test_gallery() -> void:
 	var gallery: GalleryScreen = main.gallery_screen
 	_check("galerie : ouverte depuis l'écran titre", gallery.visible and main.gallery_entries.size() == 3)
 	var order := Array(Gallery.sorted(main.gallery_entries, false).map(func(e: Dictionary) -> String: return e.key))
-	_check("galerie : du plus facile au plus difficile", order == ["fronde", "hamster", "vent_arriere"])
+	_check("galerie : du plus facile au plus difficile", order == ["toboggan", "coussin", "vent_arriere"])
 	_check("galerie : état « À découvrir »", main.gallery_status(main.gallery_entries[0]) == "À découvrir")
 	var customs: int = main.custom_levels.size()
-	await _click(gallery.play_button("fronde").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	await _click(gallery.play_button("toboggan").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	for i in 3000:
 		await physics_frame
 		if not gallery.visible:
 			break
 	_check("galerie : niveau vérifié, ajouté et ouvert", not gallery.visible
-			and main.custom_levels.size() == customs + 1 and main.levels[main.current].name == "La fronde")
+			and main.custom_levels.size() == customs + 1 and main.levels[main.current].name == "Le toboggan")
 	var entry: Dictionary = main.gallery_entries[0]
 	main.board.clear_placed()
 	main.board.apply_layout(entry.level.solution)
@@ -951,12 +951,12 @@ func _test_gallery() -> void:
 	_check("galerie : résolu en 2 essais", main.gallery_status(entry) == "Résolu en 2 essais")
 	main.open_gallery()
 	await _steps(2)
-	await _click(gallery.play_button("fronde").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	await _click(gallery.play_button("toboggan").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	await _steps(2)
 	_check("galerie : rejouer ne le duplique pas", main.custom_levels.size() == customs + 1 and not gallery.visible)
 
 	# Copie en ligne : une entrée remplacée et une nouvelle ; un code abîmé est ignoré.
-	var online := "[fronde]\nname=\"La fronde, version 2\"\ncode=%s\n\n[nouveau]\nname=\"Nouveau\"\nadded=\"2026-12-01\"\ncode=%s\n\n[abime]\ncode=\"BAB1:xyz\"\n" % [
+	var online := "[toboggan]\nname=\"Le toboggan, version 2\"\ncode=%s\n\n[nouveau]\nname=\"Nouveau\"\nadded=\"2026-12-01\"\ncode=%s\n\n[abime]\ncode=\"BAB1:xyz\"\n" % [
 			var_to_str(entry.code), var_to_str(main.gallery_entries[1].code)]
 	var file := FileAccess.open(main.gallery_online_path, FileAccess.WRITE)
 	file.store_string(online)
@@ -965,7 +965,7 @@ func _test_gallery() -> void:
 	await _steps(2)
 	var names := Array(main.gallery_entries.map(func(e: Dictionary) -> String: return e.name))
 	_check("galerie en ligne : fusionnée, codes abîmés écartés", main.gallery_entries.size() == 4
-			and names.has("La fronde, version 2") and names.has("Nouveau") and not names.has("La fronde"))
+			and names.has("Le toboggan, version 2") and names.has("Nouveau") and not names.has("Le toboggan"))
 	gallery.newest_first = true
 	gallery._rebuild()
 	_check("galerie : tri par date", Gallery.sorted(main.gallery_entries, true)[0].key == "nouveau")

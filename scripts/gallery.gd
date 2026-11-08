@@ -2,8 +2,8 @@ class_name Gallery
 ## Galerie de niveaux partagés. Son contenu est un fichier `gallery/index.cfg` du dépôt du jeu,
 ## une section par niveau :
 ##
-##     [fronde]
-##     name="La fronde"
+##     [toboggan]
+##     name="Le toboggan"
 ##     author="Bric-à-Brac"
 ##     added="2026-11-08"
 ##     difficulty=1
