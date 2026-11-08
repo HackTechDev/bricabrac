@@ -38,6 +38,7 @@ const WORLDS: Array[Dictionary] = [
 	{"id": "cuisine", "name": "Cuisine", "color": Color("3a2a24")},
 	{"id": "usine", "name": "Usine", "color": Color("262d2a")},
 	{"id": "espace", "name": "Espace", "color": Color("120f2a")},
+	{"id": "jardin", "name": "Jardin", "color": Color("1e3324")},
 	{"id": "perso", "name": "Mes niveaux", "color": Color("23303a")},
 ]
 ## Pièces qui peuvent servir d'objectif à un niveau.

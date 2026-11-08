@@ -202,7 +202,7 @@ au-delà de son point d'attache, de quoi fabriquer une fronde. Il s'amincit à m
 
 ## Les niveaux
 
-Les 26 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
+Les 31 niveaux sont regroupés en cinq mondes, chacun avec sa couleur de fond. Tous sont accessibles
 dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
 Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles.
 Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran. L'écran s'ouvre sur la vignette du niveau
@@ -246,6 +246,14 @@ Le bouton **Indice** donne un coup de pouce sans tout révéler.
 24. **Le sas :** les portails.
 25. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
 26. **À l'abri du vent :** un vent solaire, et des planches pour s'en protéger.
+
+**Le jardin**, où les niveaux enchaînent plusieurs mécanismes :
+
+27. **Le bassin :** la bouée, puis une trappe qui lâche une bille vers le panier.
+28. **Le chat du potager :** le chat, les ciseaux et un ventilateur pour un ballon attaché.
+29. **Le puits :** un contrepoids remonte la bille, qui réveille la souris.
+30. **Le cerf-volant :** le vent, les ciseaux et une haie de planches.
+31. **La grande machine :** chariot, trappe, souris et engrenages à la suite.
 
 ## Les objectifs bonus
 
