@@ -24,15 +24,24 @@ func _build() -> void:
 	add_visual(plank, _paint_plank)
 	plank.rotation_degrees = TILT * dir
 	if running:
+		# Pivot sans butée : la butée angulaire du PinJoint2D, heurtée par un objet lourd,
+		# fait tourner la planche à plus de 50 tours par seconde et projette la bille à des
+		# milliers de px/s. La butée est donc faite à la main (_physics_process).
 		var joint := PinJoint2D.new()
 		add_child(joint)
-		joint.angular_limit_enabled = true
-		# Limites relatives à l'inclinaison de départ.
-		var span := deg_to_rad(TILT * 2.0)
-		joint.angular_limit_lower = 0.0 if dir > 0 else -span
-		joint.angular_limit_upper = span if dir > 0 else 0.0
 		joint.node_a = joint.get_path_to(base)
 		joint.node_b = joint.get_path_to(plank)
+
+
+## Butée : la planche ne dépasse pas ±TILT ; arrivée en butée, elle s'arrête net.
+func _physics_process(_delta: float) -> void:
+	if not running or plank == null:
+		return
+	var limit := deg_to_rad(TILT)
+	var outward := signf(plank.rotation)
+	if absf(plank.rotation) > limit and signf(plank.angular_velocity) == outward:
+		plank.angular_velocity = 0.0
+		plank.rotation = limit * outward
 
 
 func can_flip() -> bool:

@@ -8,7 +8,7 @@ section, les idées les plus utiles ou les moins coûteuses viennent en premier.
 Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 - Faire essayer les 46 niveaux à de vrais joueurs et noter où ils bloquent.
-- Revoir la difficulté de la Catapulte et du Pendule, dont les zones gagnantes sont étroites.
+- Revoir la difficulté du Pendule, dont la zone gagnante est étroite.
 - Régler en jouant le chat, l'élastique et la corde qui s'accroche aux obstacles, jusqu'ici
   réglés seulement par des tests.
 - Vérifier que la nouvelle solution de la Bouée (ventilateur incliné) se trouve sans l'indice.
