@@ -9,6 +9,7 @@ signal choose
 signal sandbox
 signal editor
 signal gallery
+signal options
 
 const BG := Color("14203a")
 const FADE := 0.3
@@ -29,9 +30,9 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 60  # Au-dessus des marques d'objectif et de l'aperçu de corde du plateau.
 	_buttons = VBoxContainer.new()
-	_buttons.add_theme_constant_override("separation", 10)
+	_buttons.add_theme_constant_override("separation", 8)
 	_buttons.custom_minimum_size.x = 300
-	_buttons.position = Vector2(490, 310)
+	_buttons.position = Vector2(490, 292)
 	_buttons.size = Vector2(300, 0)
 	add_child(_buttons)
 	_play_button = _add_button("Jouer", play)
@@ -39,6 +40,7 @@ func _init() -> void:
 	_add_button("Bac à sable", sandbox)
 	_add_button("Galerie des joueurs", gallery)
 	_add_button("Éditeur de niveaux", editor)
+	_add_button("Options", options, false)
 	if not OS.has_feature("web"):
 		var quit := Button.new()
 		quit.text = "Quitter"
@@ -48,19 +50,21 @@ func _init() -> void:
 		_buttons.add_child(quit)
 	_progress = Label.new()
 	_progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_progress.position = Vector2(340, 640)
+	_progress.position = Vector2(340, 664)
 	_progress.size = Vector2(600, 24)
 	_progress.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
 	add_child(_progress)
 
 
-func _add_button(text: String, sig: Signal) -> Button:
+## `closing` : l'écran se referme avant d'émettre le signal (les options s'ouvrent par-dessus).
+func _add_button(text: String, sig: Signal, closing := true) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.focus_mode = Control.FOCUS_NONE
 	button.custom_minimum_size.y = 40
 	button.pressed.connect(func() -> void:
-		close()
+		if closing:
+			close()
 		sig.emit())
 	_buttons.add_child(button)
 	return button

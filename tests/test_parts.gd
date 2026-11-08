@@ -24,6 +24,7 @@ func _run() -> void:
 	await _test_repel()
 	await _test_candle()
 	await _test_effects()
+	await _test_hums()
 	_end("PIÈCES OK")
 
 
@@ -503,3 +504,22 @@ func _test_effects() -> void:
 	await _steps(70)
 	_check("animations réduites : pas de particules", board.effects.count() == 0)
 	Effects.enabled = true
+
+
+## Sons continus : un par sorte de machine en marche, coupés à l'arrêt et quand le canal est éteint.
+func _test_hums() -> void:
+	_level([
+		{"kind": "fan", "pos": Vector2(200, 500)},
+		{"kind": "fan", "pos": Vector2(200, 300)},
+		{"kind": "conveyor", "pos": Vector2(600, 500), "channel": 1},
+	])
+	_check("sons continus : rien à l'atelier", board.sfx.hum_counts.fan == 0)
+	board.start()
+	await _steps(5)
+	_check("ventilateurs : un souffle continu (%d)" % board.sfx.hum_counts.fan, board.sfx.hum_counts.fan == 2)
+	_check("tapis éteint : silencieux", board.sfx.hum_counts.belt == 0)
+	board.activate_channel(1)
+	await _steps(5)
+	_check("tapis allumé : il ronronne", board.sfx.hum_counts.belt == 1)
+	board.stop()
+	_check("arrêt : sons continus coupés", board.sfx.hum_counts.fan == 0 and board.sfx.hum_counts.belt == 0)

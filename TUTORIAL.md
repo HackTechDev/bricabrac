@@ -71,6 +71,7 @@ Le niveau est gagné quand la bille reste une demi-seconde dans le panier.
 | Accélérer la simulation (×1, ×2, ×4) | V, ou bouton ×1 |
 | Montrer ou masquer la trace du dernier essai | T |
 | Couper le son | M |
+| Options : volume des effets et de la musique | O, ou bouton Options de l'écran titre |
 | Choisir un niveau | Tab, ou le bouton en haut à gauche |
 | Revenir à l'écran titre | Échap, quand rien n'est sélectionné ni en cours |
 | Marquer l'objectif (éditeur) | G |

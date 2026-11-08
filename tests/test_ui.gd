@@ -99,6 +99,7 @@ func _run() -> void:
 	await _test_hints()
 	_test_records()
 	await _test_copy_paste()
+	await _test_options()
 
 	_finish("INTERFACE OK")
 
@@ -1227,3 +1228,27 @@ func _test_copy_paste() -> void:
 	_check("clic dans le vide : sélection vidée", main._selection().is_empty())
 	board.set_layout([])
 	main._commit()
+
+
+## Options : touche O, volumes séparés des effets et de la musique, enregistrés.
+func _test_options() -> void:
+	await _key(KEY_O)
+	_check("touche O : options ouvertes", main.options.visible)
+	await _key(KEY_SPACE)
+	_check("options ouvertes : le clavier ne lance rien", not main.board.running)
+	var sliders: Array = main.options.find_children("*", "HSlider", true, false)
+	sliders[0].value = 0.5
+	sliders[1].value = 0.0
+	var fx := AudioServer.get_bus_index(Sfx.BUS_EFFECTS)
+	var mus := AudioServer.get_bus_index(Sfx.BUS_MUSIC)
+	_check("volume des effets appliqué", is_equal_approx(AudioServer.get_bus_volume_db(fx), linear_to_db(0.5)))
+	_check("musique à zéro : bus coupé", AudioServer.is_bus_mute(mus) and not AudioServer.is_bus_mute(fx))
+	_check("bus musique distinct des effets", main.music.bus == Sfx.BUS_MUSIC and main.board.sfx._players[0].bus == Sfx.BUS_EFFECTS)
+	await _key(KEY_ESCAPE)
+	_check("Échap : options fermées", not main.options.visible)
+	var cfg := ConfigFile.new()
+	cfg.load(SAVE)
+	_check("volumes enregistrés", cfg.get_value("settings", "sfx_volume") == 0.5 and cfg.get_value("settings", "music_volume") == 0.0)
+	sliders[0].value = 1.0
+	sliders[1].value = 0.5
+	main.options.close()

@@ -376,6 +376,7 @@ func _physics_process(delta: float) -> void:
 	_blow()
 	_solve_gears()
 	_record_trails()
+	_update_hums()
 	if has_won:
 		return
 	elapsed += delta
@@ -390,6 +391,20 @@ func _physics_process(delta: float) -> void:
 		won.emit()
 
 
+## Sons continus : un par sorte de machine en marche (tapis, ventilateurs).
+func _update_hums() -> void:
+	var belts := 0
+	var fans := 0
+	for part in parts:
+		if part.powered:
+			if part is ConveyorPart:
+				belts += 1
+			elif part is FanPart:
+				fans += 1
+	sfx.set_hum("belt", belts)
+	sfx.set_hum("fan", fans)
+
+
 func _rebuild(run: bool) -> void:
 	var was_running := running
 	if was_running and not run:
@@ -401,6 +416,7 @@ func _rebuild(run: bool) -> void:
 	elapsed = 0.0
 	channel_on = [true, false, false, false]
 	effects.clear()
+	sfx.stop_hums()
 	for part in parts:
 		_part_layer.remove_child(part)
 		part.queue_free()

@@ -27,6 +27,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 | Annuler / rétablir | Ctrl+Z / Ctrl+Y ou Ctrl+Maj+Z |
 | Lancer / arrêter | Espace |
 | Couper le son | M |
+| Options (volumes des effets et de la musique) | O |
 | Écran titre | Échap, quand rien n'est sélectionné |
 
 ## Organisation
@@ -38,7 +39,9 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 - `scripts/tutorial.gd` : bulles du tutoriel intégré ; les étapes sont dans les fichiers de niveau.
 - `scripts/parts/` : une classe par pièce, dessinée par le code. `catalog.gd` les référence.
 - `scripts/parts/rope_part.gd` : contrainte de longueur de la corde, enroulée sur les poulies et accrochée aux coins des obstacles (Godot n'a pas de joint poulie en 2D).
-- `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio.
+- `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio, dont les sons continus du
+  tapis et du ventilateur ; `music.gd` : musique d'atelier, composée par le code elle aussi.
+- `scripts/options_panel.gd` : fenêtre d'options ; `effects.gd` : particules décoratives.
 - `scripts/wind.gd` : abri du vent, par lancer de rayons depuis l'amont.
 - `gallery/index.cfg` : galerie de niveaux partagés (codes `BAB1:`) ; `scripts/gallery.gd` en décrit le
   format. Pour y ajouter un niveau proposé, coller son code dans une nouvelle section.

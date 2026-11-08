@@ -5,6 +5,11 @@ extends Node
 const RATE := 22050
 const VOICES := 12
 const MIN_INTERVAL_MS := 45
+## Bus audio : les effets et la musique se règlent séparément ; le bus principal coupe tout.
+const BUS_EFFECTS := "Effets"
+const BUS_MUSIC := "Musique"
+## Sons continus des machines, en boucle tant qu'elles tournent.
+const HUMS := ["belt", "fan"]
 
 ## Nombre de demandes par son, y compris celles coupées par la limite de fréquence.
 var counts := {}
@@ -14,17 +19,65 @@ var silent := false
 static var _bank := {}
 
 var _players: Array[AudioStreamPlayer] = []
+var _hums := {}
+## Nombre de machines qui font tourner chaque son continu.
+var hum_counts := {}
 var _last_played := {}
 var _rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
+	Sfx.ensure_buses()
 	if _bank.is_empty():
 		_bank = Sfx.build_bank()
 	for i in VOICES:
 		var player := AudioStreamPlayer.new()
+		player.bus = BUS_EFFECTS
 		add_child(player)
 		_players.append(player)
+	for hum: String in HUMS:
+		var player := AudioStreamPlayer.new()
+		player.bus = BUS_EFFECTS
+		player.stream = _bank[hum]
+		add_child(player)
+		_hums[hum] = player
+		hum_counts[hum] = 0
+
+
+## Crée les bus Effets et Musique, reliés au bus principal, s'ils n'existent pas encore.
+static func ensure_buses() -> void:
+	for bus: String in [BUS_EFFECTS, BUS_MUSIC]:
+		if AudioServer.get_bus_index(bus) == -1:
+			AudioServer.add_bus()
+			var index := AudioServer.bus_count - 1
+			AudioServer.set_bus_name(index, bus)
+			AudioServer.set_bus_send(index, "Master")
+
+
+static func set_volume(bus: String, volume: float) -> void:
+	ensure_buses()
+	var index := AudioServer.get_bus_index(bus)
+	AudioServer.set_bus_volume_db(index, linear_to_db(maxf(volume, 0.0001)))
+	AudioServer.set_bus_mute(index, volume <= 0.0)
+
+
+## Son continu `hum` porté par `count` machines : plus il y en a, plus il est fort (un peu).
+func set_hum(hum: String, count: int) -> void:
+	if hum_counts.get(hum, 0) == count:
+		return
+	hum_counts[hum] = count
+	var player: AudioStreamPlayer = _hums[hum]
+	if count <= 0 or silent:
+		player.stop()
+		return
+	player.volume_db = linear_to_db(minf(0.14 + 0.04 * (count - 1), 0.25))
+	if not player.playing:
+		player.play()
+
+
+func stop_hums() -> void:
+	for hum: String in HUMS:
+		set_hum(hum, 0)
 
 
 func play(sound: String, volume := 1.0) -> void:
@@ -78,7 +131,54 @@ static func build_bank() -> Dictionary:
 		var hold := 0.5 if i == pitches.size() - 1 else 0.2
 		notes.append([hold, pitches[i], pitches[i], 0.7, 5.0, "tri", i * 0.13])
 	bank["win"] = _render(notes)
+	bank["belt"] = _render_loop(1.0, _belt_sample)
+	bank["fan"] = _render_loop(1.0, _fan_sample)
 	return bank
+
+
+## Boucle sans couture : les fréquences sont des multiples de 1 / durée, et le bruit est lissé.
+static func _render_loop(duration: float, sample: Callable) -> AudioStreamWAV:
+	var count := int(duration * RATE)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 3
+	var state := {"smooth": 0.0, "slow": 0.0}
+	var mix := PackedFloat32Array()
+	mix.resize(count)
+	for i in count:
+		mix[i] = sample.call(float(i) / RATE, rng, state)
+	var wav := _to_wav(mix, 0.8)
+	wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	wav.loop_end = count
+	return wav
+
+
+## Tapis : grondement grave et cliquetis régulier des lattes.
+static func _belt_sample(t: float, rng: RandomNumberGenerator, state: Dictionary) -> float:
+	state.smooth += 0.3 * (rng.randf_range(-1.0, 1.0) - state.smooth)
+	var clack := pow(1.0 - fposmod(t * 6.0, 1.0), 12.0)
+	return 0.35 * (4.0 * absf(fposmod(t * 55.0, 1.0) - 0.5) - 1.0) + state.smooth * (0.25 + 1.2 * clack)
+
+
+## Ventilateur : souffle doux et ronronnement du moteur, modulé par les pales.
+static func _fan_sample(t: float, rng: RandomNumberGenerator, state: Dictionary) -> float:
+	state.slow += 0.08 * (rng.randf_range(-1.0, 1.0) - state.slow)
+	var blades := 0.75 + 0.25 * sin(t * TAU * 16.0)
+	return state.slow * 2.2 * blades + 0.18 * sin(t * TAU * 120.0)
+
+
+static func _to_wav(mix: PackedFloat32Array, level: float, rate := RATE) -> AudioStreamWAV:
+	var peak := 0.001
+	for s in mix:
+		peak = maxf(peak, absf(s))
+	var bytes := PackedByteArray()
+	bytes.resize(mix.size() * 2)
+	for i in mix.size():
+		bytes.encode_s16(i * 2, int(mix[i] / peak * level * 32767.0))
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = rate
+	wav.data = bytes
+	return wav
 
 
 ## Chaque voix : durée, fréquence de départ, d'arrivée, niveau, amortissement, forme, [départ].
@@ -93,18 +193,7 @@ static func _render(voices: Array) -> AudioStreamWAV:
 	for v: Array in voices:
 		var start := int((v[6] if v.size() > 6 else 0.0) * RATE)
 		_add_voice(mix, start, v[0], v[1], v[2], v[3], v[4], v[5], rng)
-	var peak := 0.001
-	for s in mix:
-		peak = maxf(peak, absf(s))
-	var bytes := PackedByteArray()
-	bytes.resize(mix.size() * 2)
-	for i in mix.size():
-		bytes.encode_s16(i * 2, int(mix[i] / peak * 0.8 * 32767.0))
-	var wav := AudioStreamWAV.new()
-	wav.format = AudioStreamWAV.FORMAT_16_BITS
-	wav.mix_rate = RATE
-	wav.data = bytes
-	return wav
+	return _to_wav(mix, 0.8)
 
 
 static func _add_voice(mix: PackedFloat32Array, start: int, duration: float, f0: float, f1: float,

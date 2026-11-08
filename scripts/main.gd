@@ -49,6 +49,12 @@ var rope_from: Part
 var rope_from_off := Vector2.ZERO
 var rope_via: Array = []
 var muted := false
+## Volumes de 0 à 1, réglés dans les options.
+var sfx_volume := 1.0
+var music_volume := 0.5
+var music: Music
+var options: OptionsPanel
+var _mute_check: CheckBox
 
 var histories := {}
 var saved_layouts := {}
@@ -184,7 +190,12 @@ func _ready() -> void:
 	title_screen.sandbox.connect(func() -> void: _enter(_index_of("bac_a_sable")))
 	title_screen.editor.connect(func() -> void: _enter(editor_index()))
 	title_screen.gallery.connect(open_gallery)
+	title_screen.options.connect(open_options)
 	title_screen.hide()
+	music = Music.new()
+	add_child(music)
+	_build_options()
+	_apply_volumes()
 	editor.load_from(_editor_draft)
 	load_level(_first_unsolved())
 	if show_title:
@@ -437,7 +448,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _handle_key(event: InputEventKey) -> void:
-	if title_screen.is_open():
+	if title_screen.is_open() or options.visible:
 		return
 	if gallery_screen.visible:
 		if event.keycode == KEY_ESCAPE:
@@ -474,6 +485,8 @@ func _handle_key(event: InputEventKey) -> void:
 			cycle_speed()
 		KEY_TAB:
 			open_level_select()
+		KEY_O:
+			open_options()
 		KEY_G:
 			_toggle_goal()
 		KEY_ESCAPE:
@@ -1659,6 +1672,36 @@ func _tutorial_obstacles() -> Array:
 
 # --- Progression ----------------------------------------------------------------
 
+# --- Options -------------------------------------------------------------------
+
+func _build_options() -> void:
+	options = OptionsPanel.new()
+	add_child(options)
+	options.add_slider("Effets sonores", sfx_volume, func(v: float) -> void:
+		sfx_volume = v
+		_apply_volumes()
+		board.sfx.play("tick"))
+	options.add_slider("Musique", music_volume, func(v: float) -> void:
+		music_volume = v
+		_apply_volumes())
+	_mute_check = options.add_check("Couper tout le son (M)", muted, func(on: bool) -> void:
+		if on != muted:
+			_toggle_sound())
+	options.closed.connect(_save_progress)
+
+
+func open_options() -> void:
+	_stop_drag()
+	_hide_tooltip()
+	_mute_check.set_pressed_no_signal(muted)
+	options.open()
+
+
+func _apply_volumes() -> void:
+	Sfx.set_volume(Sfx.BUS_EFFECTS, sfx_volume)
+	Sfx.set_volume(Sfx.BUS_MUSIC, music_volume)
+
+
 func _toggle_sound() -> void:
 	muted = not muted
 	_refresh_controls()
@@ -1680,6 +1723,8 @@ func _load_progress() -> void:
 		for id: String in cfg.get_value("progress", "completed", []):
 			completed[id] = true
 		muted = cfg.get_value("settings", "muted", false)
+		sfx_volume = cfg.get_value("settings", "sfx_volume", 1.0)
+		music_volume = cfg.get_value("settings", "music_volume", 0.5)
 		saved_layouts = cfg.get_value("layouts", "by_level", {})
 		attempts = cfg.get_value("progress", "attempts", {})
 		for id: String in cfg.get_value("progress", "tutorials", []):
@@ -1734,6 +1779,8 @@ func _save_progress() -> void:
 	cfg.set_value("progress", "hints", hint_levels)
 	cfg.set_value("progress", "records", records)
 	cfg.set_value("settings", "muted", muted)
+	cfg.set_value("settings", "sfx_volume", sfx_volume)
+	cfg.set_value("settings", "music_volume", music_volume)
 	cfg.set_value("layouts", "by_level", saved_layouts)
 	if editor != null:
 		var draft := {"id": editor.custom_id, "name": editor.name_edit.text,

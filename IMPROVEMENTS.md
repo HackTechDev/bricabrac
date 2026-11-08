@@ -43,8 +43,7 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 ## Présentation
 
 - D'autres particules : gouttes du bac d'eau, étincelles des engrenages.
-- Musique d'atelier discrète, avec un réglage de volume séparé des effets.
-- Sons continus pour le tapis et le ventilateur.
+- Une musique par monde, sur la même trame que celle de l'atelier.
 - Montrer l'ombre du vent derrière les obstacles, pour que l'abri se voie avant de lancer.
 - Interface traduite, en commençant par l'anglais.
 - Options d'accessibilité : couleurs de canaux adaptées, réduction des animations (dont le
