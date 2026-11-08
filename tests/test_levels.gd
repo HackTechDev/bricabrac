@@ -39,7 +39,10 @@ func _run() -> void:
 ## connus, et un fichier réécrit puis relu redonne exactement le même niveau.
 func _check_files() -> void:
 	var levels := LevelData.all()
-	_report("fichiers", "18 niveaux lus", levels.size() == 18, "%d lus" % levels.size())
+	var files := Array(DirAccess.get_files_at(LevelFile.DIR)).filter(
+			func(name: String) -> bool: return name.get_extension() == LevelFile.EXTENSION)
+	_report("fichiers", "%d niveaux lus" % files.size(), levels.size() == files.size() and levels.size() >= 18,
+			"%d lus" % levels.size())
 	var ids := {}
 	for level: Dictionary in levels:
 		ids[level.id] = true

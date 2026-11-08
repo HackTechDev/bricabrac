@@ -6,7 +6,7 @@ extends RopePart
 ## longueur de pose, de quoi faire une catapulte.
 
 const ELASTIC_COLOR := Color("e9a23b")
-## Raideur, en force par pixel d'allongement, et amortissement le long de l'élastique.
+## Raideur, en force par pixel d'allongement, et amortissement de l'allongement.
 const STIFF := 30.0
 const DAMP := 4.0
 
@@ -45,7 +45,9 @@ func _physics_process(_delta: float) -> void:
 	var rate := 0.0
 	for end in ends:
 		rate += end.pull_rate()
-	var force := STIFF * stretch + DAMP * rate
+	# L'amortissement freine l'allongement, mais pas la détente : relâché, l'élastique claque
+	# et lance ce qu'il tient, comme une fronde.
+	var force := STIFF * stretch + DAMP * maxf(rate, 0.0)
 	if force <= 0.0:
 		return
 	var impulse := force / Engine.physics_ticks_per_second

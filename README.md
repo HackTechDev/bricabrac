@@ -41,7 +41,8 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 - `gallery/index.cfg` : galerie de niveaux partagés (codes `BAB1:`) ; `scripts/gallery.gd` en décrit le
   format. Pour y ajouter un niveau proposé, coller son code dans une nouvelle section.
 - `levels/` : les niveaux du jeu, un fichier texte par niveau (`07_contrepoids.cfg`), joués dans
-  l'ordre des noms ; chacun indique son monde et sa solution.
+  l'ordre des noms ; chacun indique son monde et sa solution. Chaque monde a sa dizaine (atelier
+  01 à 19, cuisine 20, usine 30, espace 40), pour ajouter un niveau sans renuméroter les autres.
 - `scripts/level_file.gd` : lecture et écriture de ces fichiers ; `level_data.gd` : mondes, bac à
   sable, éditeur et liste des niveaux.
 

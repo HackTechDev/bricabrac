@@ -197,12 +197,12 @@ dessus. Retirer une pièce ou une poulie renvoie aussi au bac les cordes qui y s
 
 L'**élastique** se pose exactement comme la corde, mais il s'étire : au-delà de sa longueur de
 repos, il tire d'autant plus fort qu'il est allongé, comme un ressort. Sélectionné, R ou la molette
-règlent sa tension de départ, de 0 à 70 % par pas de 10 : tendu, il ramène vivement ce qu'il retient,
-de quoi fabriquer une fronde. Il s'amincit à mesure qu'il s'étire.
+règlent sa tension de départ, de 0 à 70 % par pas de 10 : tendu, il claque et lance ce qu'il retient
+au-delà de son point d'attache, de quoi fabriquer une fronde. Il s'amincit à mesure qu'il s'étire.
 
 ## Les niveaux
 
-Les 18 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
+Les 19 niveaux sont regroupés en quatre mondes, chacun avec sa couleur de fond. Tous sont accessibles
 dès le départ depuis l'écran de sélection, qu'ouvrent le bouton en haut à gauche ou la touche Tab.
 Chaque niveau y a sa vignette, avec son état : « À faire », ou « Terminé » suivi de ses étoiles.
 Clique sur une vignette pour jouer ce niveau ; Échap ferme l'écran.
@@ -219,24 +219,25 @@ Le bouton **Indice** donne un coup de pouce sans tout révéler.
 7. **Contrepoids :** les poulies et la corde.
 8. **Le pendule :** la corde comme balancier.
 9. **Réaction en chaîne :** une machine complète, avec plusieurs mécanismes en cascade.
+10. **La fronde :** l'élastique tendu, qui lance la bille par-dessus un mur.
 
 **La cuisine**, avec ses minuteries et son bac d'eau :
 
-10. **Le minuteur :** la minuterie et la trappe.
-11. **La bouée :** faire flotter une caisse jusqu'à une plaque.
-12. **Le batteur :** le moteur et l'engrenage.
+11. **Le minuteur :** la minuterie et la trappe.
+12. **La bouée :** faire flotter une caisse jusqu'à une plaque.
+13. **Le batteur :** le moteur et l'engrenage.
 
 **L'usine**, avec ses machines et sa ventilation :
 
-13. **Train d'engrenages :** relier un moteur lointain par des roues.
-14. **Le palan magnétique :** soulever une bille avec l'aimant.
-15. **Ventilation :** un vent permanent contrarie le ballon.
+14. **Train d'engrenages :** relier un moteur lointain par des roues.
+15. **Le palan magnétique :** soulever une bille avec l'aimant.
+16. **Ventilation :** un vent permanent contrarie le ballon.
 
 **L'espace**, où la gravité est faible :
 
-16. **Bond lunaire :** un saut sur ressort qui porte très loin.
-17. **Le sas :** les portails.
-18. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
+17. **Bond lunaire :** un saut sur ressort qui porte très loin.
+18. **Le sas :** les portails.
+19. **Tir en orbite :** canon, minuterie et portails pour franchir un mur.
 
 ## Les objectifs bonus
 

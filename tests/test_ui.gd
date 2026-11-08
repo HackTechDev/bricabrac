@@ -468,8 +468,9 @@ func _test_level_select() -> void:
 	await _key(KEY_TAB)
 	_check("sélection : Tab ouvre", select.visible)
 	await _steps(2)
-	await _click(select.card(10).get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
-	_check("sélection : clic sur une vignette", main.current == 10 and not select.visible)
+	var kitchen := _first_of_world("cuisine")
+	await _click(select.card(kitchen).get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+	_check("sélection : clic sur une vignette", main.current == kitchen and not select.visible)
 	_check("sélection : nom du monde sur le bouton", main._level_button.text.contains("Cuisine"))
 
 
@@ -805,7 +806,8 @@ func _test_official_levels() -> void:
 			same.append(file.level.id)
 		else:
 			print("    différent : ", file.path.get_file())
-	_check("jeu : les 18 niveaux reviennent identiques (%d)" % same.size(), same.size() == 18)
+	var count := LevelFile.list_dir(dir).size()
+	_check("jeu : les %d niveaux reviennent identiques (%d)" % [count, same.size()], same.size() == count)
 	main.edit_official(path)
 	main._ask_save_official()
 	main.official_dialog.id_edit.text = "contrepoids_bis"
@@ -974,3 +976,11 @@ func _test_gallery() -> void:
 	_check("galerie : adresse de proposition avec le code", url.begins_with(Gallery.ISSUE_URL)
 			and url.contains("Ma%20proposition") and url.contains("BAB1%3A"))
 	main._editor_reset()
+
+
+## Indice du premier niveau d'un monde dans la liste du jeu.
+func _first_of_world(world: String) -> int:
+	for i in main.levels.size():
+		if main.levels[i].get("world", "") == world:
+			return i
+	return -1
