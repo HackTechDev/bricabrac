@@ -132,9 +132,10 @@ func _test_rope_tool() -> void:
 	await _steps(2)
 
 	# Un clic sur la corde la sélectionne sans la déplacer ; clic droit : retour au bac.
-	await _click(board.to_global(Vector2(500, 40)), MOUSE_BUTTON_LEFT)
+	# Elle passe sur le dessus des poulies, à un rayon de leur axe.
+	await _click(board.to_global(Vector2(500, 40 - PulleyPart.RADIUS)), MOUSE_BUTTON_LEFT)
 	_check("clic sur la corde : sélection", main.selected is RopePart and main.drag_part == null)
-	await _click(board.to_global(Vector2(500, 40)), MOUSE_BUTTON_RIGHT)
+	await _click(board.to_global(Vector2(500, 40 - PulleyPart.RADIUS)), MOUSE_BUTTON_RIGHT)
 	_check("clic droit retire la corde", board.remaining("rope") == 1)
 
 	# Retirer une poulie emporte la corde qui y passe.
@@ -370,7 +371,8 @@ func _test_undo_cascade() -> void:
 	for part in board.parts:
 		if part is RopePart:
 			rope = part
-	_check("Ctrl+Z : corde rattachée à la poulie", rope != null and rope.points().size() == 3)
+	_check("Ctrl+Z : corde rattachée à la poulie", rope != null
+			and rope.entry.get("via", []).size() == 1 and rope.points().size() > 3)
 
 
 ## Sauvegarde devenue incohérente : le niveau démarre quand même, sans les pièces invalides.

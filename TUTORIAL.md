@@ -172,7 +172,12 @@ dessus. Retirer une pièce ou une poulie renvoie aussi au bac les cordes qui y s
 - **Le mou se règle :** sélectionne une corde, puis R ou la molette pour ajouter ou retirer du mou
   par pas de 20 px. Un objet retenu par une corde détendue tombe librement avant d'être rattrapé.
 - **Le plus lourd l'emporte :** de part et d'autre d'une poulie, le boulet fait monter une bille.
-- **Elle traverse tout :** seuls ses deux bouts agissent, et elle ne heurte aucun objet.
+- **Elle s'enroule sur les poulies :** elle passe du côté où elle tourne, sur le bord de la roue,
+  et la fait tourner en coulissant.
+- **Elle se prend aux obstacles :** en mouvement, elle accroche les coins de ce qu'elle rencontre et
+  les contourne ; un pendule qui frôle un poteau repart sur un rayon plus court. Elle tire aussi sur
+  les objets mobiles qu'elle soutient : tendue entre deux supports, elle retient une bille comme un
+  hamac. Ce qu'elle traverse déjà quand tu lances la machine ne la gêne pas.
 - **Le point d'attache compte :** sur une planche, une bascule ou un domino, il dépend de l'endroit
   où tu cliques. Cela permet par exemple de régler un pendule.
 - **Il faut au moins un objet mobile :** une corde entre deux pièces fixes est refusée.

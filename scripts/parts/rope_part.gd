@@ -3,12 +3,22 @@ extends Part
 ## Corde : relie deux pièces, en passant éventuellement par des poulies.
 ## Sa longueur totale est celle de la pose plus un mou réglable (R, molette) : elle ne peut pas
 ## dépasser cette longueur, elle tire mais ne pousse jamais.
-## Elle ne heurte rien. Godot n'ayant pas de joint poulie en 2D, la contrainte est résolue ici.
+## Elle s'enroule sur ses poulies, du côté où elle tourne, et se prend aux coins des obstacles
+## qu'elle rencontre en mouvement : elle les contourne, et tire sur ceux qui peuvent bouger.
+## Ce qu'elle traverse déjà au lancement ne la gêne pas : la pose reste celle du joueur.
+## Godot n'ayant pas de joint poulie en 2D, la contrainte est résolue ici.
 
 const COLOR := Color("e8d9b5")
 const STIFFNESS := 0.2
 const MAX_CORRECTION := 500.0
 const TWANG_SPEED := 180.0
+## Écart entre la corde et le coin qu'elle contourne, et nombre de coins au plus.
+const MARGIN := 3.0
+const MAX_WRAPS := 12
+## Distance au-delà de laquelle un coin, passé de l'autre côté, libère la corde.
+const UNWRAP := 0.25
+## Premiers pas de simulation où la longueur se recale sur les coins trouvés au départ.
+const SETTLE_TICKS := 3
 
 var rest_length := 0.0
 ## Plus grand allongement observé : les tests s'en servent pour vérifier la contrainte.
@@ -17,8 +27,37 @@ var max_stretch := 0.0
 var _a: Part
 var _b: Part
 var _via: Array[PulleyPart] = []
-var _first_span := 0.0
 var _cut := false
+## Côté d'enroulement de chaque poulie (+1 ou -1), fixé au lancement.
+var _sides: Array[float] = []
+## Coins d'obstacles, rangés par tronçon entre deux points fixes (bouts et poulies).
+var _wraps: Array = []
+var _exclude: Array[RID] = []
+var _settle := 0
+## Dernier tracé calculé : nœuds, segments droits, longueur et longueur avant la 1re poulie.
+var _nodes: Array[Dictionary] = []
+var _outs: Array = []
+var _length := 0.0
+var _lead := 0.0
+var _last_lead := 0.0
+
+
+## Coin d'obstacle où la corde s'appuie, en coordonnées du corps qui le porte.
+class Wrap:
+	var body: CollisionObject2D
+	var local: Vector2
+	var side: float
+
+	func _init(p_body: CollisionObject2D, p_local: Vector2, p_side: float) -> void:
+		body = p_body
+		local = p_local
+		side = p_side
+
+	func alive() -> bool:
+		return is_instance_valid(body) and body.is_inside_tree() and not body.is_queued_for_deletion()
+
+	func at() -> Vector2:
+		return body.global_transform * local
 
 
 class End:
@@ -46,7 +85,7 @@ class End:
 		if state == null:
 			return 0.0
 		var lever := arm.cross(dir)
-		return state.inverse_mass + state.inverse_inertia * lever * lever
+		return state.inverse_mass * dir.length_squared() + state.inverse_inertia * lever * lever
 
 	func apply(impulse: float) -> void:
 		if state == null:
@@ -57,10 +96,19 @@ class End:
 
 func _build() -> void:
 	add_visual(self, paint)
+	_wraps.clear()
+	_sides.clear()
+	_exclude.clear()
 	if running and _resolve():
-		var path := points()
-		rest_length = _measure(path) + slack()
-		_first_span = path[0].distance_to(path[1])
+		_route()
+		rest_length = _rest_for(_length)
+		_last_lead = _lead
+		_settle = SETTLE_TICKS
+
+
+## Longueur au repos pour une longueur posée donnée.
+func _rest_for(length: float) -> float:
+	return length + slack()
 
 
 func slack() -> float:
@@ -107,36 +155,27 @@ func hit_test(point: Vector2) -> bool:
 	return false
 
 
-## Tracé en coordonnées du plateau ; vide si une pièce manque.
+## Tracé en coordonnées du plateau, arcs de poulies compris ; vide si une pièce manque.
 func points() -> PackedVector2Array:
 	if not _resolve() or _cut:
 		return PackedVector2Array()
 	var path := PackedVector2Array()
-	path.append(board.to_local(_a.main_body.to_global(entry.get("from_off", Vector2.ZERO))))
-	for pulley in _via:
-		path.append(board.to_local(pulley.global_position))
-	path.append(board.to_local(_b.main_body.to_global(entry.get("to_off", Vector2.ZERO))))
+	for point in _route():
+		path.append(board.to_local(point))
 	return path
 
 
 func _physics_process(_delta: float) -> void:
-	if _cut or _a == null:
+	if not _advance():
 		return
-	if not _attached(_a) or not _attached(_b):
-		_cut = true
-		refresh()
-		return
-	var path := points()
-	var length := _measure(path)
-	var stretch := length - rest_length
+	var stretch := _length - rest_length
 	max_stretch = maxf(max_stretch, stretch)
-	_turn_pulleys(path)
-	var last := path.size() - 1
-	var a := End.new(_a.main_body, board.to_global(path[0]),
-			(path[1] - path[0]).normalized())
-	var b := End.new(_b.main_body, board.to_global(path[last]),
-			(path[last - 1] - path[last]).normalized())
-	var softness := a.softness() + b.softness()
+	var ends := _ends()
+	var softness := 0.0
+	var rate := 0.0
+	for end in ends:
+		softness += end.softness()
+		rate += end.pull_rate()
 	if softness <= 0.0:
 		return
 	# Vitesse d'allongement autorisée : la corde peut se tendre, puis se rattrape si elle a trop cédé.
@@ -144,25 +183,274 @@ func _physics_process(_delta: float) -> void:
 	var allowed := -stretch / dt
 	if stretch > 0.0:
 		allowed = -minf(STIFFNESS * stretch / dt, MAX_CORRECTION)
-	var excess := a.pull_rate() + b.pull_rate() - allowed
+	var excess := rate - allowed
 	if excess <= 0.0:
 		return
 	var impulse := excess / softness
-	a.apply(impulse)
-	b.apply(impulse)
+	for end in ends:
+		end.apply(impulse)
 	if excess > TWANG_SPEED and stretch > -1.0:
 		board.sfx.play("twang", excess / 900.0)
 
 
-func _turn_pulleys(path: PackedVector2Array) -> void:
-	if _via.is_empty():
-		return
-	var span := path[0].distance_to(path[1])
-	var moved := span - _first_span
-	_first_span = span
-	for pulley in _via:
-		pulley.spin += moved / PulleyPart.RADIUS
-		pulley.refresh()
+## Un pas de simulation : coins pris ou lâchés, tracé, poulies. Faux si la corde ne tire plus.
+func _advance() -> bool:
+	if _cut or _a == null:
+		return false
+	if not _attached(_a) or not _attached(_b):
+		_cut = true
+		refresh()
+		return false
+	if _settle > 0:
+		_ignore_crossed()
+	else:
+		_update_wraps()
+	_route()
+	if _settle > 0:
+		_settle -= 1
+		rest_length = _rest_for(_length)
+		_last_lead = _lead
+	_turn_pulleys()
+	return true
+
+
+## Points où la corde agit : ses deux bouts, et les coins portés par des corps mobiles.
+func _ends() -> Array[End]:
+	var ends: Array[End] = []
+	var first: Vector2 = _outs[0][0]
+	var last: Vector2 = _outs[_outs.size() - 1][1]
+	ends.append(End.new(_a.main_body, first, (_outs[0][1] - first).normalized()))
+	ends.append(End.new(_b.main_body, last, (_outs[_outs.size() - 1][0] - last).normalized()))
+	for i in range(1, _nodes.size() - 1):
+		var wrap: Wrap = _nodes[i].get("wrap")
+		if wrap != null and wrap.body is RigidBody2D:
+			var w: Vector2 = _nodes[i].pos
+			var pull: Vector2 = (_outs[i - 1][0] - w).normalized() + (_outs[i][1] - w).normalized()
+			ends.append(End.new(wrap.body as RigidBody2D, w, pull))
+	return ends
+
+
+func _turn_pulleys() -> void:
+	var moved := _lead - _last_lead
+	_last_lead = _lead
+	for i in _via.size():
+		_via[i].spin -= moved / PulleyPart.RADIUS * _side(i)
+		_via[i].refresh()
+
+
+## Côté d'enroulement : la poulie reste à l'intérieur du virage que prend la corde.
+func _side(i: int) -> float:
+	if i < _sides.size():
+		return _sides[i]
+	var prev: Vector2 = _anchor_a() if i == 0 else _via[i - 1].global_position
+	var next: Vector2 = _anchor_b() if i == _via.size() - 1 else _via[i + 1].global_position
+	var here := _via[i].global_position
+	return -1.0 if (here - prev).cross(next - here) > 0.0 else 1.0
+
+
+func _anchor_a() -> Vector2:
+	return _a.main_body.to_global(entry.get("from_off", Vector2.ZERO))
+
+
+func _anchor_b() -> Vector2:
+	return _b.main_body.to_global(entry.get("to_off", Vector2.ZERO))
+
+
+## Points de passage dans l'ordre : bout, coins, poulie (rayon signé), coins, ..., bout.
+## « span » et « k » disent où insérer un coin qui suivrait ce nœud.
+func _list_nodes() -> Array[Dictionary]:
+	if running and _sides.size() != _via.size():
+		_sides.clear()
+		for i in _via.size():
+			_sides.append(_side(i))
+	var list: Array[Dictionary] = [{"pos": _anchor_a(), "rho": 0.0, "span": 0, "k": -1}]
+	for span in _via.size() + 1:
+		var wraps: Array = _wraps[span] if span < _wraps.size() else []
+		for k in wraps.size():
+			var wrap: Wrap = wraps[k]
+			if wrap.alive():
+				list.append({"pos": wrap.at(), "rho": 0.0, "span": span, "k": k, "wrap": wrap})
+		if span < _via.size():
+			list.append({"pos": _via[span].global_position, "rho": _side(span) * PulleyPart.RADIUS,
+					"span": span + 1, "k": -1})
+	list.append({"pos": _anchor_b(), "rho": 0.0, "span": _via.size(), "k": 1 << 20})
+	return list
+
+
+## Segment tangent à deux cercles de rayons signés (rayon nul : un simple point).
+static func _tangent(c1: Vector2, r1: float, c2: Vector2, r2: float) -> Array[Vector2]:
+	var d := c2 - c1
+	var dist := d.length()
+	if dist < 0.001:
+		return [c1, c2]
+	var u := d / dist
+	var k := clampf((r1 - r2) / dist, -1.0, 1.0)
+	var n := u * k + Vector2(-u.y, u.x) * sqrt(1.0 - k * k)
+	return [c1 + n * r1, c2 + n * r2]
+
+
+## Calcule le tracé (coordonnées globales) et sa longueur exacte, arcs compris.
+func _route() -> PackedVector2Array:
+	_nodes = _list_nodes()
+	_outs.clear()
+	for i in _nodes.size() - 1:
+		_outs.append(_tangent(_nodes[i].pos, _nodes[i].rho, _nodes[i + 1].pos, _nodes[i + 1].rho))
+	var path := PackedVector2Array([_outs[0][0]])
+	_length = 0.0
+	_lead = -1.0
+	for i in range(1, _nodes.size()):
+		var enter: Vector2 = _outs[i - 1][1]
+		_length += path[path.size() - 1].distance_to(enter)
+		path.append(enter)
+		var rho: float = _nodes[i].rho
+		if i == _nodes.size() - 1 or rho == 0.0:
+			continue
+		if _lead < 0.0:
+			_lead = _length
+		var center: Vector2 = _nodes[i].pos
+		var exit: Vector2 = _outs[i][0]
+		var a_in := (enter - center).angle()
+		var a_out := (exit - center).angle()
+		# Rayon positif : la corde tourne dans le sens des angles décroissants.
+		var sweep := wrapf(a_in - a_out, 0.0, TAU) if rho > 0.0 else -wrapf(a_out - a_in, 0.0, TAU)
+		var steps := maxi(2, ceili(absf(sweep) / 0.2))
+		for step in range(1, steps + 1):
+			path.append(center + Vector2.from_angle(a_in - sweep * step / steps) * absf(rho))
+		_length += absf(sweep * rho)
+	if _lead < 0.0:
+		_lead = _length
+	return path
+
+
+## Lâche les coins dépassés, puis accroche ceux que les segments droits traversent.
+func _update_wraps() -> void:
+	while _wraps.size() < _via.size() + 1:
+		_wraps.append([])
+	for span: Array in _wraps:
+		for k in range(span.size() - 1, -1, -1):
+			if not (span[k] as Wrap).alive():
+				span.remove_at(k)
+	for attempt in MAX_WRAPS:
+		_route()
+		var freed := false
+		for i in range(1, _nodes.size() - 1):
+			var wrap: Wrap = _nodes[i].get("wrap")
+			if wrap != null and _offset(_outs[i - 1][0], _outs[i][1], _nodes[i].pos) * wrap.side < -UNWRAP:
+				_wraps[_nodes[i].span].remove_at(_nodes[i].k)
+				freed = true
+				break
+		if not freed:
+			break
+	for attempt in 4:
+		if _wrap_count() >= MAX_WRAPS:
+			return
+		_route()
+		var added := false
+		for i in _outs.size():
+			var wrap := _find_wrap(_outs[i][0], _outs[i][1], _nodes[i], _nodes[i + 1])
+			if wrap != null:
+				_wraps[_nodes[i].span].insert(_nodes[i].k + 1, wrap)
+				added = true
+				break
+		if not added:
+			return
+
+
+func _wrap_count() -> int:
+	var count := 0
+	for span: Array in _wraps:
+		count += span.size()
+	return count
+
+
+## Distance signée d'un point à la droite p → q.
+static func _offset(p: Vector2, q: Vector2, point: Vector2) -> float:
+	var line := q - p
+	var length := line.length()
+	return 0.0 if length < 0.001 else line.cross(point - p) / length
+
+
+## Le segment p → q traverse-t-il un obstacle ? Renvoie le coin à contourner : celui du côté
+## le moins enfoncé, c'est-à-dire celui que la corde vient de franchir.
+func _find_wrap(p: Vector2, q: Vector2, from: Dictionary, to: Dictionary) -> Wrap:
+	if p.distance_to(q) < 2.0:
+		return null
+	var query := PhysicsRayQueryParameters2D.create(p, q, LAYER_WORLD, _excluded())
+	var hit := get_world_2d().direct_space_state.intersect_ray(query)
+	var body := hit.get("collider") as CollisionObject2D
+	if body == null:
+		return null
+	var corners := _corners(body, hit.shape)
+	var line := q - p
+	var best: Array[int] = [-1, -1]
+	var depth: Array[float] = [0.0, 0.0]
+	for j in corners.size():
+		var v := body.global_transform * corners[j]
+		var t := (v - p).dot(line) / line.length_squared()
+		if t <= 0.0 or t >= 1.0:
+			continue
+		var d := _offset(p, q, v)
+		var s := 0 if d > 0.0 else 1
+		if absf(d) > depth[s]:
+			depth[s] = absf(d)
+			best[s] = j
+	var side := 0 if best[1] < 0 or (best[0] >= 0 and depth[0] <= depth[1]) else 1
+	if best[side] < 0:
+		return null
+	var local := corners[best[side]]
+	for node in [from, to]:
+		var other: Wrap = node.get("wrap")
+		if other != null and other.body == body and other.local.distance_to(local) < 1.0:
+			return null
+	return Wrap.new(body, local, 1.0 if side == 0 else -1.0)
+
+
+## Coins d'une forme, écartés de MARGIN, en coordonnées du corps. Un disque devient un polygone.
+static func _corners(body: CollisionObject2D, shape_index: int) -> PackedVector2Array:
+	var corners := PackedVector2Array()
+	var owner := body.shape_find_owner(shape_index)
+	var shape := body.shape_owner_get_shape(owner, 0)
+	var xf := body.shape_owner_get_transform(owner)
+	if shape is RectangleShape2D:
+		var half := (shape as RectangleShape2D).size / 2.0
+		for sign: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+			corners.append(xf * ((half + Vector2.ONE * MARGIN) * sign))
+	elif shape is CircleShape2D:
+		var r := ((shape as CircleShape2D).radius + MARGIN) / cos(PI / 12.0)
+		for i in 12:
+			corners.append(xf * (Vector2.from_angle(i * TAU / 12.0) * r))
+	elif shape is ConvexPolygonShape2D:
+		var points := (shape as ConvexPolygonShape2D).points
+		var center := Vector2.ZERO
+		for point in points:
+			center += point / points.size()
+		for point in points:
+			corners.append(xf * (point + (point - center).normalized() * MARGIN * 1.5))
+	return corners
+
+
+## Au lancement, les obstacles que la corde traverse déjà la laissent passer.
+func _ignore_crossed() -> void:
+	_route()
+	var space := get_world_2d().direct_space_state
+	for out: Array in _outs:
+		for attempt in 8:
+			var query := PhysicsRayQueryParameters2D.create(out[0], out[1], LAYER_WORLD, _excluded())
+			var hit := space.intersect_ray(query)
+			if hit.is_empty():
+				break
+			_exclude.append(hit.rid)
+
+
+## Les pièces liées par la corde ne l'arrêtent pas : elle part d'elles ou s'y enroule déjà.
+func _excluded() -> Array[RID]:
+	if _exclude.is_empty():
+		var parts: Array[Part] = [_a, _b]
+		parts.append_array(_via)
+		for part in parts:
+			for node in part.find_children("*", "CollisionObject2D", true, false):
+				_exclude.append((node as CollisionObject2D).get_rid())
+	return _exclude
 
 
 func _resolve() -> bool:
@@ -212,7 +500,8 @@ func paint(c: CanvasItem) -> void:
 	var slack := rest_length - _measure(path) if running else slack()
 	var sag := minf(sqrt(maxf(slack, 0.0)) * 4.0, 90.0) if slack > 2.0 else 0.0
 	for i in range(1, path.size()):
-		if sag > 0.0:
+		# Les petits segments d'un arc de poulie restent droits : la corde y est plaquée.
+		if sag > 0.0 and path[i - 1].distance_to(path[i]) > 30.0:
 			# Le mou fait ployer la corde vers le bas, ou sur le côté si elle est verticale.
 			var bow := (path[i] - path[i - 1]).orthogonal().normalized()
 			if bow.y < 0.0 or (is_zero_approx(bow.y) and bow.x < 0.0):

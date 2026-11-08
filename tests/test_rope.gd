@@ -8,6 +8,9 @@ func _run() -> void:
 	await _test_atwood()
 	await _test_equal_masses()
 	await _test_pendulum()
+	await _test_pulley_wrap()
+	await _test_corner_wrap()
+	await _test_hammock()
 	await _test_only_pulls()
 	await _test_slack()
 	await _test_elastic()
@@ -32,11 +35,12 @@ func _rope() -> RopePart:
 	return null
 
 
-## Machine d'Atwood : a = g (m1 - m2) / (m1 + m2).
+## Machine d'Atwood : a = g (m1 - m2) / (m1 + m2). Les billes pendent sous les points où la
+## corde quitte les poulies, à un rayon de leur axe.
 func _test_atwood() -> void:
 	_level(_pulleys() + [
-		{"kind": "ball_heavy", "id": "lourd", "pos": Vector2(700, 150)},
-		{"kind": "ball", "id": "leger", "pos": Vector2(300, 500)},
+		{"kind": "ball_heavy", "id": "lourd", "pos": Vector2(716, 150)},
+		{"kind": "ball", "id": "leger", "pos": Vector2(284, 500)},
 		{"kind": "rope", "from": "lourd", "via": ["w2", "w1"], "to": "leger"},
 	])
 	board.start()
@@ -54,8 +58,8 @@ func _test_atwood() -> void:
 
 func _test_equal_masses() -> void:
 	_level(_pulleys() + [
-		{"kind": "ball", "id": "a", "pos": Vector2(700, 300)},
-		{"kind": "ball", "id": "b", "pos": Vector2(300, 300)},
+		{"kind": "ball", "id": "a", "pos": Vector2(716, 300)},
+		{"kind": "ball", "id": "b", "pos": Vector2(284, 300)},
 		{"kind": "rope", "from": "a", "via": ["w2", "w1"], "to": "b"},
 	])
 	board.start()
@@ -81,6 +85,76 @@ func _test_pendulum() -> void:
 		farthest = maxf(farthest, pos.distance_to(Vector2(500, 60)))
 	_near("pendule : rayon conservé", farthest, radius, 0.01)
 	_near("pendule : passe au point bas", lowest, 60.0 + radius, 0.04)
+
+
+## La corde s'enroule sur les poulies : elle passe sur le dessus, à un rayon de l'axe, sans
+## jamais les traverser.
+func _test_pulley_wrap() -> void:
+	_level(_pulleys() + [
+		{"kind": "ball", "id": "a", "pos": Vector2(716, 300)},
+		{"kind": "ball", "id": "b", "pos": Vector2(284, 300)},
+		{"kind": "rope", "from": "a", "via": ["w2", "w1"], "to": "b"},
+	])
+	var path := _rope().points()
+	var top := INF
+	var inside := 0.0
+	for point in path:
+		top = minf(top, point.y)
+		for center: Vector2 in [Vector2(300, 40), Vector2(700, 40)]:
+			inside = maxf(inside, PulleyPart.RADIUS - point.distance_to(center))
+	_near("poulies : la corde passe sur le dessus", top, 40.0 - PulleyPart.RADIUS, 0.01)
+	_check("poulies : la corde ne les traverse pas (%.2f px)" % inside, inside < 0.1)
+	# Longueur : deux brins de 260 px, le dessus entre les poulies et deux quarts de tour.
+	var expected := 2.0 * 260.0 + 400.0 + PI * PulleyPart.RADIUS
+	board.start()
+	_near("poulies : longueur avec les arcs", _rope().rest_length, expected, 0.002)
+
+
+## Un pendule qui passe sous un poteau : la corde se prend à son coin, le contourne, puis s'en
+## libère en revenant.
+func _test_corner_wrap() -> void:
+	_level([
+		{"kind": "plank", "id": "poutre", "pos": Vector2(500, 60), "len": 100.0, "locked": true},
+		{"kind": "plank", "id": "poteau", "pos": Vector2(560, 200), "len": 100.0, "rot": 90.0, "locked": true},
+		{"kind": "ball_heavy", "id": "m", "pos": Vector2(200, 100)},
+		{"kind": "rope", "from": "m", "to": "poutre"},
+	])
+	board.start()
+	var wrapped := 0
+	var crossed := 0
+	var reach := 0.0
+	var released := false
+	for i in 600:
+		await physics_frame
+		var path := _rope().points()
+		if path.size() > 2:
+			wrapped += 1
+		elif wrapped > 0:
+			released = true
+		for j in range(1, path.size()):
+			if Geometry2D.segment_intersects_segment(path[j - 1], path[j],
+					Vector2(560, 155), Vector2(560, 245)) != null:
+				crossed += 1
+		reach = maxf(reach, _pos("m").x)
+	_check("coin : la corde s'y enroule (%d pas)" % wrapped, wrapped > 30)
+	_check("coin : elle ne traverse jamais le poteau (%d)" % crossed, crossed == 0)
+	_check("coin : la bille repart sur un rayon plus court (x max %.0f)" % reach, reach > 600.0)
+	_check("coin : la corde s'en libère au retour", released)
+
+
+## Une corde tendue entre deux poteaux retient la bille qui tombe dessus, comme un hamac.
+func _test_hammock() -> void:
+	_level([
+		{"kind": "plank", "id": "g", "pos": Vector2(300, 400), "len": 60.0, "locked": true},
+		{"kind": "plank", "id": "d", "pos": Vector2(700, 400), "len": 60.0, "locked": true},
+		{"kind": "ball_heavy", "id": "m", "pos": Vector2(500, 250)},
+		{"kind": "rope", "from": "g", "to": "d"},
+	])
+	board.start()
+	await _steps(240)
+	_check("hamac : la bille repose sur la corde (y %.0f)" % _pos("m").y,
+			_pos("m").y < 400.0 and _pos("m").y > 340.0)
+	_check("hamac : la corde passe sous la bille", _rope().points().size() > 2)
 
 
 ## Une bille lancée vers l'attache : la corde se détend au lieu de la repousser.

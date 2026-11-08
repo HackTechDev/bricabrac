@@ -35,7 +35,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 - Rechercher l'origine de l'avertissement « ObjectDB instances leaked » des scripts de test.
 - Rendre le vent bloquable par les obstacles : il traverse tout aujourd'hui.
-- Faire s'enrouler la corde autour des poulies et la faire réagir aux obstacles.
 - Réduire la variation de durée observée sur le niveau Dominos.
 - Lancer les tests automatiquement sur GitHub Actions à chaque envoi.
 - Déplacer les niveaux dans des fichiers de données, ce que l'éditeur demandera de toute façon.

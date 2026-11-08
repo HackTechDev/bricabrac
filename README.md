@@ -33,7 +33,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 - `scripts/history.gd` : historique d'annulation, par niveau.
 - `scripts/tutorial.gd` : bulles du tutoriel intégré ; les étapes sont dans `level_data.gd`.
 - `scripts/parts/` : une classe par pièce, dessinée par le code. `catalog.gd` les référence.
-- `scripts/parts/rope_part.gd` : contrainte de longueur de la corde (Godot n'a pas de joint poulie en 2D).
+- `scripts/parts/rope_part.gd` : contrainte de longueur de la corde, enroulée sur les poulies et accrochée aux coins des obstacles (Godot n'a pas de joint poulie en 2D).
 - `scripts/sfx.gd` : sons synthétisés par le code, sans fichier audio.
 - `scripts/level_data.gd` : les niveaux, regroupés en quatre mondes, chacun avec une solution.
 

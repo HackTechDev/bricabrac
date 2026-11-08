@@ -11,12 +11,8 @@ const STIFF := 30.0
 const DAMP := 4.0
 
 
-func _build() -> void:
-	add_visual(self, paint)
-	if running and _resolve():
-		var path := points()
-		rest_length = _measure(path) * (1.0 - tension())
-		_first_span = path[0].distance_to(path[1])
+func _rest_for(length: float) -> float:
+	return length * (1.0 - tension())
 
 
 func tension() -> float:
@@ -38,28 +34,23 @@ func describe() -> PackedStringArray:
 
 
 func _physics_process(_delta: float) -> void:
-	if _cut or _a == null:
+	if not _advance():
 		return
-	if not _attached(_a) or not _attached(_b):
-		_cut = true
-		refresh()
-		return
-	var path := points()
-	var stretch := _measure(path) - rest_length
+	var stretch := _length - rest_length
 	max_stretch = maxf(max_stretch, stretch)
-	_turn_pulleys(path)
 	refresh()
 	if stretch <= 0.0:
 		return
-	var last := path.size() - 1
-	var a := End.new(_a.main_body, board.to_global(path[0]), (path[1] - path[0]).normalized())
-	var b := End.new(_b.main_body, board.to_global(path[last]), (path[last - 1] - path[last]).normalized())
-	var force := STIFF * stretch + DAMP * (a.pull_rate() + b.pull_rate())
+	var ends := _ends()
+	var rate := 0.0
+	for end in ends:
+		rate += end.pull_rate()
+	var force := STIFF * stretch + DAMP * rate
 	if force <= 0.0:
 		return
 	var impulse := force / Engine.physics_ticks_per_second
-	a.apply(impulse)
-	b.apply(impulse)
+	for end in ends:
+		end.apply(impulse)
 
 
 func paint(c: CanvasItem) -> void:
