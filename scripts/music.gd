@@ -50,9 +50,12 @@ func _process(_delta: float) -> void:
 
 
 func _exit_tree() -> void:
+	stop()
 	if _thread != null:
-		_stream = _thread.wait_to_finish()
+		_thread.wait_to_finish()
 		_thread = null
+	# Libérée avec le lecteur, pour que Godot ne la compte pas comme une fuite en quittant.
+	_stream = null
 
 
 func _start() -> void:

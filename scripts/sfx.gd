@@ -16,7 +16,11 @@ var counts := {}
 ## Plateau invisible (vérification d'un niveau importé) : aucun son.
 var silent := false
 
+## Sons calculés une fois, partagés par tous les plateaux. La banque est rendue quand le dernier
+## lecteur quitte l'arbre : une variable statique n'est pas libérée avant la fin du programme, et
+## Godot signalerait ses sons comme des fuites (« ObjectDB instances leaked »).
 static var _bank := {}
+static var _users := 0
 
 var _players: Array[AudioStreamPlayer] = []
 var _hums := {}
@@ -26,10 +30,29 @@ var _last_played := {}
 var _rng := RandomNumberGenerator.new()
 
 
-func _ready() -> void:
-	Sfx.ensure_buses()
+func _enter_tree() -> void:
+	_users += 1
+
+
+func _exit_tree() -> void:
+	# Une lecture en cours garde son flux dans le serveur audio : on les arrête toutes.
+	for player in _players:
+		player.stop()
+	for hum: String in _hums:
+		_hums[hum].stop()
+	_users -= 1
+	if _users == 0:
+		_bank = {}
+
+
+static func _sound(sound: String) -> AudioStreamWAV:
 	if _bank.is_empty():
 		_bank = Sfx.build_bank()
+	return _bank[sound]
+
+
+func _ready() -> void:
+	Sfx.ensure_buses()
 	for i in VOICES:
 		var player := AudioStreamPlayer.new()
 		player.bus = BUS_EFFECTS
@@ -38,7 +61,7 @@ func _ready() -> void:
 	for hum: String in HUMS:
 		var player := AudioStreamPlayer.new()
 		player.bus = BUS_EFFECTS
-		player.stream = _bank[hum]
+		player.stream = _sound(hum)
 		add_child(player)
 		_hums[hum] = player
 		hum_counts[hum] = 0
@@ -90,7 +113,7 @@ func play(sound: String, volume := 1.0) -> void:
 	for player in _players:
 		if not player.playing:
 			_last_played[sound] = now
-			player.stream = _bank[sound]
+			player.stream = _sound(sound)
 			player.volume_db = linear_to_db(clampf(volume, 0.02, 1.0))
 			player.pitch_scale = _rng.randf_range(0.96, 1.04)
 			player.play()

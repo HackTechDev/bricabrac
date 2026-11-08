@@ -26,6 +26,11 @@ func _start_board() -> void:
 func _end(success: String) -> void:
 	print("ÉCHECS : %d" % failures if failures else success)
 	board.free()
+	# Les sons arrêtés ne quittent le serveur audio qu'à son prochain mixage, en temps réel : sans
+	# cette pause, ils seraient comptés comme des fuites (« ObjectDB instances leaked »).
+	await process_frame
+	OS.delay_msec(150)
+	await process_frame
 	quit(1 if failures else 0)
 
 

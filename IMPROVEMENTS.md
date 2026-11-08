@@ -52,7 +52,6 @@ Le jeu n'a pour l'instant été vérifié que par des tests automatiques.
 
 ## Technique
 
-- Rechercher l'origine de l'avertissement « ObjectDB instances leaked » des scripts de test.
 - Réduire la variation de durée observée sur le niveau Dominos.
 - Lancer les tests automatiquement sur GitHub Actions à chaque envoi.
 - Mesurer les performances avec beaucoup d'objets : les corps physiques ne s'endorment jamais,
