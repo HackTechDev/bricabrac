@@ -47,6 +47,52 @@ sur itch.io (zip du dossier). Les niveaux, la galerie et la traduction sont incl
 paquet ; la musique y est composée sur le fil principal une demi-seconde après le démarrage. La
 sauvegarde reste dans le navigateur, et le bouton Quitter n'y apparaît pas.
 
+#### Analyse de l'export web
+
+**Vérifié :**
+
+- Le paquet `index.pck` contient les 43 niveaux de `levels/`, la galerie `gallery/index.cfg`,
+  la traduction `i18n/en.json` et le shader du grenier. Vérification faite en chargeant le
+  paquet dans Godot (`--main-pack`) et en listant ses dossiers.
+- Le paquet exporté, lancé hors navigateur, démarre sans erreur.
+- Les tests automatiques passent après les deux corrections ci-dessous.
+
+**Corrigé pour le web :**
+
+- **Traduction absente.** `Lang` lit `i18n/en.json` comme un fichier brut, et le préréglage
+  n'exportait que `levels/*.cfg` et `gallery/*.cfg` : le choix de l'anglais n'aurait rien fait.
+  `i18n/*.json` est maintenant inclus.
+- **Musique sans fils d'exécution.** Elle est composée dans un fil à part, mais l'export web est
+  réglé sans fils (`variant/thread_support=false`), pour éviter les en-têtes COOP/COEP qu'exigent
+  les fils dans un navigateur. Sans fils, elle est composée sur le fil principal une
+  demi-seconde après le démarrage. L'image s'arrête un court instant, environ une seconde sur un
+  ordinateur de bureau, plus sur une machine modeste.
+
+**Particularités du navigateur :**
+
+- La page doit être servie en HTTP : ouverte comme fichier (`file://`), elle ne charge pas.
+- La progression, les réglages et les niveaux personnels sont gardés dans le stockage du
+  navigateur (IndexedDB). Ils disparaissent si l'on efface les données du site, et ne passent
+  pas d'un navigateur à l'autre.
+- Pas de bouton Quitter ; Ctrl+Q et la confirmation de fermeture sont sans effet.
+- Le navigateur n'autorise le son qu'après un premier clic ou une première touche.
+- Le moteur WebAssembly pèse environ 40 Mo (`index.wasm`), et le jeu lui-même 0,4 Mo
+  (`index.pck`). Le premier chargement prend donc quelques secondes ; un hébergeur qui compresse
+  les fichiers (gzip, Brotli), comme itch.io, réduit beaucoup le wasm.
+- « Actualiser en ligne » dans la galerie télécharge depuis raw.githubusercontent.com, qui
+  autorise les requêtes d'autres sites (CORS).
+
+**Pas encore vérifié** (aucun navigateur piloté ici) :
+
+- le jeu dans Firefox, Chrome et Safari, son compris ;
+- la durée réelle de l'arrêt dû à la musique ;
+- les filmages en GIF et en vidéo, qui écrivent des fichiers dans le stockage du navigateur,
+  où on ne peut pas facilement les récupérer ;
+- l'ouverture du dossier des enregistrements et le lien « Proposer mon niveau… », qui
+  dépendent de l'ouverture d'une page ou d'un dossier par le navigateur ;
+- les performances du bac à sable avec beaucoup d'objets, le WebAssembly étant plus lent que la
+  version native.
+
 ## Organisation
 
 - `scripts/board.gd` : mécanique de jeu (disposition, simulation, victoire), sans interface.
