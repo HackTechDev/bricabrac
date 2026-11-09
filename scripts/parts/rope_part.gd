@@ -19,6 +19,9 @@ const MAX_WRAPS := 12
 const UNWRAP := 0.25
 ## Premiers pas de simulation où la longueur se recale sur les coins trouvés au départ.
 const SETTLE_TICKS := 3
+## Rayon des poignées des deux bouts, montrées quand la corde est choisie : on les glisse pour
+## raccrocher la corde ailleurs.
+const END_GRAB := 11.0
 
 var rest_length := 0.0
 ## Plus grand allongement observé : les tests s'en servent pour vérifier la contrainte.
@@ -144,6 +147,23 @@ func is_cut() -> bool:
 ## Fin de corde liée à une pièce donnée, ou passant par elle ?
 func depends_on(id: String) -> bool:
 	return entry.get("from", "") == id or entry.get("to", "") == id or entry.get("via", []).has(id)
+
+
+## Bout de la corde sous `point` ("from" ou "to"), ou "" ; en coordonnées du plateau.
+func end_at(point: Vector2) -> String:
+	if not _resolve() or _cut:
+		return ""
+	for end: String in ["from", "to"]:
+		if end_position(end).distance_to(point) <= END_GRAB:
+			return end
+	return ""
+
+
+## Point d'attache d'un bout ("from" ou "to"), en coordonnées du plateau.
+func end_position(end: String) -> Vector2:
+	if not _resolve():
+		return Vector2.INF
+	return board.to_local(_anchor_a() if end == "from" else _anchor_b())
 
 
 func hit_test(point: Vector2) -> bool:
@@ -515,6 +535,11 @@ func paint(c: CanvasItem) -> void:
 			c.draw_line(path[i - 1], path[i], col, 2.5)
 	c.draw_circle(path[0], 4.0, col)
 	c.draw_circle(path[path.size() - 1], 4.0, col)
+	if selected and not running:
+		# Poignées : glisser un bout le raccroche à une autre pièce.
+		for at: Vector2 in [path[0], path[path.size() - 1]]:
+			c.draw_circle(at, END_GRAB - 3.0, Color(col, 0.25))
+			c.draw_arc(at, END_GRAB - 3.0, 0.0, TAU, 24, col, 2.0)
 
 
 func paint_icon(c: CanvasItem) -> void:

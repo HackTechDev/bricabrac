@@ -69,6 +69,10 @@ var rope_kind := "rope"
 var rope_from: Part
 var rope_from_off := Vector2.ZERO
 var rope_via: Array = []
+## Bout de corde en cours de glisser : la corde, son bout ("from" ou "to"), point de départ.
+var rope_end_part: RopePart
+var rope_end := ""
+var _rope_end_start := Vector2.ZERO
 var muted := false
 ## Volumes de 0 à 1, réglés dans les options.
 var sfx_volume := 1.0
@@ -483,6 +487,11 @@ func _input(event: InputEvent) -> void:
 		_marquee.queue_redraw()
 		get_viewport().set_input_as_handled()
 		return
+	if rope_end_part != null and event is InputEventMouse:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+			_drop_rope_end()
+		get_viewport().set_input_as_handled()
+		return
 	if drag_part == null:
 		return
 	if event is InputEventMouseMotion:
@@ -625,6 +634,11 @@ func _handle_click(button: MouseButton, shift := false) -> void:
 					_select(target)
 				open_context_menu()
 		MOUSE_BUTTON_LEFT:
+			if not shift and selected is RopePart and _is_player_part(selected):
+				var end := (selected as RopePart).end_at(_mouse)
+				if end != "":
+					_grab_rope_end(selected, end)
+					return
 			var target := board.part_at(_mouse)
 			if not _is_player_part(target):
 				if not shift:
@@ -639,7 +653,9 @@ func _handle_click(button: MouseButton, shift := false) -> void:
 				_start_group_drag(target)
 			else:
 				_select(target)
-				if not target is RopePart:
+				if target is RopePart:
+					_status.text = Lang.t("Glisse l'un des deux cercles pour raccrocher la corde ailleurs.")
+				else:
 					drag_part = target
 					drag_is_new = false
 					drag_origin = target.position
@@ -876,7 +892,61 @@ func _finish_rope(target: Part) -> void:
 			else Lang.t("Corde posée, tendue. Sélectionne-la et appuie sur R pour lui donner du mou.")
 
 
+## Saisit un bout de la corde choisie : la corde pâlit, l'aperçu suit le pointeur.
+func _grab_rope_end(rope: RopePart, end: String) -> void:
+	_hide_tooltip()
+	rope_end_part = rope
+	rope_end = end
+	_rope_end_start = _mouse
+	rope.modulate.a = 0.35
+	board.sfx.play("tick")
+	_update_rope_preview()
+
+
+## Lâcher d'un bout : il se raccroche à la pièce sous le pointeur, avec les règles de la pose.
+## Un lâcher refusé laisse la corde comme elle était.
+func _drop_rope_end() -> void:
+	var rope := rope_end_part
+	var end := rope_end
+	_release_rope_end()
+	if _mouse.distance_to(_rope_end_start) < 4.0:
+		return  # Simple clic sur la poignée.
+	var target := board.part_at(_mouse)
+	if target is RopePart:
+		target = null
+	var other := board.find_part(rope.entry.get("to" if end == "from" else "from", ""))
+	var refusal := ""
+	if target == null:
+		refusal = Lang.t("Lâche le bout de la corde sur une pièce.")
+	elif not target.can_tie():
+		refusal = Lang.t("Une corde s'attache à un objet, pas à une poulie.")
+	elif target == other:
+		refusal = Lang.t("Une corde relie deux pièces différentes.")
+	elif other != null and not (other.main_body is RigidBody2D or target.main_body is RigidBody2D):
+		refusal = Lang.t("Une corde entre deux pièces fixes ne ferait rien : choisis un objet mobile.")
+	if refusal != "":
+		_status.text = refusal
+		board.sfx.play("deny")
+		return
+	rope.entry[end] = target.entry.id
+	rope.entry[end + "_off"] = target.rope_anchor(board.to_global(_mouse))
+	var part := board.rebuild_part(rope)
+	_select(part)
+	board.sfx.play("place")
+	_commit()
+	_status.text = Lang.t("Corde raccrochée.")
+
+
+func _release_rope_end() -> void:
+	if rope_end_part != null and is_instance_valid(rope_end_part):
+		rope_end_part.modulate.a = 1.0
+	rope_end_part = null
+	rope_end = ""
+	_update_rope_preview()
+
+
 func _cancel_rope() -> void:
+	_release_rope_end()
 	rope_tool = false
 	rope_from = null
 	rope_via.clear()
@@ -887,6 +957,16 @@ func _update_rope_preview() -> void:
 	if _rope_preview == null:
 		return
 	_rope_preview.clear_points()
+	if rope_end_part != null:
+		# Bout en cours de glisser : du bout fixe aux poulies, jusqu'au pointeur.
+		var via: Array = rope_end_part.entry.get("via", []).duplicate()
+		if rope_end == "from":
+			via.reverse()
+		_rope_preview.add_point(rope_end_part.end_position("to" if rope_end == "from" else "from"))
+		for id: String in via:
+			_rope_preview.add_point(board.find_part(id).position)
+		_rope_preview.add_point(_mouse)
+		return
 	if rope_from == null:
 		return
 	_rope_preview.add_point(board.to_local(rope_from.main_body.to_global(rope_from_off)))

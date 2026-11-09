@@ -58,7 +58,8 @@ Liste de tout ce que propose Bric-à-Brac. Le détail des règles et des command
   - cellule photoélectrique, qui allume son canal à la lumière (ou quand on la coupe) ;
   - lampe.
 - **Liens :** corde (avec poulies, mou réglable, accroche aux coins des obstacles) et élastique
-  (tension de départ réglable, de quoi faire une fronde).
+  (tension de départ réglable, de quoi faire une fronde). Une corde posée se raccroche ailleurs
+  en glissant l'un de ses bouts.
 - **Objectif :** panier.
 - **Canaux 0 à 3 :** une plaque, un interrupteur ou une minuterie met en marche toutes les pièces
   de son canal, sans câble. Le canal 0 fonctionne en permanence.

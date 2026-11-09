@@ -223,6 +223,11 @@ La corde relie deux pièces, avec des poulies en chemin si besoin. Elle se pose 
 Échap ou clic droit annule la pose en cours. Pour retirer une corde déjà posée, fais un clic droit
 dessus, puis « Retirer ». Retirer une pièce ou une poulie renvoie aussi au bac les cordes qui y sont liées.
 
+Pour **déplacer un bout** d'une corde déjà posée, clique sur la corde : ses deux bouts s'entourent
+d'un cercle. Glisse l'un d'eux et lâche-le sur une autre pièce, ou ailleurs sur la même : la corde
+s'y raccroche, avec les mêmes règles qu'à la pose. Lâché dans le vide ou sur une poulie, le bout
+reste où il était ; Ctrl+Z annule le changement.
+
 À retenir :
 
 - **Elle tire mais ne pousse pas :** elle se pose tendue et ne peut pas dépasser sa longueur. Elle

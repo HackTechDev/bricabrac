@@ -100,6 +100,7 @@ func _run() -> void:
 	await _test_sandbox()
 	await _test_level_select()
 	await _test_elastic_tool()
+	await _test_rope_ends()
 	await _test_editor()
 	await _test_share()
 	await _test_replay()
@@ -527,6 +528,63 @@ func _test_elastic_tool() -> void:
 	await _key(KEY_R)
 	_check("élastique : R règle la tension", board.placed.back().get("tension", 0.0) == 10.0)
 	board.clear_placed()
+
+
+## Bouts de corde : la corde choisie montre deux poignées ; en glisser une raccroche ce bout à
+## une autre pièce, avec les règles de la pose, et Ctrl+Z l'annule.
+func _test_rope_ends() -> void:
+	var board: Board = main.board
+	main.load_level(main.editor_index())
+	await _steps(2)
+	board.clear_placed()
+	var ball := board.place("ball", Vector2(300, 300))
+	board.place("plank", Vector2(600, 300))
+	var crate := board.place("crate", Vector2(300, 480))
+	main._commit()
+	var ball_id: String = ball.entry.id
+	var crate_id: String = crate.entry.id
+	main._grab_from_bin("rope")
+	await _click(board.to_global(Vector2(300, 300)), MOUSE_BUTTON_LEFT)
+	await _click(board.to_global(Vector2(600, 300)), MOUSE_BUTTON_LEFT)
+	var rope := _rope(board)
+	_check("bouts : corde posée", rope != null and rope.entry.from == ball_id)
+
+	# Sans la corde choisie, un clic sur la bille la déplace, elle et non le bout de corde.
+	main._select(null)
+	await _drag(board.to_global(Vector2(300, 300)), board.to_global(Vector2(300, 200)))
+	_check("bouts : la bille se déplace si la corde n'est pas choisie",
+			board.find_part(ball_id).entry.pos == Vector2(300, 200) and _rope(board).entry.from == ball_id)
+	await _key(KEY_Z, true)
+	_check("bouts : bille revenue", board.find_part(ball_id).entry.pos == Vector2(300, 300))
+
+	# Choisir la corde, puis glisser son bout de la bille à la caisse.
+	await _click(board.to_global(Vector2(450, 300)), MOUSE_BUTTON_LEFT)
+	_check("bouts : corde choisie", main.selected is RopePart and main._status.text.contains("cercles"))
+	_check("bouts : poignée sur la bille", (main.selected as RopePart).end_at(Vector2(305, 298)) == "from")
+	await _drag(board.to_global(Vector2(300, 300)), board.to_global(Vector2(300, 480)))
+	rope = _rope(board)
+	_check("bouts : raccrochée à la caisse", rope.entry.from == crate_id and rope.entry.to != crate_id
+			and main.selected == rope and main.rope_end_part == null and rope.modulate.a == 1.0)
+	await _key(KEY_Z, true)
+	_check("bouts : Ctrl+Z la rend à la bille", _rope(board).entry.from == ball_id)
+
+	# Lâchers refusés : la corde ne change pas.
+	main._select(_rope(board))
+	await _drag(board.to_global(Vector2(600, 300)), board.to_global(Vector2(300, 300)))
+	_check("bouts : pas deux bouts sur la même pièce", _rope(board).entry.to != ball_id
+			and main._status.text.contains("différentes"))
+	main._select(_rope(board))
+	await _drag(board.to_global(Vector2(600, 300)), board.to_global(Vector2(800, 100)))
+	_check("bouts : lâché dans le vide, rien ne change", _rope(board).entry.to != ""
+			and board.find_part(_rope(board).entry.to).kind == "plank" and main._status.text.contains("sur une pièce"))
+	board.clear_placed()
+
+
+func _rope(board: Board) -> RopePart:
+	for part in board.parts:
+		if part is RopePart:
+			return part
+	return null
 
 
 ## Éditeur : poser un décor, désigner l'objectif, régler l'inventaire, essayer, gagner, enregistrer,

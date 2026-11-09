@@ -35,6 +35,7 @@ Ouvrir le projet dans Godot, ou, avec `GODOT` pointant vers l'exécutable de God
 | Changer de canal | C |
 | Poser une corde | Clic sur Corde dans le bac, puis le premier objet, les poulies dans l'ordre, le second objet |
 | Annuler une corde en cours | Échap, clic droit ou Ctrl+Z |
+| Déplacer un bout de corde | Clic sur la corde, puis glisser l'un des deux cercles sur une autre pièce |
 | Sélection multiple | Maj+clic, cadre tracé sur une zone vide, Ctrl+A |
 | Copier / coller | Ctrl+C / Ctrl+V (sous la souris) |
 | Ajuster la position | Flèches (Maj : 5 crans) |

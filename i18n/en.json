@@ -654,5 +654,9 @@
  "À propos": "About",
  "Ce jeu a été vibe-codé avec Claude, l'assistant d'IA d'Anthropic : le code, les niveaux, les sons et la musique ont été écrits en conversation avec lui.": "This game was vibe-coded with Claude, Anthropic's AI assistant: the code, levels, sounds and music were written in conversation with it.",
  "Développeur : %s": "Developer: %s",
- "Code source (licence MIT) :": "Source code (MIT license):"
+ "Code source (licence MIT) :": "Source code (MIT license):",
+ "Glisse l'un des deux cercles pour raccrocher la corde ailleurs.": "Drag one of the two circles to tie the rope somewhere else.",
+ "Lâche le bout de la corde sur une pièce.": "Drop the end of the rope on a part.",
+ "Une corde s'attache à un objet, pas à une poulie.": "A rope ties to an object, not to a pulley.",
+ "Corde raccrochée.": "Rope re-tied."
 }
